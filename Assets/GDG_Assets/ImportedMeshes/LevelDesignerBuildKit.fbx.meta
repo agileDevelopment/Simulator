@@ -1,0 +1,131 @@
+fileFormatVersion: 2
+guid: 9af61f5883dfa09429fa888de7d45802
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Column_4M
+    100002: //RootNode
+    100004: Railing
+    100006: Stairs
+    100008: WallSection_1M
+    100010: WallSection_1MX4M
+    100012: WallSection_4M
+    100014: WallSection_4M_Door_Center
+    100016: Center
+    100018: Hemi
+    100020: UCX_WallSection_4M_Door_Center
+    100022: UCX_WallSection_4M_Door_Center_001
+    100024: UCX_WallSection_4M_Door_Center_002
+    100026: Collider_WallSection_4M_Door_Center
+    100028: Collider_WallSection_4M_Door_Center_001
+    100030: Collider_WallSection_4M_Door_Center_002
+    400000: Column_4M
+    400002: //RootNode
+    400004: Railing
+    400006: Stairs
+    400008: WallSection_1M
+    400010: WallSection_1MX4M
+    400012: WallSection_4M
+    400014: WallSection_4M_Door_Center
+    400016: Center
+    400018: Hemi
+    400020: UCX_WallSection_4M_Door_Center
+    400022: UCX_WallSection_4M_Door_Center_001
+    400024: UCX_WallSection_4M_Door_Center_002
+    400026: Collider_WallSection_4M_Door_Center
+    400028: Collider_WallSection_4M_Door_Center_001
+    400030: Collider_WallSection_4M_Door_Center_002
+    2300000: Column_4M
+    2300002: Railing
+    2300004: Stairs
+    2300006: WallSection_1M
+    2300008: WallSection_1MX4M
+    2300010: WallSection_4M
+    2300012: WallSection_4M_Door_Center
+    2300014: UCX_WallSection_4M_Door_Center
+    2300016: UCX_WallSection_4M_Door_Center_001
+    2300018: UCX_WallSection_4M_Door_Center_002
+    2300020: Collider_WallSection_4M_Door_Center
+    2300022: Collider_WallSection_4M_Door_Center_001
+    2300024: Collider_WallSection_4M_Door_Center_002
+    3300000: Column_4M
+    3300002: Railing
+    3300004: Stairs
+    3300006: WallSection_1M
+    3300008: WallSection_1MX4M
+    3300010: WallSection_4M
+    3300012: WallSection_4M_Door_Center
+    3300014: UCX_WallSection_4M_Door_Center
+    3300016: UCX_WallSection_4M_Door_Center_001
+    3300018: UCX_WallSection_4M_Door_Center_002
+    3300020: Collider_WallSection_4M_Door_Center
+    3300022: Collider_WallSection_4M_Door_Center_001
+    3300024: Collider_WallSection_4M_Door_Center_002
+    4300000: Column_4M
+    4300002: Stairs
+    4300004: Railing
+    4300006: WallSection_1M
+    4300008: WallSection_1MX4M
+    4300010: WallSection_4M_Door_Center
+    4300012: WallSection_4M
+    4300014: UCX_WallSection_4M_Door_Center_002
+    4300016: UCX_WallSection_4M_Door_Center_001
+    4300018: UCX_WallSection_4M_Door_Center
+    4300020: Collider_WallSection_4M_Door_Center_002
+    4300022: Collider_WallSection_4M_Door_Center_001
+    4300024: Collider_WallSection_4M_Door_Center
+    7400000: Default Take
+    9500000: //RootNode
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  additionalBone: 0
+  userData: 
