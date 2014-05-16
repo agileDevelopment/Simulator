@@ -13,8 +13,8 @@ public class OrbitGUI : MonoBehaviour, IFlightGUIOptions {
 	// Use this for initialization
 	void Start () {
 		simValues = gameObject.GetComponent<LoadOptionsGUI>();
-		nodeOrbitString="40";
-		nodeMaxSpeedString="50";
+		nodeOrbitString="75";
+		nodeMaxSpeedString="30";
 	}
 	
 	// Update is called once per frame
@@ -64,7 +64,7 @@ int count = 1;
 	}
 		
 public void setFloor(){
-		floorSize = (int)((simValues.nodesSqrt+2)*radius*2);
+		floorSize = (int)((simValues.nodesSqrt)*radius*2.5);
 center = floorSize/2;
 GameObject floor = GameObject.Find("Floor");
 floor.transform.position = (new Vector3(center,-10,center));

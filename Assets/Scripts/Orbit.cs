@@ -35,7 +35,7 @@ public class Orbit :  NodeMove{
 		radius = (float)orbitValues.radius*(gameObject.GetComponent<NodeController>().idNum % 
 		simValues.nodesSqrt);
 		radius += gameObject.GetComponent<NodeController>().idNum;
-		radiusSpeed = Random.Range(5,orbitValues.nodeMaxSpeed);
+		radiusSpeed = Random.Range(1,orbitValues.nodeMaxSpeed);
 		rotationSpeed = Random.Range(5,orbitValues.nodeMaxSpeed);
 		center = new Vector3(orbitValues.center,10, orbitValues.center);
 		transform.position = (transform.position - center).normalized * radius + center;	

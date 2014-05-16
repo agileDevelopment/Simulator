@@ -71,6 +71,7 @@ void Update(){
 			if(!simValues.drawLine){
 				foreach(DictionaryEntry entry in lines){
 					GameObject line = (GameObject)entry.Value;
+                    if(line)
 					line.GetComponent<LineRenderer>().enabled = false;
 				}
 			}
@@ -84,46 +85,50 @@ void Update(){
                 foreach (DictionaryEntry entry in lines)
                 {
                     GameObject line = (GameObject)entry.Value;
-                    if (line)//check to see if its been destroyed already
+                    if (line)
+                    {//check to see if its been destroyed already
                         line.GetComponent<LineRenderer>().enabled = true;
-                    GameObject dest = GameObject.Find("Node " + entry.Key);
+                        GameObject dest = GameObject.Find("Node " + entry.Key);
 
-                    line.GetComponent<LineRenderer>().SetPosition(0, source.transform.position);
-                    line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
-                    lineColor = Color.white;
-                    if (simValues.adaptiveNetworkColor)
-                    {
-                        float distance = Vector3.Distance(source.transform.position, dest.transform.position);
-                        if (line != null)
+
+                        line.GetComponent<LineRenderer>().SetPosition(0, source.transform.position);
+                        line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
+                        lineColor = Color.white;
+
+                        if (simValues.adaptiveNetworkColor)
                         {
-                            lineColor = Color.black;
-                            //Lots of RGB math here... basically spilts the line into two categories, halfway and less
-                            // than half way and adjusts the color accordly.  
+                            float distance = Vector3.Distance(source.transform.position, dest.transform.position);
+                            if (line != null)
+                            {
+                                lineColor = Color.black;
+                                //Lots of RGB math here... basically spilts the line into two categories, halfway and less
+                                // than half way and adjusts the color accordly.  
 
-                            //greater than midway show Red - Yellow
-                            if (distance > midPoint)
-                            {
-                                float delta = ((simValues.nodeCommRange - distance) / midPoint);
-                                lineColor.r = 255;
-                                lineColor.g = (delta * colorStep) * 3;
-                            }
-                            //less than midway, show Yellow - Green				
-                            if (distance <= midPoint)
-                            {
-                                float delta = (distance / midPoint);
-                                lineColor.g = 255;
-                                lineColor.r = (delta * colorStep) - 10;
-                            }
+                                //greater than midway show Red - Yellow
+                                if (distance > midPoint)
+                                {
+                                    float delta = ((simValues.nodeCommRange - distance) / midPoint);
+                                    lineColor.r = 255;
+                                    lineColor.g = (delta * colorStep) * 3;
+                                }
+                                //less than midway, show Yellow - Green				
+                                if (distance <= midPoint)
+                                {
+                                    float delta = (distance / midPoint);
+                                    lineColor.g = 255;
+                                    lineColor.r = (delta * colorStep) - 10;
+                                }
 
-                            //extra bonus for being close
-                            if (distance < 20)
-                            {
-                                lineColor.g = 255;
-                                lineColor.r = 0;
+                                //extra bonus for being close
+                                if (distance < 20)
+                                {
+                                    lineColor.g = 255;
+                                    lineColor.r = 0;
+                                }
                             }
                         }
+                        line.GetComponent<LineRenderer>().SetColors(lineColor, lineColor);
                     }
-                    line.GetComponent<LineRenderer>().SetColors(lineColor, lineColor);
                 }
 		}
 		}
