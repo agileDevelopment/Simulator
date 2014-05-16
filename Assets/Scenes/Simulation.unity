@@ -120,6 +120,7 @@ MonoBehaviour:
   pauseString: Pause Simulation
   paused: 0
   showMainGui: 0
+  adaptiveNetworkColor: 0
   flightChoice: 0
   menuLabelWidth: 145
   menuFieldWidth: 45
