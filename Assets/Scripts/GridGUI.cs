@@ -72,7 +72,7 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions {
 		GameObject floor = GameObject.Find("Floor");
 		floor.transform.position = (new Vector3(center,-10,center));
 		floor.transform.localScale = (new Vector3(floorSize,.1f,floorSize));	
-		Camera.main.transform.position = (new Vector3(center,floorSize/2,center));
+		Camera.main.transform.position = (new Vector3(center,floorSize,center));
 		Camera.main.isOrthoGraphic = true;
 		Camera.main.orthographicSize = floor.transform.localScale.x/2;
 		floor.renderer.material.mainTextureScale = new Vector2(floorSize/10, floorSize/10);

@@ -13,6 +13,7 @@
 //--------------------------------------------------------------
 
 using UnityEngine;
+using System.Collections;
 
 public class LoadOptionsGUI : MonoBehaviour {
 	
@@ -36,7 +37,6 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public string pauseString = "Pause Simulation";
 	public bool paused=false;
 	public bool showMainGui;
-    public bool adaptiveNetworkColor = false;
 	public int flightChoice=0;
 	public int menuLabelWidth = 170;
 	public int menuFieldWidth = 100;
@@ -128,11 +128,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 		if(!showMainGui){
 		
 			//Left hand column options
-            GUI.color = Color.green;
-            GUI.backgroundColor = Color.blue;
-
-            GUI.Box(new Rect(5, 5, buttonWidth + 10, buttonHeight * numberButtons+30), "UAV Simulator Options");
-			GUILayout.BeginArea(new Rect(10,30,buttonWidth, buttonHeight*numberButtons));
+			GUILayout.BeginArea(new Rect(10,10,buttonWidth, buttonHeight*numberButtons));
 						if(GUILayout.Button("Exit")){
 							Application.Quit();
 							}
@@ -142,15 +138,11 @@ public class LoadOptionsGUI : MonoBehaviour {
 						}
 					GUILayout.Space(buttonHeight);
 					if(GUILayout.Button(drawLinesString)){
-                        if (drawLine)
-                        {
-                            drawLinesString = "Show Lines";
-                        }
-                        else drawLinesString = "Hide Lines";
+							if(drawLine)
+								drawLinesString = "Show Lines";
+							else drawLinesString = "Hide Lines";
 							drawLine = !drawLine;
 						}
-                          if (drawLine)
-                        adaptiveNetworkColor = GUILayout.Toggle(adaptiveNetworkColor, "Adaptive Color");
 						if(GUILayout.Button(pauseString)){
 						if(!paused)
 						pauseString = "Resume";
@@ -158,7 +150,6 @@ public class LoadOptionsGUI : MonoBehaviour {
 						pauseString = "Pause Simulation";
 						paused = !paused;
 						}
-
 			GUILayout.BeginHorizontal();
 			slowMotion = GUILayout.Toggle(slowMotion, "Slow Sim", GUILayout.Width(80));
 			if(GUILayout.Button("-")){

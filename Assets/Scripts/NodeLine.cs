@@ -25,6 +25,7 @@ LoadOptionsGUI simValues;
 NodeController data;	
 Color lineColor = Color.red;
 float colorStep;
+float modVal;
 int count;
 int midPoint;
 
@@ -38,6 +39,7 @@ void Start(){
 		lineColor.g = 0;
 		lineColor.b = 0;
 		colorStep = (float)255/(simValues.nodeCommRange/2);
+		modVal = (simValues.nodesSqrt/5);
 }
 
 //public function to be called by nodeController if we need to add a connection
@@ -81,50 +83,42 @@ void Update(){
 				GameObject source = gameObject;
 			
 				//loop through all the lines in our container and update accordingly
-                foreach (DictionaryEntry entry in lines)
-                {
-                    GameObject line = (GameObject)entry.Value;
-                    if (line)//check to see if its been destroyed already
-                        line.GetComponent<LineRenderer>().enabled = true;
-                    GameObject dest = GameObject.Find("Node " + entry.Key);
-
-                    line.GetComponent<LineRenderer>().SetPosition(0, source.transform.position);
-                    line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
-                    lineColor = Color.white;
-                    if (simValues.adaptiveNetworkColor)
-                    {
-                        float distance = Vector3.Distance(source.transform.position, dest.transform.position);
-                        if (line != null)
-                        {
-                            lineColor = Color.black;
-                            //Lots of RGB math here... basically spilts the line into two categories, halfway and less
-                            // than half way and adjusts the color accordly.  
-
-                            //greater than midway show Red - Yellow
-                            if (distance > midPoint)
-                            {
-                                float delta = ((simValues.nodeCommRange - distance) / midPoint);
-                                lineColor.r = 255;
-                                lineColor.g = (delta * colorStep) * 3;
-                            }
-                            //less than midway, show Yellow - Green				
-                            if (distance <= midPoint)
-                            {
-                                float delta = (distance / midPoint);
-                                lineColor.g = 255;
-                                lineColor.r = (delta * colorStep) - 10;
-                            }
-
-                            //extra bonus for being close
-                            if (distance < 20)
-                            {
-                                lineColor.g = 255;
-                                lineColor.r = 0;
-                            }
-                        }
-                    }
-                    line.GetComponent<LineRenderer>().SetColors(lineColor, lineColor);
-                }
+				foreach(DictionaryEntry entry in lines){
+					GameObject line = (GameObject)entry.Value;
+					if(line)//check to see if its been destroyed already
+						line.GetComponent<LineRenderer>().enabled = true;
+					GameObject dest = GameObject.Find("Node " + entry.Key);
+					float distance = Vector3.Distance(source.transform.position,dest.transform.position);
+					if(line!=null){
+					
+					//Lots of RGB math here... basically spilts the line into two categories, halfway and less
+					// than half way and adjusts the color accordly.  
+						lineColor = Color.black;
+						line.GetComponent<LineRenderer>().SetPosition(0,source.transform.position);
+						line.GetComponent<LineRenderer>().SetPosition(1,dest.transform.position);
+						
+						//greater than midway show Red - Yellow
+						if(distance > midPoint){
+							float delta = ((simValues.nodeCommRange - distance)/midPoint);
+							lineColor.r = 255;				
+							lineColor.g = (delta*colorStep)*3;
+						}
+						//less than midway, show Yellow - Green				
+						if(distance <=midPoint){
+							float delta = (distance/midPoint);
+							lineColor.g =255;	
+							lineColor.r = (delta*colorStep)-10;
+						}
+						
+						//extra bonus for being close
+						if(distance < 20){
+							lineColor.g =255;	
+							lineColor.r = 0;
+						}
+	
+						line.GetComponent<LineRenderer>().SetColors(lineColor, lineColor);		
+					}
+				}
 		}
 		}
 }
