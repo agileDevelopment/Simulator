@@ -138,7 +138,7 @@ SubstanceImporter:
         data:
           first:
             name: _Color
-          second: {r: .588235259, g: .588235259, b: .588235259, a: 1}
+          second: {r: 0, g: 0, b: 1, a: 1}
         data:
           first:
             name: _SpecColor
@@ -658,7 +658,7 @@ SubstanceImporter:
   - serializedVersion: 10
     name: Wall1M
     prototypeName: Grid
-    shaderName: Specular
+    shaderName: Diffuse
     inputs:
     - name: $normalformat
       value:
@@ -697,10 +697,10 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: GridColor
       value:
-        scalar[0]: .400000006
-        scalar[1]: .400000006
-        scalar[2]: .400000006
-        scalar[3]: 1
+        scalar[0]: .768627465
+        scalar[1]: .768627465
+        scalar[2]: .776470602
+        scalar[3]: .968627453
         texture: {instanceID: 0}
     - name: SelectDecal
       value:
@@ -783,7 +783,7 @@ SubstanceImporter:
         data:
           first:
             name: _Color
-          second: {r: 1, g: 1, b: 1, a: .53725493}
+          second: {r: .678431392, g: .725490212, b: .917647064, a: .909803927}
         data:
           first:
             name: _SpecColor
