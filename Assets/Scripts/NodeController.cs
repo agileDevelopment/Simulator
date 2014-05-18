@@ -19,10 +19,12 @@ using System.Collections;
 
 public class NodeController : MonoBehaviour {
 	public NodeMove flightBehavior;
+    public INetworkBehavior networkBehavior;
 	LoadOptionsGUI simValues;
 	NodeLine lineController;
 	public int idNum;
 	public string idString;
+    public bool selected;
 
 	
 	
@@ -32,21 +34,44 @@ public class NodeController : MonoBehaviour {
 	//	flightBehavior = gameObject.AddComponent<Orbit>();
 	}
 	void Start () {
+        selected = false;
 		lineController = gameObject.GetComponent<NodeLine>();
 		//change this to implement a different movement controller
 	
 	}
+
+    void OnMouseDown()
+    {
+        unselectNodes();
+        selected = true;
+        gameObject.renderer.material.color = Color.green;
+
+    }
+
+    private void unselectNodes()
+    {
+        GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+
+        foreach (GameObject node in nodes)
+        {
+            if(node)
+            node.GetComponent<NodeController>().selected = false;
+            node.renderer.material.color = Color.blue;
+        }
+
+    }
 	
 
 	//----------------Unity Functions------------------------------
 	void OnTriggerEnter (Collider col)
-	{	
-		
-		if(col.gameObject.tag == "Node")
+	{
+
+        if (col.gameObject.tag == "Node")
 		{
-			GameObject otherNode = col.gameObject;
+            GameObject otherNode = col.gameObject;
 			lineController.addLine(otherNode);
-		}
+            networkBehavior.addNeighbor(otherNode);
+        }
 		
 	}
 	
@@ -55,15 +80,17 @@ public class NodeController : MonoBehaviour {
 		{
 			GameObject otherNode = col.gameObject;
 			lineController.removeLine(otherNode);
+            networkBehavior.removeNeighbor(otherNode);
 		}
 	}
 	
 	
 	// Update is called once per frame
 	void Update () {
-		if(gameObject.GetComponent<SphereCollider>().radius < simValues.nodeCommRange/10)
+		if(gameObject.GetComponent<SphereCollider>().radius < simValues.nodeCommRange/20)
 			gameObject.GetComponent<SphereCollider>().radius += .1f;
-	
+        if (selected)
+            gameObject.renderer.material.color = Color.green;
 		}
 		
 	void LateUpdate(){

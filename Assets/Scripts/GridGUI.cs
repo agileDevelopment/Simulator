@@ -3,9 +3,9 @@ using System.Collections;
 
 public class GridGUI : MonoBehaviour, IFlightGUIOptions {
 	LoadOptionsGUI simValues;
-	public string nodeSpacingString= "90";
-	public string nodeOrbitString="75";
-	public string nodeMaxSpeedString="10";
+	public string nodeSpacingString= "70";
+	public string nodeOrbitString="50";
+	public string nodeMaxSpeedString="20";
 	public int nodeSpacing;
 	public int nodeMaxSpeed;
 	public float radius;
@@ -13,6 +13,9 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions {
 	// Use this for initialization
 	void Start () {
 		simValues = gameObject.GetComponent<LoadOptionsGUI>();
+        nodeSpacingString= "75";
+	    nodeOrbitString="40";
+	    nodeMaxSpeedString="15";
 	}
 	
 	// Update is called once per frame
@@ -74,7 +77,7 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions {
 		floor.transform.localScale = (new Vector3(floorSize,.1f,floorSize));	
 		Camera.main.transform.position = (new Vector3(center,floorSize/2,center));
 		Camera.main.isOrthoGraphic = true;
-		Camera.main.orthographicSize = floor.transform.localScale.x/2;
+		Camera.main.orthographicSize = floor.transform.localScale.x/2 +50;
 		floor.renderer.material.mainTextureScale = new Vector2(floorSize/10, floorSize/10);
 	}
 	

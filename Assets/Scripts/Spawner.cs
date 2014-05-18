@@ -22,6 +22,9 @@ float floorSize;
 IFlightGUIOptions flightGUI;
 IFlightBehavior flightBehavior;
 
+INetworkGUIOptions networkGUI;
+INetworkBehavior networkBehavior;
+
 	// Use this for initialization
 	void Start () {
 
@@ -32,18 +35,29 @@ IFlightBehavior flightBehavior;
 	
 	}
 	
-	public void StartSimulation(int choice){
-	switch(choice){
-	case 0:
-	flightGUI = gameObject.GetComponent<GridGUI>();
-	break;
-	case 1:
-	flightGUI = gameObject.GetComponent<OrbitGUI>();
-	break;
-	
-	default:
-	break;
+	public void StartSimulation(int flightChoice, int networkChoice ){
+        switch (flightChoice)
+        {
+	        case 0:
+	         flightGUI = gameObject.GetComponent<GridGUI>();
+	          break;
+	        case 1:
+	          flightGUI = gameObject.GetComponent<OrbitGUI>();
+	         break;
+	        default:
+	           break;
 	}
+        switch (networkChoice)
+        {
+            case 0:
+                networkGUI = gameObject.GetComponent<NW_AODV_GUI>();
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
+
 		LoadOptionsGUI loadData = gameObject.GetComponent<LoadOptionsGUI>();
 		flightGUI.setFloor();
 
@@ -51,10 +65,12 @@ IFlightBehavior flightBehavior;
 		for(int i = 0; i < loadData.numNodes; i++){
 				GameObject node = (GameObject)GameObject.Instantiate(nodePrefab);
 				node.name =  "Node " + i.ToString();
+                node.renderer.material.color = Color.blue;
 				NodeController data = node.GetComponent<NodeController>();
 				data.idNum = i;
 				data.idString = "Node " + i.ToString();
-			switch(choice){
+                switch (flightChoice)
+                {
 			case 0:
 				node.AddComponent<Grid>();
 				node.GetComponent<NodeController>().flightBehavior = node.GetComponent<Grid>();
@@ -67,7 +83,19 @@ IFlightBehavior flightBehavior;
 			default:
 				break;
 			}
-			node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange/100;
+                switch (networkChoice)
+                {
+                    case 0:
+                        node.AddComponent<NW_AODV>();
+                        node.GetComponent<NodeController>().networkBehavior = node.GetComponent<NW_AODV>();
+                        break;
+                    case 1:
+                        break;
+                    default:
+                        break;
+                }
+
+			node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange/200;
 		}
 		
 		flightGUI.setSpawnLocation();

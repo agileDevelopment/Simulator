@@ -74,15 +74,15 @@ public interface IFlightGUIOptions{
 //  OS: Windows x64/X86
 //  Language:C#
 //
-//  Class Dependicies: Spawner
+//  Class Dependicies: Node Controller
 
-//  Description:  Defines what methods must be implemented to interface with the main program GUI.
+//  Description:  Implements C.E. Perkins AODV dynamic network protocol.
 //
 //--------------------------------------------------------------
-public interface INetworkBehavior{
-	
-//todo
-	
+public interface INetworkBehavior
+{
+    void addNeighbor(GameObject node);
+    void removeNeighbor(GameObject node);
 }
 //------------------------------------------------------------
 //  Title: INetworkGUIOptions
@@ -95,14 +95,11 @@ public interface INetworkBehavior{
 //
 //  Class Dependicies: Spawner
 
-//  Description:  Defines what methods must be implemented to interface with the main program GUI.
+//  Description:  Implements Gui Options for C.E. Perkins AODV dynamic network protocol.
 //
 //--------------------------------------------------------------
 public interface INetworkGUIOptions{
-	
-//todo
 
-//adding a test of git commits and changes....
-//just modifying some comments.
+    void setGuiValues();
 	
 }

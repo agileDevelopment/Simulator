@@ -86,6 +86,7 @@ GameObject:
   - 114: {fileID: 143568325}
   - 114: {fileID: 143568328}
   - 114: {fileID: 143568329}
+  - 114: {fileID: 143568330}
   m_Layer: 0
   m_Name: Spawner
   m_TagString: Untagged
@@ -122,6 +123,7 @@ MonoBehaviour:
   showMainGui: 0
   adaptiveNetworkColor: 0
   flightChoice: 0
+  networkChoice: 0
   menuLabelWidth: 145
   menuFieldWidth: 45
   nodesSqrt: 0
@@ -130,6 +132,7 @@ MonoBehaviour:
   slowMotion: 0
   slowMoRateString: 
   slowMoRate: 0
+  foundTime: 0
 --- !u!114 &143568326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,6 +191,17 @@ MonoBehaviour:
   nodeMaxSpeed: 0
   radius: 0
   rotationSpeed: 0
+--- !u!114 &143568330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 143568324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c744f429871fe64b92e53d2e9cddedb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &532098889
 GameObject:
   m_ObjectHideFlags: 0

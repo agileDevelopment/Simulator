@@ -17,7 +17,9 @@ using UnityEngine;
 public class LoadOptionsGUI : MonoBehaviour {
 	
 	GUIContent[] flightControllerList;
+    GUIContent[] networkControllerList;
 	private ComboBox flightComboBoxControl;// = new ComboBox();
+    private ComboBox networkComboBoxControl;// = new ComboBox();
 	private GUIStyle listStyle = new GUIStyle();
 	IFlightGUIOptions flightGUI;
 	public Renderer cubeRender;	
@@ -32,27 +34,34 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public string nodeCommRangeString="100";
 	public int nodeCommRange;
 	public string drawLinesString = "Hide Lines";
-	public bool drawLine=true;
+	public bool drawLine=false;
 	public string pauseString = "Pause Simulation";
 	public bool paused=false;
 	public bool showMainGui;
-    public bool adaptiveNetworkColor = false;
+    public bool adaptiveNetworkColor = true;
 	public int flightChoice=0;
+    public int networkChoice = 0;
 	public int menuLabelWidth = 170;
 	public int menuFieldWidth = 100;
 	public int nodesSqrt;
 	public bool enableUpdate;
-	public bool updateLines  =true;
+	public bool updateLines  =false;
 	public bool slowMotion = false;
 	public string slowMoRateString;
 	public int slowMoRate;
 	int counter = 1;
+    public float foundTime;
+    public float startTime;
+    public float endTime;
 	
 	void Start () {
 		numberButtons=5;
-		numNodesString="25";
+		numNodesString="75";
 		slowMoRateString = "2";
-	showMainGui = true;
+	    showMainGui = true;
+        drawLine = true;
+        updateLines = true;
+        adaptiveNetworkColor = true;
 		//List for types of Flight Controllers
 		//Must be updated when new FlightBehaviors are implemented
 		flightControllerList = new GUIContent[4];
@@ -70,6 +79,12 @@ public class LoadOptionsGUI : MonoBehaviour {
 					listStyle.padding.bottom = 4;
 		flightComboBoxControl = new ComboBox(new Rect(5, buttonHeight*numberButtons+10, 240, 20),
 			 flightControllerList[0], flightControllerList, "button", "box", listStyle);
+
+        //List for Network Controllers
+        networkControllerList = new GUIContent[1];
+        networkControllerList[0] = new GUIContent("AODV");
+        networkComboBoxControl = new ComboBox(new Rect(5, buttonHeight * numberButtons +30, 240, 20),
+             networkControllerList[0], networkControllerList, "button", "box", listStyle);
 
 	}
 	
@@ -95,6 +110,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
 			flightChoice = flightComboBoxControl.Show();
+            networkChoice = networkComboBoxControl.Show();
 			GUI.EndGroup();
 
 
@@ -106,7 +122,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 			if(GUILayout.Button("Load Simulation",GUILayout.Width(buttonWidth),GUILayout.Height(50))){
 			paused = true;
 				setVariables();
-				gameObject.GetComponent<Spawner>().StartSimulation(flightChoice);		
+				gameObject.GetComponent<Spawner>().StartSimulation(flightChoice,networkChoice);		
 			}
 			
 			if(GUILayout.Button("Exit")){
@@ -123,6 +139,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 					default:
 					break;
 				}
+
 		}
 		//show this menu while simulation is running
 		if(!showMainGui){
@@ -171,11 +188,6 @@ public class LoadOptionsGUI : MonoBehaviour {
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
 			
-			//Top Speed Controls...
-			GUILayout.BeginArea(new Rect((Screen.width- buttonWidth)/2 - 200,10, 400,30));
-
-			GUILayout.EndArea();
-			
 		}
 		
 
@@ -222,6 +234,16 @@ public class LoadOptionsGUI : MonoBehaviour {
 		default:
 			break;
 		}
+
+        switch (networkChoice)
+        {
+            case 0:
+                gameObject.GetComponent<NW_AODV_GUI>().setGuiValues();
+                break;
+            case 1:
+            default:
+                break;
+        }
 	}
 }
 //code to generate Combo box.  Taking off Unity Forums 
