@@ -133,6 +133,8 @@ MonoBehaviour:
   slowMoRateString: 
   slowMoRate: 0
   foundTime: 0
+  startTime: 0
+  endTime: 0
 --- !u!114 &143568326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,7 +146,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae3c4c8d87c9ba1458dba01e4c898e64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 100000, guid: efcf64f68a756574c905179e7093a69c, type: 2}
+  nodePrefab: {fileID: 100000, guid: f469a7361ca502b4796b8823fe65c797, type: 2}
 --- !u!4 &143568327
 Transform:
   m_ObjectHideFlags: 0
@@ -202,6 +204,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c744f429871fe64b92e53d2e9cddedb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nodeToFind: {fileID: 0}
+  source: {fileID: 0}
+  nodeToFindString: 
+  nodeToFindID: 0
+  timeToFind: 0
+  numHops: 0
+  nextHop: 
+  sourceStr: 
 --- !u!1 &532098889
 GameObject:
   m_ObjectHideFlags: 0
