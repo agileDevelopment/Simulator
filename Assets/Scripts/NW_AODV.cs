@@ -29,12 +29,8 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
     Hashtable currentRREQ;
     Hashtable routes;
     float active_route_timer;
-
     int nodeSeqNum;
     int broadcastID;
-
-  //  int countdown = 20;
-
 
     //--------------------------------------Unity Functions---------------------------------------
     // Use this for initialization
@@ -64,8 +60,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
         {
             RevPath r = (RevPath)revPath.Value;
             if (r.expTimer < Time.time)
-                currentRREQ.Remove(r.source.name + "-" + r.broadcast_id);
-
+               currentRREQ.Remove(r.source.name + "-" + r.broadcast_id);
         }
 
         //clear routes if they have expired.
@@ -75,12 +70,8 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
             RouteEntry r = (RouteEntry)revPath.Value;
             if (r.expirationTime < Time.time)
                 routes.Remove(r.destination);
-
         }
-
-
     }
-
     void OnMouseDown()
     {
         AODV_GUI.source = gameObject;
@@ -94,7 +85,6 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
         {
             neighbors.Add(node);
         }
-
     }
     //public function to be called by nodeController if we need to remove a connection
     public void removeNeighbor(GameObject nodeID)
@@ -129,7 +119,16 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
             else if (neighbors.Contains(dataIn.destination))
             {
                 destFound = true;
-    //            print(gameObject.name + "is neighbor");
+                
+                RREPpacket update = new RREPpacket();
+                update.broadcast_id = dataIn.broadcast_id;
+                update.dest_sequence_num = dataIn.dest_sequence_num;
+                update.destination = dataIn.destination;
+                update.hop_count = 1;
+                update.intermediate = dataIn.destination;
+                update.source = dataIn.source;
+                updateRouteFromRREP(update);
+                
             }
             //if we have a route to the destination in our routing table
             else if (routes.Contains(dataIn.destination))
@@ -138,9 +137,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                 //check to see if our route is stale...if so, don't use it.
                 if (dataIn.dest_sequence_num <= route.dest_sequence_num)
                 {
-  
                     destFound = true;
-       //             print(gameObject.name + "has route");
                 }
             }
 
@@ -207,8 +204,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                 {
                     routeToSource = new RouteEntry();
                     routeToSource.numberHops = 10000000;
-                }
-                
+                }           
                     if (dataIn.hop_count < routeToSource.numberHops)
                     {
                         routeToSource.dest_sequence_num = dataIn.source_seq;
@@ -218,9 +214,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                         routeToSource.numberHops = dataIn.hop_count;
                     }
             }
-
         }
-
     }
     public void sendRREQ(RREQpacket dataOut)
     {
@@ -238,22 +232,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
             }
         }
     }
-    /*
-    public void sendRREQ(RREQpacket dataOut)
-    {
-        string cameFrom = dataOut.intermediate.name;
-        List<GameObject> temp = new List<GameObject>(neighbors);
-        foreach (GameObject node in temp)
-        {
-            if (cameFrom != node.name && node.name != dataOut.destination.name)
-            {
-                dataOut.intermediate = gameObject;
-                float distance = Vector3.Distance(gameObject.transform.position, node.transform.position);
-                node.GetComponent<NW_AODV>().recRREQ(dataOut);
-            }
-        }
-    }
-    */
+
     public void sendRREP(RREPpacket rrepPacket)
    // public IEnumerator sendRREP(RREPpacket rrepPacket)
     {
@@ -291,10 +270,10 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                     simValues.foundTime = Time.time;
                 }
                 rrepPacket.hop_count++;
-                rrepPacket.intermediate = gameObject;
                 updateRouteFromRREP(rrepPacket);
-
-                gameObject.renderer.material.color = Color.red;
+                rrepPacket.intermediate = gameObject;
+                if(gameObject.renderer.material.color == Color.blue)
+                    gameObject.renderer.material.color = Color.red;
                 if(gameObject!= rrepPacket.source)
                     returnP.GetComponent<NW_AODV>().recRREP(rrepPacket);
             }
@@ -348,13 +327,100 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                     source.numberHops = rreqPacketIn.hop_count;
 
                     //check again incase of race conditions 
-                    if (!routes.Contains(rreqPacketIn.destination))
+                   if (!routes.Contains(rreqPacketIn.destination)){
+                        routes.Remove(source.destination);
                         routes.Add(source.destination, source);
+                        }
                     else updateRouteFromRREQ(rreqPacketIn);
 
                 }
             }
     }
+
+    public void sendMessage(MSGPacket packet)
+    {
+        StartCoroutine(delaySendMessage(packet));
+    }
+
+
+
+    IEnumerator delaySendMessage(MSGPacket packet)
+    {
+        bool haveRoute = false;
+        if(routes.Contains(packet.destination)){
+   //         print(gameObject.name + " has route");
+            haveRoute = true;
+            }
+        else
+        {
+     //       print(gameObject.name + " doesn't have route");
+            for (int i = 0; i <= packet.retries; packet.retries--)
+            {
+       //         print(gameObject.name + " waiting for route");
+                discoverPath(packet.destination);
+                yield return new WaitForSeconds(.1f);
+                if (routes.Contains(packet.destination))
+                {
+                    haveRoute = true;
+       //             print(gameObject.name + " has route");
+                    break;
+                }
+ 
+            }
+            if (!haveRoute)
+            {
+                print("Error: TimeOut");
+            }
+        }
+        if (haveRoute)
+        {
+            packet.sender = gameObject;
+            RouteEntry route = (RouteEntry)routes[packet.destination];
+            GameObject nextHop = (GameObject)route.nextHop;
+    //        print(gameObject.name + " FWD MSG to: " + nextHop.name);
+            nextHop.GetComponent<NW_AODV>().recMessage(packet);
+        }
+
+    }
+
+    public void recMessage(MSGPacket packet)
+    {
+           StartCoroutine(delayRecMessage(packet));
+    }
+
+    IEnumerator delayRecMessage(MSGPacket packet)
+    {
+        float distance = Vector3.Distance(gameObject.transform.position, packet.sender.transform.position);
+        distance = distance / 2000;
+        yield return new WaitForSeconds(distance);
+     //   print(gameObject.name + " rev'd MSG");
+
+        gameObject.renderer.material.color = Color.white;
+        if (gameObject == packet.destination)
+        {
+            gameObject.renderer.material.color = Color.green;
+            float tTime  = Time.time - packet.startTime;
+            print(packet.message + "Time to Send: " + tTime );
+        }
+        else
+        {
+             sendMessage(packet);
+        }
+    }
+
+    public void initMessage(GameObject destination)
+    {
+        MSGPacket packetToSend = new MSGPacket();
+        packetToSend.destination = destination;
+        packetToSend.message = " I am a test message";
+        packetToSend.retries = (int) simValues.numNodes / 2;
+        packetToSend.source = gameObject;
+        packetToSend.startTime = Time.time;
+        print(gameObject.name + " Initiating MSG to " + destination.name);
+
+        sendMessage(packetToSend);
+    }
+
 
     IEnumerator delayRecRREP(RREPpacket rrepPacketIn)
     {
@@ -428,14 +494,11 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                foreach (DictionaryEntry r in routes)
                {
                    RouteEntry rt = (RouteEntry)r.Value;
-            //       print(rt.destination.name + " - " + rt.nextHop.name + " - " + rt.numberHops);
                }
-       //      print(rrepPacketIn.path);
             }
         }
         else
         {
-          //  StartCoroutine("sendRREP", rrepPacketIn);
             sendRREP(rrepPacketIn);
         }
     }
@@ -458,7 +521,6 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
         dataOut.hop_count = 0;
         dataOut.source_seq = nodeSeqNum;
         dataOut.TTL = (int)simValues.numNodes / 2;
-       // sendRREQ(dataOut);
 
         RevPath revEntry = new RevPath();
         revEntry.destination = dataOut.destination;
@@ -470,7 +532,6 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
         revEntry.replied = false;
         currentRREQ.Add(dataOut.source + "-" + dataOut.broadcast_id, revEntry);
 
-       // StartCoroutine("sendRREQ", dataOut);
         recRREQ(dataOut);
     }
  
@@ -535,4 +596,15 @@ public struct RevPath
     public int broadcast_id;
     public float expTimer;
     public int source_sequence_num;
-};
+}
+
+public struct MSGPacket
+{
+    public GameObject source;
+    public GameObject sender;
+    public GameObject destination;
+    public float startTime;
+    public string message;
+    public int retries;
+}
+;

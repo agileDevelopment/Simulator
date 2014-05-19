@@ -78,6 +78,31 @@ public class NW_AODV_GUI : MonoBehaviour, INetworkGUIOptions {
 
                 }
             }
+            if (GUILayout.Button("Send Message", GUILayout.Width(140)))
+            {
+                GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+
+                foreach (GameObject node in nodes)
+                {
+                    if (node)
+                        node.renderer.material.color = Color.blue;
+
+                }
+                nodeToFindID = int.Parse(nodeToFindString);
+                simValues.foundTime = 0;
+                simValues.startTime = Time.time;
+                simValues.endTime = 0;
+
+                if (nodeToFindID < simValues.numNodes)
+                {
+                    nodeToFind = GameObject.Find("Node " + nodeToFindID);
+                    source.GetComponent<NW_AODV>().initMessage(nodeToFind);
+                    nodeToFind.renderer.material.color = Color.magenta;
+
+                }
+            }
+
+
             GUILayout.EndVertical();
             GUILayout.EndArea();
         }
