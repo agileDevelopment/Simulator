@@ -157,7 +157,6 @@ public class LoadOptionsGUI : MonoBehaviour {
                     flightGUI.setFloor();
                     if (networkChoice != networkBehaviorLoader[0])
                     {
-                        print("Network choice: " + networkChoice + "GUI");
                         ((INetworkGUIOptions)gameObject.GetComponent(networkChoice + "GUI")).setGuiValues();
                     }
                     else
@@ -174,6 +173,9 @@ public class LoadOptionsGUI : MonoBehaviour {
 				Application.Quit();
 			}
 			GUILayout.EndArea();
+
+            if (movementChoice != movementBehaviorLoader[0])
+                ((IFlightGUIOptions)gameObject.GetComponent(movementChoice + "GUI")).showGUI();
 		}
 		//show this menu while simulation is running
 		if(!showMainGui){

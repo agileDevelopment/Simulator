@@ -28,7 +28,7 @@ public class AODVGUI : MonoBehaviour, INetworkGUIOptions {
 	}
 
     void OnGUI(){
-        if(!simValues.showMainGui && simValues.networkChoice == "AODVGUI")
+        if(!simValues.showMainGui && simValues.networkChoice == "AODV")
         {
             GUI.Box(new Rect(0,Screen.height / 2, 175, 200), "AODV Options");
             GUILayout.BeginArea(new Rect(10, Screen.height / 2 +5, 175, 200));            
