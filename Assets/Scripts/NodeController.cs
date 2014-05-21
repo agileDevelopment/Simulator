@@ -25,8 +25,6 @@ public class NodeController : MonoBehaviour {
 	public int idNum;
 	public string idString;
     public bool selected;
-
-	
 	
 	// Use this for initialization
 	void Awake(){
@@ -70,7 +68,7 @@ public class NodeController : MonoBehaviour {
 		{
             GameObject otherNode = col.gameObject;
 			lineController.addLine(otherNode);
-            networkBehavior.addNeighbor(otherNode);
+            if (networkBehavior != null) networkBehavior.addNeighbor(otherNode);
         }
 		
 	}
@@ -79,8 +77,8 @@ public class NodeController : MonoBehaviour {
 		if(col.gameObject.tag == "Node")
 		{
 			GameObject otherNode = col.gameObject;
-			lineController.removeLine(otherNode);
-            networkBehavior.removeNeighbor(otherNode);
+            lineController.removeLine(otherNode);
+            if (networkBehavior != null) networkBehavior.removeNeighbor(otherNode);
 		}
 	}
 	

@@ -52,14 +52,18 @@ public class RTPopulationManager : MonoBehaviour
             NodeController data = node.GetComponent<NodeController>();
 
             node.AddComponent(movementBehaviorClassName);
-            node.AddComponent(networkClassBehavior);
+            if (networkClassBehavior != "")
+                node.AddComponent(networkClassBehavior);
 
             node.name = "Node " + globalCount;
             node.renderer.material.color = Color.blue;
             data.idNum = globalCount;
             data.idString = "Node " + globalCount;
             data.flightBehavior = (NodeMove)node.GetComponent(movementBehaviorClassName);
-            data.networkBehavior = (INetworkBehavior)node.GetComponent(networkClassBehavior);
+            if (networkClassBehavior != "")
+                data.networkBehavior = (INetworkBehavior)node.GetComponent(networkClassBehavior);
+            else
+                data.networkBehavior = null;
 
             node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange / 200;
 
@@ -78,12 +82,12 @@ public class RTPopulationManager : MonoBehaviour
         }
     }
 
-    public bool checkMember(NodeMove member)
+    public bool checkMember(GameObject member)
     {
-        MemberInfo info = populationInfo[member.gameObject];
+        MemberInfo info = populationInfo[member];
         if (loadData.maxAge != 0 && loadData.maxAge < info.age)
         {
-            populationInfo.Remove(member.gameObject);
+            populationInfo.Remove(member);
             maintainPopulation();
             return false;
         }

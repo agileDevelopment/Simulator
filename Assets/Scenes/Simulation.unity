@@ -82,7 +82,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 143568327}
-  - 114: {fileID: 143568326}
   - 114: {fileID: 143568325}
   - 114: {fileID: 143568328}
   m_Layer: 0
@@ -103,11 +102,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f022deee8bbe9904b904517b223e1372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeRender: {fileID: 845107081}
+  cubeRender: {fileID: 0}
   buttonHeight: 50
   buttonWidth: 200
   buttonSpace: 100
-  numberButtons: 4
+  numberButtons: 0
   numNodesString: 
   numNodes: 0
   simRunTimeString: 0
@@ -115,18 +114,19 @@ MonoBehaviour:
   nodeCommRangeString: 100
   nodeCommRange: 0
   drawLinesString: Hide Lines
-  drawLine: 1
+  drawLine: 0
   pauseString: Pause Simulation
   paused: 0
   showMainGui: 0
-  adaptiveNetworkColor: 0
+  adaptiveNetworkColor: 1
   movementChoice: 
-  networkChoice: 0
-  menuLabelWidth: 145
-  menuFieldWidth: 45
+  networkChoice: 
+  commLinesChoice: 0
+  menuLabelWidth: 170
+  menuFieldWidth: 100
   nodesSqrt: 0
   enableUpdate: 0
-  updateLines: 1
+  updateLines: 0
   slowMotion: 0
   slowMoRateString: 
   slowMoRate: 0
@@ -134,18 +134,6 @@ MonoBehaviour:
   startTime: 0
   endTime: 0
   maxAge: 0
---- !u!114 &143568326
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 143568324}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae3c4c8d87c9ba1458dba01e4c898e64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 100000, guid: f469a7361ca502b4796b8823fe65c797, type: 2}
 --- !u!4 &143568327
 Transform:
   m_ObjectHideFlags: 0
