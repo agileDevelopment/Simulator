@@ -70,7 +70,7 @@ GameObject floor = GameObject.Find("Floor");
 floor.transform.position = (new Vector3(center,-10,center));
 floor.transform.localScale = (new Vector3(floorSize,.1f,floorSize));	
 Camera.main.isOrthoGraphic = true;
-Camera.main.orthographicSize = floor.transform.localScale.x/2;
+Camera.main.orthographicSize = floor.transform.localScale.x / 2 + 50;
 		Camera.main.transform.position = (new Vector3(center,100,center));
 floor.renderer.material.mainTextureScale = new Vector2(floorSize/10, floorSize/10);
 }

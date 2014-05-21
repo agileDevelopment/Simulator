@@ -3,6 +3,8 @@
 # =============== #
 Temp/
 Library/
+test_Data/
+obj/
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
@@ -29,3 +31,5 @@ obj/
 .Trashes
 ehthumbs.db
 Thumbs.db
+UAV Sim 6000_Data/
+*.exe

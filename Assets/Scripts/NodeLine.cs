@@ -110,10 +110,12 @@ void Update(){
                                     float delta = ((simValues.nodeCommRange - distance) / midPoint);
                                     lineColor.r = 255;
                                     lineColor.g = (delta * colorStep) * 3;
+                                    line.GetComponent<LineRenderer>().SetWidth(2f, 2f);
                                 }
                                 //less than midway, show Yellow - Green				
                                 if (distance <= midPoint)
                                 {
+                                    line.GetComponent<LineRenderer>().SetWidth(4, 4);
                                     float delta = (distance / midPoint);
                                     lineColor.g = 255;
                                     lineColor.r = (delta * colorStep) - 10;
@@ -124,6 +126,7 @@ void Update(){
                                 {
                                     lineColor.g = 255;
                                     lineColor.r = 0;
+                                    line.GetComponent<LineRenderer>().SetWidth(6, 6);
                                 }
                             }
                         }
