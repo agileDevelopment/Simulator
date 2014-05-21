@@ -26,7 +26,7 @@ public abstract class NodeMove : MonoBehaviour, IFlightBehavior {
 	
 	void Start () {
 	//	simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
-}
+    }
 
 	public abstract void updateLocation();
 	

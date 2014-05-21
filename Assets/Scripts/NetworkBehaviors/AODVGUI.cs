@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class NW_AODV_GUI : MonoBehaviour, INetworkGUIOptions {
+public class AODVGUI : MonoBehaviour, INetworkGUIOptions {
     LoadOptionsGUI simValues;
     public GameObject nodeToFind;
     public GameObject source;
@@ -72,7 +72,7 @@ public class NW_AODV_GUI : MonoBehaviour, INetworkGUIOptions {
                 if (nodeToFindID < simValues.numNodes)
                 {
                     nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                    source.GetComponent<NW_AODV>().discoverPath(nodeToFind);
+                    source.GetComponent<AODV>().discoverPath(nodeToFind);
                     nodeToFind.renderer.material.color = Color.magenta;
 
 
@@ -96,7 +96,7 @@ public class NW_AODV_GUI : MonoBehaviour, INetworkGUIOptions {
                 if (nodeToFindID < simValues.numNodes)
                 {
                     nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                    source.GetComponent<NW_AODV>().initMessage(nodeToFind);
+                    source.GetComponent<AODV>().initMessage(nodeToFind);
                     nodeToFind.renderer.material.color = Color.magenta;
 
                 }

@@ -13,6 +13,7 @@
 //--------------------------------------------------------------
 
 using UnityEngine;
+using System.Collections.Generic;
 
 public class LoadOptionsGUI : MonoBehaviour {
 	
@@ -39,8 +40,8 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public bool paused=false;
 	public bool showMainGui;
     public bool adaptiveNetworkColor = true;
-	public int flightChoice=0;
-    public int networkChoice = 0;
+	public string movementChoice = "";
+    public string networkChoice = "";
 	public int menuLabelWidth = 170;
 	public int menuFieldWidth = 100;
 	public int nodesSqrt;
@@ -53,6 +54,11 @@ public class LoadOptionsGUI : MonoBehaviour {
     public float foundTime;
     public float startTime;
     public float endTime;
+    public Dictionary<int, string> movementBehaviorLoader = new Dictionary<int, string>();
+    public Dictionary<int, string> networkBehaviorLoader = new Dictionary<int, string>();
+
+    // Real Time Population Options
+    public int maxAge = 0;
 	
 	void Start () {
 		numberButtons=5;
@@ -64,11 +70,20 @@ public class LoadOptionsGUI : MonoBehaviour {
         adaptiveNetworkColor = true;
 		//List for types of Flight Controllers
 		//Must be updated when new FlightBehaviors are implemented
-		flightControllerList = new GUIContent[4];
-		flightControllerList[0] = new GUIContent("Grid");
-		flightControllerList[1] = new GUIContent("Orbit");
-		flightControllerList[2] = new GUIContent("Random");
-		flightControllerList[3] = new GUIContent("Path");
+
+        // Initialize the various attached classes
+        movementBehaviorLoader.Add(0, "ANNNav");
+        movementBehaviorLoader.Add(1, "Grid");
+        movementBehaviorLoader.Add(2, "Orbit");
+        networkBehaviorLoader.Add(0, "AODV");
+
+		flightControllerList = new GUIContent[movementBehaviorLoader.Count];
+        
+        foreach (KeyValuePair<int, string> key_value in movementBehaviorLoader) {
+            flightControllerList[key_value.Key] = new GUIContent(key_value.Value);
+            gameObject.AddComponent(key_value.Value + "GUI"); // Attach the GUI Component to the Spawner
+        }
+
 		listStyle.normal.textColor = Color.white; 
 		listStyle.onHover.background =
 		listStyle.hover.background = new Texture2D(2, 2);
@@ -81,8 +96,12 @@ public class LoadOptionsGUI : MonoBehaviour {
 			 flightControllerList[0], flightControllerList, "button", "box", listStyle);
 
         //List for Network Controllers
-        networkControllerList = new GUIContent[1];
-        networkControllerList[0] = new GUIContent("AODV");
+        networkControllerList = new GUIContent[networkBehaviorLoader.Count];
+        foreach (KeyValuePair<int, string> key_value in networkBehaviorLoader)
+        {
+            networkControllerList[key_value.Key] = new GUIContent(key_value.Value);
+            gameObject.AddComponent(key_value.Value + "GUI"); // Attach the GUI Component to the Spawner
+        }
         networkComboBoxControl = new ComboBox(new Rect(5, buttonHeight * numberButtons +30, 240, 20),
              networkControllerList[0], networkControllerList, "button", "box", listStyle);
 
@@ -109,37 +128,30 @@ public class LoadOptionsGUI : MonoBehaviour {
 			nodeCommRangeString = GUILayout.TextField(nodeCommRangeString, GUILayout.Width(menuFieldWidth));
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
-			flightChoice = flightComboBoxControl.Show();
-            networkChoice = networkComboBoxControl.Show();
+			
+            movementChoice = movementBehaviorLoader[flightComboBoxControl.Show()];
+            networkChoice = networkBehaviorLoader[networkComboBoxControl.Show()];
+
 			GUI.EndGroup();
 
-
-			// Make a background box			
-
-			
-			//Exit button.
 			GUILayout.BeginArea(new Rect((Screen.width- buttonWidth)/2 , Screen.height/2+250, buttonWidth,buttonHeight*numberButtons));
 			if(GUILayout.Button("Load Simulation",GUILayout.Width(buttonWidth),GUILayout.Height(50))){
 			paused = true;
 				setVariables();
-				gameObject.GetComponent<Spawner>().StartSimulation(flightChoice,networkChoice);		
+                flightGUI = (IFlightGUIOptions)gameObject.GetComponent(movementChoice + "GUI");
+                flightGUI.setGuiValues();
+                flightGUI.setFloor();
+                ((INetworkGUIOptions)gameObject.GetComponent(networkChoice + "GUI")).setGuiValues();
+				gameObject.GetComponent<RTPopulationManager>().initializePopulation(movementChoice, networkChoice);
+                flightGUI.setSpawnLocation();
 			}
 			
 			if(GUILayout.Button("Exit")){
 				Application.Quit();
 			}
 			GUILayout.EndArea();
-			switch(flightChoice){
-					case 0:
-				gameObject.GetComponent<GridGUI>().showGUI();
-						break;
-					case 1:
-				gameObject.GetComponent<OrbitGUI>().showGUI();
-						break;
-					default:
-					break;
-				}
 
+            ((IFlightGUIOptions)gameObject.GetComponent(movementChoice + "GUI")).showGUI();
 		}
 		//show this menu while simulation is running
 		if(!showMainGui){
@@ -223,27 +235,6 @@ public class LoadOptionsGUI : MonoBehaviour {
 		simRunTime = int.Parse(simRunTimeString);
 		showMainGui = false;
 		nodesSqrt = (int)Mathf.Sqrt(numNodes);
-		
-		switch(flightChoice){
-		case 0:
-			gameObject.GetComponent<GridGUI>().setGuiValues();
-			break;
-		case 1:
-			gameObject.GetComponent<OrbitGUI>().setGuiValues();
-			break;
-		default:
-			break;
-		}
-
-        switch (networkChoice)
-        {
-            case 0:
-                gameObject.GetComponent<NW_AODV_GUI>().setGuiValues();
-                break;
-            case 1:
-            default:
-                break;
-        }
 	}
 }
 //code to generate Combo box.  Taking off Unity Forums 

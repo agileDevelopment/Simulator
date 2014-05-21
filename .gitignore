@@ -3,6 +3,8 @@
 # =============== #
 Temp/
 Library/
+test_Data/
+obj/
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #

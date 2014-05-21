@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------
-//  Title: NW_AODV
+//  Title: AODV
 //  Date: 5-16-2014
 //  Version: 1.0
 //  Project: UAV Swarm
@@ -7,7 +7,7 @@
 //  OS: Windows x64/X86
 //  Language:C#
 //
-//  Class Dependicies: NW_AODV_GUI, NodeController
+//  Class Dependicies: AODVGUI, NodeController
 //  Description: Implements C.E. Perkins AODV dynamic network protocol.
 //  Local connectivity management is handled by the sphere colider and .addNeighbor().  This is in place
 //  of the Local connective management as outlined by Perkins.  
@@ -21,10 +21,10 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class NW_AODV : MonoBehaviour, INetworkBehavior
+public class AODV : MonoBehaviour, INetworkBehavior
 {
     LoadOptionsGUI simValues;
-    NW_AODV_GUI AODV_GUI;
+    AODVGUI AODV_GUI;
     List<GameObject> neighbors;
     Hashtable currentRREQ;
     Hashtable routes;
@@ -37,7 +37,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
     void Start()
     {
         simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
-        AODV_GUI = GameObject.Find("Spawner").GetComponent<NW_AODV_GUI>();
+        AODV_GUI = GameObject.Find("Spawner").GetComponent<AODVGUI>();
         active_route_timer = 3.0f;  // used to delete route information;
         neighbors = new List<GameObject>();
         nodeSeqNum = 0;
@@ -161,7 +161,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                 //craft RREP packet to return
                 RREPpacket reply = new RREPpacket();
                 reply.broadcast_id = dataIn.broadcast_id;
-                reply.dest_sequence_num = dataIn.destination.GetComponent<NW_AODV>().nodeSeqNum;
+                reply.dest_sequence_num = dataIn.destination.GetComponent<AODV>().nodeSeqNum;
                 reply.source = dataIn.source;
                 reply.destination = dataIn.destination;
                 reply.hop_count = 1;
@@ -226,8 +226,8 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
             if (cameFrom != node.name && node.name != dataOut.destination.name)
             {
                 dataOut.intermediate = gameObject;
-                node.GetComponent<NW_AODV>().recRREQ(dataOut);
-               // node.GetComponent<NW_AODV>().StartCoroutine("recRREQ", dataOut);
+                node.GetComponent<AODV>().recRREQ(dataOut);
+               // node.GetComponent<AODV>().StartCoroutine("recRREQ", dataOut);
 
             }
         }
@@ -275,7 +275,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
                 if(gameObject.renderer.material.color == Color.blue)
                     gameObject.renderer.material.color = Color.red;
                 if(gameObject!= rrepPacket.source)
-                    returnP.GetComponent<NW_AODV>().recRREP(rrepPacket);
+                    returnP.GetComponent<AODV>().recRREP(rrepPacket);
             }
         }
     }
@@ -378,7 +378,7 @@ public class NW_AODV : MonoBehaviour, INetworkBehavior
             RouteEntry route = (RouteEntry)routes[packet.destination];
             GameObject nextHop = (GameObject)route.nextHop;
     //        print(gameObject.name + " FWD MSG to: " + nextHop.name);
-            nextHop.GetComponent<NW_AODV>().recMessage(packet);
+            nextHop.GetComponent<AODV>().recMessage(packet);
         }
 
     }
