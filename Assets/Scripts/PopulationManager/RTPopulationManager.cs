@@ -27,7 +27,7 @@ public class RTPopulationManager : MonoBehaviour
     private object buildMemberLock = new object(); // We need this to prevent many members dying and the count being messed up by threading
     public bool replaceMembers = true; // Can add a toggle later for programs that want to just kill members without replacement
 
-    Dictionary<GameObject, MemberInfo> populationInfo = new Dictionary<GameObject, MemberInfo>();
+    public Dictionary<GameObject, MemberInfo> populationInfo = new Dictionary<GameObject, MemberInfo>();
 
     public void initializePopulation(string movementBehaviorClassName, string networkClassBehavior)
     {
@@ -79,6 +79,7 @@ public class RTPopulationManager : MonoBehaviour
         {
             GameObject newNode = buildMemberNode();
             populationInfo.Add(newNode, new MemberInfo());
+            ((IFlightGUIOptions)newNode.GetComponent(movementBehaviorClassName + "GUI")).setSpawnLocation(newNode);
         }
     }
 

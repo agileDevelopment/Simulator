@@ -55,6 +55,8 @@ public interface IFlightBehavior{
 public interface IFlightGUIOptions{
 	
 	void setSpawnLocation();
+
+    void setSpawnLocation(GameObject singleNode);
 	
 	void showGUI();
 	
@@ -102,4 +104,9 @@ public interface INetworkGUIOptions{
 
     void setGuiValues();
 	
+}
+
+public interface IMovementManager
+{
+    Vector3 getDestination(ArrayList inputs);
 }

@@ -26,7 +26,6 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions
 
     }
 
-
     public void showGUI()
     {
         GUI.BeginGroup(new Rect(((Screen.width - simValues.buttonWidth) / 2) + 250, Screen.height / 2 - 250, 250, 400));
@@ -79,6 +78,9 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions
         }
 
     }
+
+    public void setSpawnLocation(GameObject node)
+    { }
 
     public void setFloor()
     {

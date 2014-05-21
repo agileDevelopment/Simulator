@@ -23,17 +23,22 @@ using System.Collections;
 public class ANNNav : NodeMove
 {
     //other data
+    public IMovementManager movementManager;
     public RTPopulationManager populationManager;
-    public Vector3 desiredPosition;
+    public ArrayList inputs;
     public int speed = 0;
 
     // Use this for initialization
     void Start()
     {
         ANNNavGUI guiValues = GameObject.Find("Spawner").GetComponent<ANNNavGUI>();
-        populationManager = GameObject.Find("Spawner").GetComponent<RTPopulationManager>();
+        populationManager = guiValues.popManager;
+        movementManager = guiValues.movementManager;
         speed = Random.Range(1, guiValues.nodeMaxSpeed);
-        desiredPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+
+        inputs = new ArrayList();
+        inputs.Add(transform.position);
+        inputs.Add(new Vector3(guiValues.goalPointX, guiValues.goalPointY, guiValues.goalPointZ));
     }
 
     public override void updateLocation()
@@ -44,7 +49,6 @@ public class ANNNav : NodeMove
             return;
         }
 
-        desiredPosition.x += speed;
-        transform.position = Vector3.MoveTowards(transform.position, desiredPosition, Time.deltaTime * speed);
+        transform.position = Vector3.MoveTowards(transform.position, movementManager.getDestination(inputs), Time.deltaTime * speed);
     }
 }
