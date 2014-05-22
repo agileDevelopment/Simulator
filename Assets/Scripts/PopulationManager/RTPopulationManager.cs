@@ -52,20 +52,22 @@ public class RTPopulationManager : MonoBehaviour
             NodeController data = node.GetComponent<NodeController>();
 
             node.AddComponent(movementBehaviorClassName);
-            if (networkClassBehavior != "")
-                node.AddComponent(networkClassBehavior);
 
             node.name = "Node " + globalCount;
             node.renderer.material.color = Color.blue;
             data.idNum = globalCount;
             data.idString = "Node " + globalCount;
             data.flightBehavior = (NodeMove)node.GetComponent(movementBehaviorClassName);
-            if (networkClassBehavior != "")
+         
+            if (networkClassBehavior != "none")
+            {
+                node.AddComponent(networkClassBehavior);
                 data.networkBehavior = (INetworkBehavior)node.GetComponent(networkClassBehavior);
+                node.AddComponent<NodeLine>();
+
+            }
             else
                 data.networkBehavior = null;
-
-            node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange / 200;
 
             globalCount++;
         }

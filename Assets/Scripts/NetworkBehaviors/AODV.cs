@@ -21,11 +21,11 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class AODV : MonoBehaviour, INetworkBehavior
+
+public class AODV : Network
 {
-    LoadOptionsGUI simValues;
+
     AODVGUI AODV_GUI;
-    List<GameObject> neighbors;
     Hashtable currentRREQ;
     Hashtable routes;
     float active_route_timer;
@@ -36,15 +36,14 @@ public class AODV : MonoBehaviour, INetworkBehavior
     // Use this for initialization
     void Start()
     {
-        simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
+
+        setValues(); // initialize parent class since its not added to the spawner...
         AODV_GUI = GameObject.Find("Spawner").GetComponent<AODVGUI>();
         active_route_timer = 3.0f;  // used to delete route information;
-        neighbors = new List<GameObject>();
         nodeSeqNum = 0;
         broadcastID = 0;
         currentRREQ = new Hashtable();
         routes = new Hashtable();
-
     }
 
     // Update is called once per frame
@@ -79,21 +78,7 @@ public class AODV : MonoBehaviour, INetworkBehavior
     }
 
     //--------------------------------------Custom Functions------------------------------------------
-    public void addNeighbor(GameObject node)
-    {
-        if (!neighbors.Contains(node))
-        {
-            neighbors.Add(node);
-        }
-    }
-    //public function to be called by nodeController if we need to remove a connection
-    public void removeNeighbor(GameObject nodeID)
-    {
-        if (neighbors.Contains(nodeID))
-        {
-            neighbors.Remove(nodeID);
-        }
-    }
+
 
     public void recRREQ(RREQpacket dataIn){
         StartCoroutine(delayRecRREQ(dataIn));
@@ -143,8 +128,8 @@ public class AODV : MonoBehaviour, INetworkBehavior
 
             if (destFound)
             {
-                if(simValues.foundTime==0)
-                   simValues.foundTime=Time.time;
+                if (AODV_GUI.foundTime == 0)
+                    AODV_GUI.foundTime = Time.time;
                 //update routes table
                 RevPath revEntry = new RevPath();
                 revEntry.destination = dataIn.destination;
@@ -267,7 +252,7 @@ public class AODV : MonoBehaviour, INetworkBehavior
 
                 if (gameObject == rrepPacket.source)
                 {
-                    simValues.foundTime = Time.time;
+                    AODV_GUI.foundTime = Time.time;
                 }
                 rrepPacket.hop_count++;
                 updateRouteFromRREP(rrepPacket);
@@ -337,7 +322,7 @@ public class AODV : MonoBehaviour, INetworkBehavior
             }
     }
 
-    public void sendMessage(MSGPacket packet)
+    public override void sendMessage(MSGPacket packet)
     {
         StartCoroutine(delaySendMessage(packet));
     }
@@ -383,7 +368,7 @@ public class AODV : MonoBehaviour, INetworkBehavior
 
     }
 
-    public void recMessage(MSGPacket packet)
+    public override void recMessage(MSGPacket packet)
     {
            StartCoroutine(delayRecMessage(packet));
     }
@@ -483,10 +468,10 @@ public class AODV : MonoBehaviour, INetworkBehavior
              
         if (done)
         {
-            if (simValues.endTime == 0)
+            if (AODV_GUI.endTime == 0)
             {
-                simValues.endTime = Time.time;
-                float totalTime = simValues.endTime - simValues.startTime;
+                AODV_GUI.endTime = Time.time;
+                float totalTime = AODV_GUI.endTime - AODV_GUI.startTime;
                 RouteEntry routetoDest = (RouteEntry)routes[rrepPacketIn.destination];
                 AODV_GUI.timeToFind = totalTime;
                 AODV_GUI.numHops = routetoDest.numberHops;
@@ -596,15 +581,5 @@ public struct RevPath
     public int broadcast_id;
     public float expTimer;
     public int source_sequence_num;
-}
-
-public struct MSGPacket
-{
-    public GameObject source;
-    public GameObject sender;
-    public GameObject destination;
-    public float startTime;
-    public string message;
-    public int retries;
 }
 ;

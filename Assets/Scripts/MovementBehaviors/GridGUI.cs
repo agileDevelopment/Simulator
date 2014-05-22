@@ -28,7 +28,7 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions
 
     public void showGUI()
     {
-        GUI.BeginGroup(new Rect(((Screen.width - simValues.buttonWidth) / 2) + 250, Screen.height / 2 - 250, 250, 400));
+        GUI.BeginGroup(new Rect(((Screen.width - simValues.buttonWidth) / 2) + 250, Screen.height / 2 - 250, 250, 200));
         GUI.Box(new Rect(0, 0, 250, 400), "Grid Options");
         GUILayout.BeginArea(new Rect(5, 30, simValues.buttonWidth, simValues.buttonHeight * simValues.numberButtons));
         GUILayout.BeginHorizontal();

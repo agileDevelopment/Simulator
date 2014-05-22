@@ -85,6 +85,8 @@ public interface INetworkBehavior
 {
     void addNeighbor(GameObject node);
     void removeNeighbor(GameObject node);
+    void recMessage(MSGPacket packet);
+    void sendMessage(MSGPacket packet);
 }
 //------------------------------------------------------------
 //  Title: INetworkGUIOptions
@@ -103,6 +105,7 @@ public interface INetworkBehavior
 public interface INetworkGUIOptions{
 
     void setGuiValues();
+    void showGUI();
 	
 }
 

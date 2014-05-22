@@ -102,6 +102,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f022deee8bbe9904b904517b223e1372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  linePrefab: {fileID: 100000, guid: 3d08550564fc15a4b95c5e1e9b36b0bf, type: 2}
+  networkGUI: {fileID: 0}
   cubeRender: {fileID: 0}
   buttonHeight: 50
   buttonWidth: 200
@@ -111,28 +113,19 @@ MonoBehaviour:
   numNodes: 0
   simRunTimeString: 0
   simRunTime: 0
-  nodeCommRangeString: 100
-  nodeCommRange: 0
-  drawLinesString: Hide Lines
-  drawLine: 0
   pauseString: Pause Simulation
   paused: 0
   showMainGui: 0
-  adaptiveNetworkColor: 1
   movementChoice: 
   networkChoice: 
-  commLinesChoice: 0
   menuLabelWidth: 170
   menuFieldWidth: 100
   nodesSqrt: 0
   enableUpdate: 0
-  updateLines: 0
   slowMotion: 0
   slowMoRateString: 
   slowMoRate: 0
-  foundTime: 0
-  startTime: 0
-  endTime: 0
+  counter: 1
   maxAge: 0
 --- !u!4 &143568327
 Transform:

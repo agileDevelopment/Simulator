@@ -16,14 +16,14 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class LoadOptionsGUI : MonoBehaviour {
-	
+    public GameObject linePrefab;
 	GUIContent[] flightControllerList;
     GUIContent[] networkControllerList;
     private ComboBox flightComboBoxControl;// = new ComboBox();
     private ComboBox networkComboBoxControl;// = new ComboBox();
-    private ComboBox commLinesComboBox;// = new ComboBox();
 	private GUIStyle listStyle = new GUIStyle();
 	IFlightGUIOptions flightGUI;
+    public NetworkGUI networkGUI;
 	public Renderer cubeRender;	
 	public int buttonHeight = 50;
 	public int buttonWidth = 200;
@@ -33,44 +33,31 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public int numNodes;
 	public string simRunTimeString="0";
 	public int simRunTime;
-	public string nodeCommRangeString="100";
-	public int nodeCommRange;
-	public string drawLinesString = "Hide Lines";
-	public bool drawLine=false;
+
 	public string pauseString = "Pause Simulation";
 	public bool paused=false;
 	public bool showMainGui;
-    public bool adaptiveNetworkColor = true;
-	public string movementChoice = "";
-    public string networkChoice = "";
-    public int commLinesChoice = 0;
-    public int commLinesOn = 0;
+	public string movementChoice = "0";
+    public string networkChoice = "0";
 	public int menuLabelWidth = 170;
 	public int menuFieldWidth = 100;
 	public int nodesSqrt;
 	public bool enableUpdate;
-	public bool updateLines  =false;
 	public bool slowMotion = false;
 	public string slowMoRateString;
 	public int slowMoRate;
-	int counter = 1;
-    public float foundTime;
-    public float startTime;
-    public float endTime;
+	public int counter = 1;
+
     public Dictionary<int, string> movementBehaviorLoader = new Dictionary<int, string>();
     public Dictionary<int, string> networkBehaviorLoader = new Dictionary<int, string>();
 
     // Real Time Population Options
     public int maxAge = 0;
-	
 	void Start () {
 		numberButtons=5;
 		numNodesString="75";
 		slowMoRateString = "2";
-	    showMainGui = true;
-        drawLine = true;
-        updateLines = true;
-        adaptiveNetworkColor = true;
+        showMainGui = true;
 		//List for types of Flight Controllers
 		//Must be updated when new FlightBehaviors are implemented
 
@@ -79,7 +66,7 @@ public class LoadOptionsGUI : MonoBehaviour {
         movementBehaviorLoader.Add(1, "ANNNav");
         movementBehaviorLoader.Add(2, "Grid");
         movementBehaviorLoader.Add(3, "Orbit");
-        networkBehaviorLoader.Add(0, "Network Behavior (Optional)...");
+        networkBehaviorLoader.Add(0, "none");
         networkBehaviorLoader.Add(1, "AODV");
 
 		flightControllerList = new GUIContent[movementBehaviorLoader.Count];
@@ -98,7 +85,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 			listStyle.padding.right =
 				listStyle.padding.top =
 					listStyle.padding.bottom = 4;
-		flightComboBoxControl = new ComboBox(new Rect(5, buttonHeight*numberButtons+10, 240, 20),
+        flightComboBoxControl = new ComboBox(new Rect((Screen.width - buttonWidth) / 2 - 140, Screen.height / 2 - 150, 140, 20),
 			 flightControllerList[0], flightControllerList, "button", "box", listStyle);
 
         //List for Network Controllers
@@ -106,17 +93,14 @@ public class LoadOptionsGUI : MonoBehaviour {
         foreach (KeyValuePair<int, string> key_value in networkBehaviorLoader)
         {
             networkControllerList[key_value.Key] = new GUIContent(key_value.Value);
-            if (key_value.Key != 0)
-                gameObject.AddComponent(key_value.Value + "GUI"); // Attach the GUI Component to the Spawner
+
         }
-        networkComboBoxControl = new ComboBox(new Rect(5, buttonHeight * numberButtons + 30, 240, 20),
+
+        networkComboBoxControl = new ComboBox(new Rect((Screen.width - buttonWidth) / 2 - 140, Screen.height / 2 - 120, 140, 20),
              networkControllerList[0], networkControllerList, "button", "box", listStyle);
 
-        GUIContent[] commLinesList = { new GUIContent("Comm Lines On"), new GUIContent("Comm Lines Off") };
-        commLinesComboBox = new ComboBox(new Rect(5, buttonHeight * numberButtons + 50, 240, 20),
-             commLinesList[0], commLinesList, "button", "box", listStyle);
-
 	}
+
 	
 	void OnGUI () {
 		//main interface to be shown when program first runs;
@@ -127,24 +111,19 @@ public class LoadOptionsGUI : MonoBehaviour {
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Simulation Runtime \n (0 for no limit)", GUILayout.Width(menuLabelWidth));
 			simRunTimeString = GUILayout.TextField(simRunTimeString, GUILayout.Width(menuFieldWidth));
-			GUILayout.EndHorizontal();
-			
+			GUILayout.EndHorizontal();	
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Number of Nodes", GUILayout.Width(menuLabelWidth));
 			numNodesString = GUILayout.TextField(numNodesString, GUILayout.Width(menuFieldWidth));
 			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("Node Comm Range", GUILayout.Width(menuLabelWidth));
-			nodeCommRangeString = GUILayout.TextField(nodeCommRangeString, GUILayout.Width(menuFieldWidth));
-			GUILayout.EndHorizontal();
-			GUILayout.EndArea();
-			
+            GUILayout.Space(5);
+            GUILayout.Label("Mobility Model");
+            GUILayout.Space(5);
+            GUILayout.Label("Network Model");
+			GUILayout.EndArea();			
+			GUI.EndGroup();
             movementChoice = movementBehaviorLoader[flightComboBoxControl.Show()];
             networkChoice = networkBehaviorLoader[networkComboBoxControl.Show()];
-            commLinesChoice = commLinesComboBox.Show();
-
-			GUI.EndGroup();
 
 			GUILayout.BeginArea(new Rect((Screen.width- buttonWidth)/2 , Screen.height/2+250, buttonWidth,buttonHeight*numberButtons));
 			if(GUILayout.Button("Load Simulation",GUILayout.Width(buttonWidth),GUILayout.Height(50))){
@@ -157,11 +136,12 @@ public class LoadOptionsGUI : MonoBehaviour {
                     flightGUI.setFloor();
                     if (networkChoice != networkBehaviorLoader[0])
                     {
-                        ((INetworkGUIOptions)gameObject.GetComponent(networkChoice + "GUI")).setGuiValues();
+                        networkGUI = (NetworkGUI)gameObject.GetComponent(networkChoice + "GUI");
+                        networkGUI.setGuiValues();
                     }
                     else
                     {
-                        networkChoice = "";
+                        networkChoice = "none";
                     }
 
                     gameObject.GetComponent<RTPopulationManager>().initializePopulation(movementChoice, networkChoice);
@@ -176,6 +156,9 @@ public class LoadOptionsGUI : MonoBehaviour {
 
             if (movementChoice != movementBehaviorLoader[0])
                 ((IFlightGUIOptions)gameObject.GetComponent(movementChoice + "GUI")).showGUI();
+
+            if (gameObject.GetComponent(networkChoice + "GUI") != null)
+                ((INetworkGUIOptions)gameObject.GetComponent(networkChoice + "GUI")).showGUI();
 		}
 		//show this menu while simulation is running
 		if(!showMainGui){
@@ -194,22 +177,12 @@ public class LoadOptionsGUI : MonoBehaviour {
 						Application.LoadLevel("Simulation");
 						}
 					GUILayout.Space(buttonHeight);
-					if(GUILayout.Button(drawLinesString)){
-                        if (drawLine)
-                        {
-                            drawLinesString = "Show Lines";
-                        }
-                        else drawLinesString = "Hide Lines";
-							drawLine = !drawLine;
-						}
-                        if (drawLine)
-                            adaptiveNetworkColor = GUILayout.Toggle(adaptiveNetworkColor, "Adaptive Color");
 						if(GUILayout.Button(pauseString)){
-						if(!paused)
-						pauseString = "Resume";
-						if(paused)
-						pauseString = "Pause Simulation";
-						paused = !paused;
+				    		if(!paused)
+				        		pauseString = "Resume";
+				    		if(paused)
+				        		pauseString = "Pause Simulation";
+				    		paused = !paused;
 						}
 
 			GUILayout.BeginHorizontal();
@@ -230,22 +203,27 @@ public class LoadOptionsGUI : MonoBehaviour {
 	}
 	
 	void Update(){
+        if(showMainGui)
+             if (networkChoice != "none")
+                    if ((INetworkGUIOptions)gameObject.GetComponent(networkChoice + "GUI") == null)
+                            gameObject.AddComponent(networkChoice + "GUI"); // Attach the GUI Component to the Spawner
+
+
+
+
 		if(slowMotion){
 			slowMoRate = int.Parse(slowMoRateString);
 			enableUpdate = false;
 			if (counter == slowMoRate){
 				counter =0;
 				enableUpdate = true;
-				updateLines = true;
 			}
 
 		}
 		if(!slowMotion){
 		enableUpdate = true;
-			updateLines = false;
 		if(counter >= 64/(1f/Time.deltaTime*2)){
 				counter =0;
-				updateLines = true;
 			}
 		}
 		
@@ -254,10 +232,9 @@ public class LoadOptionsGUI : MonoBehaviour {
 	}
 	
 	void setVariables(){
-        drawLine = (commLinesChoice == commLinesOn);
-        if (!drawLine) drawLinesString = "Show Lines";
+        if (networkChoice != "none")
+            gameObject.AddComponent(networkChoice + "GUI"); // Attach the GUI Component to the Spawner
 		numNodes = int.Parse(numNodesString);
-		nodeCommRange = int.Parse(nodeCommRangeString);
 		simRunTime = int.Parse(simRunTimeString);
 		showMainGui = false;
 		nodesSqrt = (int)Mathf.Sqrt(numNodes);
@@ -338,7 +315,7 @@ public class ComboBox
 		
 		if( isClickedComboButton )
 		{
-			Rect listRect = new Rect( rect.x, rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
+			Rect listRect = new Rect( rect.x+140, rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
 			                         rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length );
 			
 			GUI.Box( listRect, "", boxStyle );

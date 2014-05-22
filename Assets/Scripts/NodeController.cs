@@ -85,8 +85,11 @@ public class NodeController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if(gameObject.GetComponent<SphereCollider>().radius < simValues.nodeCommRange/20)
-			gameObject.GetComponent<SphereCollider>().radius += .1f;
+        if (simValues.networkChoice != "none")
+        {
+            if (gameObject.GetComponent<SphereCollider>().radius < simValues.networkGUI.nodeCommRange / 20)
+                gameObject.GetComponent<SphereCollider>().radius += .1f;
+        }
         if (selected)
             gameObject.renderer.material.color = Color.green;
 		}
