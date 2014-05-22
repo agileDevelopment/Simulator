@@ -232,8 +232,8 @@ public class LoadOptionsGUI : MonoBehaviour {
 	}
 	
 	void setVariables(){
-        if (networkChoice != "none")
-            gameObject.AddComponent(networkChoice + "GUI"); // Attach the GUI Component to the Spawner
+  //      if (networkChoice != "none")
+//gameObject.AddComponent(networkChoice + "GUI"); // Attach the GUI Component to the Spawner
 		numNodes = int.Parse(numNodesString);
 		simRunTime = int.Parse(simRunTimeString);
 		showMainGui = false;
