@@ -62,8 +62,8 @@ public class RTPopulationManager : MonoBehaviour
             if (networkClassBehavior != "none")
             {
                 node.AddComponent(networkClassBehavior);
-                data.networkBehavior = (INetworkBehavior)node.GetComponent(networkClassBehavior);
-                node.AddComponent<NodeLine>();
+                data.networkBehavior = (Network)node.GetComponent(networkClassBehavior);
+                 node.AddComponent<NodeLine>();
 
             }
             else

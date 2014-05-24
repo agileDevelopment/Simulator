@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
+public class ANNNavGUI : FlightGUI {
 	LoadOptionsGUI simValues;
     public RTPopulationManager popManager;
     public NEATManager movementManager;
@@ -32,7 +32,7 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 
     }
 
-    public void showGUI()
+    public override void showGUI()
     {
         GUI.BeginGroup(new Rect(((Screen.width - simValues.buttonWidth) / 2) + 250, Screen.height / 2 - 250, 250, 400));
         GUI.Box(new Rect(0, 0, 250, 400), "ANN Nav Options");
@@ -57,7 +57,7 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         GUI.EndGroup();
     }
 
-    public void setGuiValues()
+    public override void setGuiValues()
     {
         spawnPointX = int.Parse(spawnPointXString);
         spawnPointY = int.Parse(spawnPointYString);
@@ -69,7 +69,7 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         movementManager.maxSpeed = nodeMaxSpeed;
     }
 
-    public void setSpawnLocation()
+    public override void setSpawnLocation()
     {
         foreach (KeyValuePair<GameObject, MemberInfo> key_value in popManager.populationInfo)
         {
@@ -77,12 +77,12 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         }
     }
 
-    public void setSpawnLocation(GameObject gameObject)
+    public override void setSpawnLocation(GameObject gameObject)
     {
         gameObject.transform.position = new Vector3(spawnPointX, spawnPointY, spawnPointZ);
     }
 
-    public void setFloor()
+    public override void setFloor()
     {
         int floorSize = int.Parse(goalPointXString) + 10;
         int center = floorSize / 2;

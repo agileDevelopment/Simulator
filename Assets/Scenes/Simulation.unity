@@ -103,6 +103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linePrefab: {fileID: 100000, guid: 3d08550564fc15a4b95c5e1e9b36b0bf, type: 2}
+  flightGUI: {fileID: 0}
   networkGUI: {fileID: 0}
   cubeRender: {fileID: 0}
   buttonHeight: 50

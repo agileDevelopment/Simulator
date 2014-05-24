@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 public class AODV : Network
 {
-
+    
     AODVGUI AODV_GUI;
     Hashtable currentRREQ;
     Hashtable routes;
@@ -80,116 +80,132 @@ public class AODV : Network
     //--------------------------------------Custom Functions------------------------------------------
 
 
-    public void recRREQ(RREQpacket dataIn){
-        StartCoroutine(delayRecRREQ(dataIn));
-    }
-
-    IEnumerator delayRecRREQ(RREQpacket dataIn)
+    IEnumerator delayRecRREQ(RREQpacket packet)
     {
-        float distance = Vector3.Distance(gameObject.transform.position, dataIn.intermediate.transform.position);
+        float distance = Vector3.Distance(gameObject.transform.position, packet.intermediate.transform.position);
         distance = distance / 2000;
         yield return new WaitForSeconds(distance);
-        bool destFound = false;
-        RouteEntry route;
-        string rreqStr = dataIn.source.name + "-" + dataIn.broadcast_id.ToString();
-        //check to see if we already have a RREQ on record with same source and broadcast_id
-        if (!currentRREQ.Contains(rreqStr))
+        performRecRREQ(packet);
+    }
+
+
+    public void recRREQ(RREQpacket dataIn){
+        if (AODV_GUI.useLatency)
+            StartCoroutine(delayRecRREQ(dataIn));
+        else
+            performRecRREQ(dataIn);
+    }
+
+    void performRecRREQ(RREQpacket dataIn)
+    {
+        lock (nodeLock)
         {
-             // check to see if we are the destination... (shouldn't be here)
-            if (gameObject == dataIn.destination)
+            bool destFound = false;
+            RouteEntry route;
+            string rreqStr = dataIn.source.name + "-" + dataIn.broadcast_id.ToString();
+            //check to see if we already have a RREQ on record with same source and broadcast_id
+            if (!currentRREQ.Contains(rreqStr))
             {
-                destFound = true;
-            }
-            //check to see if our neighbor is the destination
-            else if (neighbors.Contains(dataIn.destination))
-            {
-                destFound = true;
-                
-                RREPpacket update = new RREPpacket();
-                update.broadcast_id = dataIn.broadcast_id;
-                update.dest_sequence_num = dataIn.dest_sequence_num;
-                update.destination = dataIn.destination;
-                update.hop_count = 1;
-                update.intermediate = dataIn.destination;
-                update.source = dataIn.source;
-                updateRouteFromRREP(update);
-                
-            }
-            //if we have a route to the destination in our routing table
-            else if (routes.Contains(dataIn.destination))
-            {
-                route = (RouteEntry)routes[dataIn.destination];
-                //check to see if our route is stale...if so, don't use it.
-                if (dataIn.dest_sequence_num <= route.dest_sequence_num)
+                // check to see if we are the destination... (shouldn't be here)
+                if (gameObject == dataIn.destination)
                 {
                     destFound = true;
                 }
-            }
-
-            if (destFound)
-            {
-                if (AODV_GUI.foundTime == 0)
-                    AODV_GUI.foundTime = Time.time;
-                //update routes table
-                RevPath revEntry = new RevPath();
-                revEntry.destination = dataIn.destination;
-                revEntry.intermediate = dataIn.intermediate;
-                revEntry.source = dataIn.source;
-                revEntry.broadcast_id = dataIn.broadcast_id;
-                revEntry.expTimer = Time.time + active_route_timer;
-                revEntry.source_sequence_num = dataIn.source_seq;
-                currentRREQ.Add(rreqStr, revEntry);
-
-                dataIn.hop_count++;
-                dataIn.TTL--;
-
-                //craft RREP packet to return
-                RREPpacket reply = new RREPpacket();
-                reply.broadcast_id = dataIn.broadcast_id;
-                reply.dest_sequence_num = dataIn.destination.GetComponent<AODV>().nodeSeqNum;
-                reply.source = dataIn.source;
-                reply.destination = dataIn.destination;
-                reply.hop_count = 1;
-                reply.lifetime = 10;
-                reply.path =gameObject.name;
-                sendRREP(reply);
-            }
-
-            //not in our routes list and not a neighbor,  forward the request on, and add to our list of current requests
-            else
-            {
-    
-                RevPath revEntry = new RevPath();
-                revEntry.destination = dataIn.destination;
-                revEntry.intermediate = dataIn.intermediate;
-                revEntry.source = dataIn.source;
-                revEntry.broadcast_id = dataIn.broadcast_id;
-                revEntry.expTimer = Time.time + active_route_timer;
-                revEntry.source_sequence_num = dataIn.source_seq;
-                revEntry.replied = false;
-                currentRREQ.Add(rreqStr, revEntry);
-                dataIn.hop_count++;
-                dataIn.TTL--;
-
-                //add route to source to our table
-                updateRouteFromRREQ(dataIn);
-                if (dataIn.TTL >= 0)
-                      StartCoroutine("sendRREQ", dataIn);
-                //    sendRREQ(dataIn);
-            }
-
-            if (currentRREQ.Contains(rreqStr))
-            {
-                RouteEntry routeToSource;
-                if (routes.Contains(dataIn.source))
+                //check to see if our neighbor is the destination
+                else if (neighbors.Contains(dataIn.destination))
                 {
-                   routeToSource = (RouteEntry)routes[dataIn.source];
+                    destFound = true;
+
+                    RREPpacket update = new RREPpacket();
+                    update.broadcast_id = dataIn.broadcast_id;
+                    update.dest_sequence_num = dataIn.dest_sequence_num;
+                    update.destination = dataIn.destination;
+                    update.hop_count = 1;
+                    update.intermediate = dataIn.destination;
+                    update.source = dataIn.source;
+                    updateRouteFromRREP(update);
+
                 }
+                //if we have a route to the destination in our routing table
+                else if (routes.Contains(dataIn.destination))
+                {
+                    route = (RouteEntry)routes[dataIn.destination];
+                    //check to see if our route is stale...if so, don't use it.
+                    if (dataIn.dest_sequence_num <= route.dest_sequence_num)
+                    {
+                        destFound = true;
+                    }
+                }
+
+                if (destFound)
+                {
+                    if (AODV_GUI.foundTime == 0)
+                        AODV_GUI.foundTime = Time.time;
+                    //update routes table
+                    RevPath revEntry = new RevPath();
+                    revEntry.destination = dataIn.destination;
+                    revEntry.intermediate = dataIn.intermediate;
+                    revEntry.source = dataIn.source;
+                    revEntry.broadcast_id = dataIn.broadcast_id;
+                    revEntry.expTimer = Time.time + active_route_timer;
+                    revEntry.source_sequence_num = dataIn.source_seq;
+                    lock (nodeLock)
+                    {
+                        currentRREQ.Add(rreqStr, revEntry);
+                    }
+                    dataIn.hop_count++;
+                    dataIn.TTL--;
+
+                    //craft RREP packet to return
+                    RREPpacket reply = new RREPpacket();
+                    reply.broadcast_id = dataIn.broadcast_id;
+                    reply.dest_sequence_num = dataIn.destination.GetComponent<AODV>().nodeSeqNum;
+                    reply.source = dataIn.source;
+                    reply.destination = dataIn.destination;
+                    reply.hop_count = 1;
+                    reply.lifetime = 10;
+                    reply.path = gameObject.name;
+                    sendRREP(reply);
+                }
+
+                //not in our routes list and not a neighbor,  forward the request on, and add to our list of current requests
                 else
                 {
-                    routeToSource = new RouteEntry();
-                    routeToSource.numberHops = 10000000;
-                }           
+
+                    RevPath revEntry = new RevPath();
+                    revEntry.destination = dataIn.destination;
+                    revEntry.intermediate = dataIn.intermediate;
+                    revEntry.source = dataIn.source;
+                    revEntry.broadcast_id = dataIn.broadcast_id;
+                    revEntry.expTimer = Time.time + active_route_timer;
+                    revEntry.source_sequence_num = dataIn.source_seq;
+                    revEntry.replied = false;
+                    lock (nodeLock)
+                    {
+                        currentRREQ.Add(rreqStr, revEntry);
+                    }
+                    dataIn.hop_count++;
+                    dataIn.TTL--;
+
+                    //add route to source to our table
+                    updateRouteFromRREQ(dataIn);
+                    if (dataIn.TTL >= 0)
+                        StartCoroutine("sendRREQ", dataIn);
+                    //    sendRREQ(dataIn);
+                }
+
+                if (currentRREQ.Contains(rreqStr))
+                {
+                    RouteEntry routeToSource;
+                    if (routes.Contains(dataIn.source))
+                    {
+                        routeToSource = (RouteEntry)routes[dataIn.source];
+                    }
+                    else
+                    {
+                        routeToSource = new RouteEntry();
+                        routeToSource.numberHops = 10000000;
+                    }
                     if (dataIn.hop_count < routeToSource.numberHops)
                     {
                         routeToSource.dest_sequence_num = dataIn.source_seq;
@@ -198,6 +214,7 @@ public class AODV : Network
                         routeToSource.nextHop = dataIn.intermediate;
                         routeToSource.numberHops = dataIn.hop_count;
                     }
+                }
             }
         }
     }
@@ -219,22 +236,20 @@ public class AODV : Network
     }
 
     public void sendRREP(RREPpacket rrepPacket)
-   // public IEnumerator sendRREP(RREPpacket rrepPacket)
     {
         bool fwdRREP = false;
-       // countdown--;
         string id = rrepPacket.source.name + "-" + rrepPacket.broadcast_id.ToString();
         if (currentRREQ.Contains(id))
         {
-
-     //       RevPath revpath = new RevPath();
-          
+         
             RevPath  revpath = (RevPath)currentRREQ[id];
             GameObject returnP = revpath.intermediate;
 
             if (!revpath.replied)
+            {
                 fwdRREP = true;
-            if (revpath.replied)
+            }
+            else
             {
                 if (rrepPacket.dest_sequence_num > revpath.dest_sequence_num)
                     fwdRREP = true;
@@ -266,8 +281,23 @@ public class AODV : Network
     }
     public void recRREP(RREPpacket dataIn)
     {
-        StartCoroutine(delayRecRREP(dataIn));
+        if (AODV_GUI.useLatency)
+            StartCoroutine(delayRecRREP(dataIn));
+        else
+            performRecRREP(dataIn);
     }
+
+    IEnumerator delayRecRREP(RREPpacket packet)
+    {
+
+        float distance = Vector3.Distance(gameObject.transform.position, packet.intermediate.transform.position);
+        distance = distance / 2000;
+        yield return new WaitForSeconds(distance);
+        performRecRREP(packet);
+    }
+
+    
+
 
     //update route table with rrepPacket info
     void updateRouteFromRREP(RREPpacket rrepPacketIn)
@@ -288,19 +318,25 @@ public class AODV : Network
                     path.expirationTime = Time.time + active_route_timer;
                     path.numberHops = rrepPacketIn.hop_count;
                     path.nextHop = rrepPacketIn.intermediate;
-                    routes.Add(rrepPacketIn.destination, path);
+                    lock (nodeLock)
+                    {
+                        routes.Add(rrepPacketIn.destination, path);
+                    }
                 }
             }
     }
 
     void updateRouteFromRREQ(RREQpacket rreqPacketIn)
     {
-        if (routes.Contains(rreqPacketIn.destination))
+        lock (nodeLock)
         {
-            RouteEntry path = (RouteEntry)routes[rreqPacketIn.destination];
-            path.expirationTime = Time.time + active_route_timer;
-        }
-                    else
+            if (routes.Contains(rreqPacketIn.destination))
+            {
+                RouteEntry path = (RouteEntry)routes[rreqPacketIn.destination];
+                path.expirationTime = Time.time + active_route_timer;
+                updateRouteFromRREQ(rreqPacketIn);
+            }
+            else
             {
                 if (!routes.Contains(rreqPacketIn.destination))
                 {
@@ -311,15 +347,13 @@ public class AODV : Network
                     source.nextHop = rreqPacketIn.intermediate;
                     source.numberHops = rreqPacketIn.hop_count;
 
-                    //check again incase of race conditions 
-                   if (!routes.Contains(rreqPacketIn.destination)){
                         routes.Remove(source.destination);
                         routes.Add(source.destination, source);
-                        }
-                    else updateRouteFromRREQ(rreqPacketIn);
+ 
 
                 }
             }
+        }
     }
 
     public override void sendMessage(MSGPacket packet)
@@ -327,65 +361,76 @@ public class AODV : Network
         StartCoroutine(delaySendMessage(packet));
     }
 
-
-
     IEnumerator delaySendMessage(MSGPacket packet)
     {
         bool haveRoute = false;
-        if(routes.Contains(packet.destination)){
-   //         print(gameObject.name + " has route");
-            haveRoute = true;
-            }
-        else
+        lock (nodeLock)
         {
-     //       print(gameObject.name + " doesn't have route");
-            for (int i = 0; i <= packet.retries; packet.retries--)
+            if (routes.Contains(packet.destination))
             {
-       //         print(gameObject.name + " waiting for route");
-                discoverPath(packet.destination);
-                yield return new WaitForSeconds(.1f);
-                if (routes.Contains(packet.destination))
+                //         print(gameObject.name + " has route");
+                haveRoute = true;
+            }
+            else
+            {
+                //       print(gameObject.name + " doesn't have route");
+                for (int i = 0; i <= packet.retries; packet.retries--)
                 {
-                    haveRoute = true;
-       //             print(gameObject.name + " has route");
-                    break;
+                    //         print(gameObject.name + " waiting for route");
+                    discoverPath(packet.destination);
+                    yield return new WaitForSeconds(.1f);
+                    if (routes.Contains(packet.destination))
+                    {
+                        haveRoute = true;
+                        //             print(gameObject.name + " has route");
+                        break;
+                    }
+
                 }
- 
+                if (!haveRoute)
+                {
+                    print("Error: TimeOut");
+                }
             }
-            if (!haveRoute)
+            if (haveRoute)
             {
-                print("Error: TimeOut");
+                packet.sender = gameObject;
+                RouteEntry route = (RouteEntry)routes[packet.destination];
+                GameObject nextHop = (GameObject)route.nextHop;
+            //            print(gameObject.name + " FWD MSG to: " + nextHop.name);
+                if(nextHop != null)
+                nextHop.GetComponent<AODV>().recMessage(packet);
             }
-        }
-        if (haveRoute)
-        {
-            packet.sender = gameObject;
-            RouteEntry route = (RouteEntry)routes[packet.destination];
-            GameObject nextHop = (GameObject)route.nextHop;
-    //        print(gameObject.name + " FWD MSG to: " + nextHop.name);
-            nextHop.GetComponent<AODV>().recMessage(packet);
         }
 
     }
 
     public override void recMessage(MSGPacket packet)
     {
-           StartCoroutine(delayRecMessage(packet));
+        if (AODV_GUI.useLatency)
+            StartCoroutine(delayRecMessage(packet));
+        else
+            performRecMessage(packet);
     }
 
     IEnumerator delayRecMessage(MSGPacket packet)
     {
-        float distance = Vector3.Distance(gameObject.transform.position, packet.sender.transform.position);
-        distance = distance / 2000;
-        yield return new WaitForSeconds(distance);
-     //   print(gameObject.name + " rev'd MSG");
 
+        float distance = Vector3.Distance(gameObject.transform.position, packet.sender.transform.position);
+            distance = distance / 2000;   
+        yield return new WaitForSeconds(distance);
+        performRecMessage(packet);
+    }
+
+
+    void performRecMessage(MSGPacket packet)
+    {
         gameObject.renderer.material.color = Color.white;
         if (gameObject == packet.destination)
         {
             gameObject.renderer.material.color = Color.green;
-            float tTime  = Time.time - packet.startTime;
-            print(packet.message + "Time to Send: " + tTime );
+      //      float tTime  = Time.time - packet.startTime;
+      //      print(packet.message + "Time to Send: " + tTime );
         }
         else
         {
@@ -401,13 +446,13 @@ public class AODV : Network
         packetToSend.retries = (int) simValues.numNodes / 2;
         packetToSend.source = gameObject;
         packetToSend.startTime = Time.time;
-        print(gameObject.name + " Initiating MSG to " + destination.name);
+    //    print(gameObject.name + " Initiating MSG to " + destination.name);
 
         sendMessage(packetToSend);
     }
 
 
-    IEnumerator delayRecRREP(RREPpacket rrepPacketIn)
+    void performRecRREP(RREPpacket rrepPacketIn)
     {
         bool done = false;
 
@@ -421,36 +466,34 @@ public class AODV : Network
        // print("GO = " + gameObject.name + "Int = " + rrepPacketIn.intermediate);
         entry.nextHop = rrepPacketIn.intermediate;
         entry.numberHops = rrepPacketIn.hop_count;
-
-        if (!routes.Contains(rrepPacketIn.destination))
+        lock (nodeLock)
         {
-            routes.Add(rrepPacketIn.destination, entry);
-        }
-        else
-        {
-            RouteEntry temp = (RouteEntry)routes[rrepPacketIn.destination];
-            if (temp.dest_sequence_num < entry.dest_sequence_num)
+            if (!routes.Contains(rrepPacketIn.destination))
             {
-                temp.nextHop = entry.nextHop;
-                temp.numberHops = entry.numberHops;
-                temp.dest_sequence_num = entry.dest_sequence_num;
-            }
-            if ((temp.dest_sequence_num == entry.dest_sequence_num) && (temp.numberHops > entry.numberHops))
-            {
-                temp.nextHop = entry.nextHop;
-                temp.numberHops = entry.numberHops;
-                temp.dest_sequence_num = entry.dest_sequence_num;
+                routes.Add(rrepPacketIn.destination, entry);
             }
 
-            routes.Remove(rrepPacketIn.destination);
-            routes.Add(rrepPacketIn.destination, entry);
+            else
+            {
+                RouteEntry temp = (RouteEntry)routes[rrepPacketIn.destination];
+                if (temp.dest_sequence_num < entry.dest_sequence_num)
+                {
+                    temp.nextHop = entry.nextHop;
+                    temp.numberHops = entry.numberHops;
+                    temp.dest_sequence_num = entry.dest_sequence_num;
+                }
+                if ((temp.dest_sequence_num == entry.dest_sequence_num) && (temp.numberHops > entry.numberHops))
+                {
+                    temp.nextHop = entry.nextHop;
+                    temp.numberHops = entry.numberHops;
+                    temp.dest_sequence_num = entry.dest_sequence_num;
+                }
 
+                routes.Remove(rrepPacketIn.destination);
+                routes.Add(rrepPacketIn.destination, entry);
+
+            }
         }
-
-        float distance = Vector3.Distance(gameObject.transform.position, rrepPacketIn.intermediate.transform.position);
-          distance = distance/2000;
-        yield return new WaitForSeconds(distance);
-
         if (gameObject == rrepPacketIn.source)
         {
             done = true;
@@ -476,10 +519,6 @@ public class AODV : Network
                 AODV_GUI.timeToFind = totalTime;
                 AODV_GUI.numHops = routetoDest.numberHops;
                AODV_GUI.nextHop = routetoDest.nextHop.name;
-               foreach (DictionaryEntry r in routes)
-               {
-                   RouteEntry rt = (RouteEntry)r.Value;
-               }
             }
         }
         else
@@ -495,13 +534,16 @@ public class AODV : Network
         dataOut.intermediate = gameObject;
         dataOut.destination = node;
         dataOut.broadcast_id = ++broadcastID;
-        if (routes.Contains(node))
+        lock (nodeLock)
         {
-            dataOut.dest_sequence_num = ((RouteEntry)routes[node]).dest_sequence_num;
-        }
-        else
-        {
-            dataOut.dest_sequence_num = 0;
+            if (routes.Contains(node))
+            {
+                dataOut.dest_sequence_num = ((RouteEntry)routes[node]).dest_sequence_num;
+            }
+            else
+            {
+                dataOut.dest_sequence_num = 0;
+            }
         }
         dataOut.hop_count = 0;
         dataOut.source_seq = nodeSeqNum;
@@ -515,18 +557,11 @@ public class AODV : Network
         revEntry.expTimer = Time.time + active_route_timer;
         revEntry.source_sequence_num = dataOut.source_seq;
         revEntry.replied = false;
-        currentRREQ.Add(dataOut.source + "-" + dataOut.broadcast_id, revEntry);
-
-        recRREQ(dataOut);
-    }
- 
-    void printRoutes()
-    {
-        print("printing routes for " + gameObject.name + "-----------------");
-        foreach (DictionaryEntry routePair in routes)
+        lock (nodeLock)
         {
-            RouteEntry r = (RouteEntry)routePair.Value;
+            currentRREQ.Add(dataOut.source + "-" + dataOut.broadcast_id, revEntry);
         }
+        recRREQ(dataOut);
     }
 }
 

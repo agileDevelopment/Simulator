@@ -42,11 +42,11 @@ public class Orbit :  NodeMove{
 		}
 		
 	public override void updateLocation(){
-		if(!(center == null)){
+	//	if(center !=null){
 		gameObject.transform.RotateAround (center, axis, rotationSpeed * Time.deltaTime);
 		desiredPosition = (transform.position - center).normalized * radius + center;
 		gameObject.transform.position = Vector3.MoveTowards(transform.position, desiredPosition, Time.deltaTime * radiusSpeed);	
-	}
+//	}
 	}
 	
 

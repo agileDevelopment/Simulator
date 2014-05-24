@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GridGUI : MonoBehaviour, IFlightGUIOptions
+public class GridGUI : FlightGUI
 {
     LoadOptionsGUI simValues;
     public string nodeSpacingString = "70";
@@ -26,7 +26,7 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions
 
     }
 
-    public void showGUI()
+    public override void showGUI()
     {
         GUI.BeginGroup(new Rect(((Screen.width - simValues.buttonWidth) / 2) + 250, Screen.height / 2 - 250, 250, 200));
         GUI.Box(new Rect(0, 0, 250, 400), "Grid Options");
@@ -47,14 +47,14 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions
         GUI.EndGroup();
     }
 
-    public void setGuiValues()
+    public override void setGuiValues()
     {
         radius = float.Parse(nodeOrbitString);
         rotationSpeed = Random.Range(5, float.Parse(nodeMaxSpeedString));
         nodeSpacing = int.Parse(nodeSpacingString);
         nodeMaxSpeed = int.Parse(nodeMaxSpeedString);
     }
-    public void setSpawnLocation()
+    public override void setSpawnLocation()
     {
         int count = 0;
         float range = simValues.nodesSqrt + 1;
@@ -79,10 +79,10 @@ public class GridGUI : MonoBehaviour, IFlightGUIOptions
 
     }
 
-    public void setSpawnLocation(GameObject node)
+    public override void setSpawnLocation(GameObject node)
     { }
 
-    public void setFloor()
+    public override void setFloor()
     {
         int floorSize = (int)(simValues.nodesSqrt * nodeSpacing + radius * 3);
         int center = floorSize / 2;

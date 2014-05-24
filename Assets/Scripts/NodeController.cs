@@ -19,9 +19,9 @@ using System.Collections;
 
 public class NodeController : MonoBehaviour {
 	public NodeMove flightBehavior;
-    public INetworkBehavior networkBehavior;
+    public Network networkBehavior;
 	LoadOptionsGUI simValues;
-	NodeLine lineController;
+
 	public int idNum;
 	public string idString;
     public bool selected;
@@ -33,7 +33,7 @@ public class NodeController : MonoBehaviour {
 	}
 	void Start () {
         selected = false;
-		lineController = gameObject.GetComponent<NodeLine>();
+
 		//change this to implement a different movement controller
 	
 	}
@@ -67,8 +67,10 @@ public class NodeController : MonoBehaviour {
         if (col.gameObject.tag == "Node")
 		{
             GameObject otherNode = col.gameObject;
-			lineController.addLine(otherNode);
-            if (networkBehavior != null) networkBehavior.addNeighbor(otherNode);
+            if (networkBehavior != null)
+            {
+                networkBehavior.addNeighbor(otherNode);
+            }
         }
 		
 	}
@@ -77,8 +79,10 @@ public class NodeController : MonoBehaviour {
 		if(col.gameObject.tag == "Node")
 		{
 			GameObject otherNode = col.gameObject;
-            lineController.removeLine(otherNode);
-            if (networkBehavior != null) networkBehavior.removeNeighbor(otherNode);
+            if (networkBehavior != null)
+            {
+                networkBehavior.removeNeighbor(otherNode);
+            }
 		}
 	}
 	

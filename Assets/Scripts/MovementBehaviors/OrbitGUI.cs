@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class OrbitGUI : MonoBehaviour, IFlightGUIOptions {
+public class OrbitGUI : FlightGUI {
 	LoadOptionsGUI simValues;
 	public string nodeOrbitString;
 	public string nodeMaxSpeedString;
@@ -23,7 +23,8 @@ public class OrbitGUI : MonoBehaviour, IFlightGUIOptions {
 	}
 
 
-    public void showGUI(){
+    public override void showGUI()
+    {
 		    GUI.BeginGroup(new Rect(((Screen.width- simValues.buttonWidth)/2)+250 , Screen.height/2-250, 250, 400));
 		    GUI.Box(new Rect(0, 0, 250, 400), "Orbit Options");
 		    GUILayout.BeginArea(new Rect(5 , 30,simValues.buttonWidth,simValues.buttonHeight*simValues.numberButtons));
@@ -39,13 +40,15 @@ public class OrbitGUI : MonoBehaviour, IFlightGUIOptions {
 	    GUI.EndGroup();
     }
 
-    public void setGuiValues(){
+    public override void setGuiValues()
+    {
 	    radius = float.Parse(nodeOrbitString);
 	    rotationSpeed = Random.Range(5,float.Parse(nodeMaxSpeedString));
 	    nodeMaxSpeed  = int.Parse(nodeMaxSpeedString);
     }
 
-    public void setSpawnLocation(){
+    public override void setSpawnLocation()
+    {
         int count = 1;
 		float range = simValues.nodesSqrt;
 	    for(int i=0; i <= range; i++){
@@ -63,10 +66,10 @@ public class OrbitGUI : MonoBehaviour, IFlightGUIOptions {
 		}
 	}
 
-    public void setSpawnLocation(GameObject node)
+    public override void setSpawnLocation(GameObject node)
     {}
 		
-    public void setFloor(){
+    public override void setFloor(){
 		    floorSize = (int)((simValues.nodesSqrt)*radius*2.5);
     center = floorSize/2;
     GameObject floor = GameObject.Find("Floor");

@@ -12,6 +12,8 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public string nodeCommRangeString = "100";
     public int nodeCommRange;
     public bool updateLines = false;
+    public bool useLatency = true;
+    string useLatencyStr = "Latency Enabled";
     public LoadOptionsGUI simValues;
     public GameObject nodeToFind;
     public GameObject source;
@@ -26,12 +28,6 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public float endTime;
 
 //----------------Unity Functions------------------------------------
-
-    // Use this for initialization
-    void Start()
-    {
-
-    }
 
     // Update is called once per frame
     //Here we are figuring out whether to update lines or not.
@@ -64,6 +60,14 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
                 GUI.Box(new Rect(0, Screen.height / 2, 175, 400), "Network Options");
                 GUILayout.BeginArea(new Rect(10, Screen.height / 2 + 5, 175, 400));
                 GUILayout.Space(30);
+                if (GUILayout.Button(useLatencyStr, GUILayout.Width(140)))
+                {
+                    if (!useLatency)
+                        useLatencyStr = "Enable Latency";
+                    if (useLatency)
+                        useLatencyStr = "Disable Latency";
+                    useLatency = !useLatency;
+                }
 
 
                 if (GUILayout.Button(drawLinesString, GUILayout.Width(140)))
@@ -75,7 +79,6 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
                     else drawLinesString = "Hide Lines";
                     drawLine = !drawLine;
                 }
-            //    if (drawLine)
                     adaptiveNetworkColor = GUILayout.Toggle(adaptiveNetworkColor, "Adaptive Color");
 
             GUILayout.BeginVertical();
@@ -168,7 +171,17 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         GUILayout.Label("Node Comm Range", GUILayout.Width(simValues.menuLabelWidth));
         nodeCommRangeString = GUILayout.TextField(nodeCommRangeString, 4);
         GUILayout.EndHorizontal();
-    
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Latency:");
+        if (GUILayout.Button(useLatencyStr))
+        {
+            if (!useLatency)
+                useLatencyStr = "Latency Enabled";
+            if (useLatency)
+                useLatencyStr = "Latency Disabled";
+            useLatency = !useLatency;
+        }
+        GUILayout.EndHorizontal();
         GUILayout.EndArea();
         GUI.EndGroup();
     
@@ -181,7 +194,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
        timeToFind = 0;
        numHops = 0;
        nextHop = "";
-       sourceStr = "";
+
 
        drawLine = true;
        updateLines = true;

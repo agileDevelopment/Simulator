@@ -3,17 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Network : MonoBehaviour, INetworkBehavior {
-    protected LoadOptionsGUI simValues;
-    protected NetworkGUI netValues;
-    protected List<GameObject> neighbors;
+    public LoadOptionsGUI simValues;
+    public NetworkGUI netValues;
+    public List<GameObject> neighbors;
+    public Object nodeLock = new Object();
+    public NodeLine lineController;
 	// Use this for initialization
 
 
 //--------------------Unity Functions------------------------
 	void Start () {
-
-
-	}
+ 	}
 	
 	// Update is called once per frame-----------------------
 	void Update () {
@@ -21,19 +21,21 @@ public class Network : MonoBehaviour, INetworkBehavior {
 	}
 
 //---------------------INetworkBehavior Implemenations
-    public void addNeighbor(GameObject node)
+    public virtual void addNeighbor(GameObject node)
     {
         if (!neighbors.Contains(node))
         {
             neighbors.Add(node);
+            lineController.addLine(node);
         }
     }
     //public function to be called by nodeController if we need to remove a connection
-    public void removeNeighbor(GameObject nodeID)
+    public virtual void removeNeighbor(GameObject node)
     {
-        if (neighbors.Contains(nodeID))
+        if (neighbors.Contains(node))
         {
-            neighbors.Remove(nodeID);
+            neighbors.Remove(node);
+            lineController.removeLine(node);
         }
     }
 
@@ -45,6 +47,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
         simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
         netValues = simValues.networkGUI;
         neighbors = new List<GameObject>();
+        lineController = gameObject.GetComponent<NodeLine>();
         gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
     }
 };
