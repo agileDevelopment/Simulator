@@ -16,8 +16,8 @@ public class GridGUI : FlightGUI
     {
         simValues = gameObject.GetComponent<LoadOptionsGUI>();
         nodeSpacingString = "75";
-        nodeOrbitString = "40";
-        nodeMaxSpeedString = "15";
+        nodeOrbitString = "0";
+        nodeMaxSpeedString = "0";
     }
 
     // Update is called once per frame

@@ -18,126 +18,153 @@
 using UnityEngine;
 using System.Collections;
 
-public class NodeLine : MonoBehaviour {
-Hashtable lines;
-LoadOptionsGUI simValues;
-NetworkGUI netValues;
-NodeController data;	
-Color lineColor = Color.red;
-float colorStep;
-int count;
-int midPoint;
+public class NodeLine : MonoBehaviour
+{
+    public Hashtable lines;
+    LoadOptionsGUI simValues;
+    NetworkGUI netValues;
+    NodeController data;
+    Color lineColor = Color.red;
+    float colorStep;
+    int count;
+    int midPoint;
 
 
-void Start(){
-		lines = new Hashtable();
-		data = gameObject.GetComponent<NodeController>();
-		simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
+    void Start()
+    {
+        lines = new Hashtable();
+        data = gameObject.GetComponent<NodeController>();
+        simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
         netValues = simValues.networkGUI;
-		midPoint = netValues.nodeCommRange/2;
-		lineColor.r = 255;
-		lineColor.g = 0;
-		lineColor.b = 0;
+        midPoint = netValues.nodeCommRange / 2;
+        lineColor.r = 255;
+        lineColor.g = 0;
+        lineColor.b = 0;
         colorStep = (float)255 / (netValues.nodeCommRange / 2);
-}
+    }
 
-//public function to be called by nodeController if we need to add a connection
-public void addLine(GameObject otherNode){
-		int idNum = otherNode.GetComponent<NodeController>().idNum;
-		if(otherNode.GetComponent<NodeController>().idNum < gameObject.GetComponent<NodeController>().idNum ){
-			if(!lines.ContainsKey(idNum)){
-				GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
-				line.tag = "Line";
-				line.name = "line_" + gameObject.GetComponent<NodeController>().idNum.ToString() + otherNode.GetComponent<NodeController>().idNum.ToString();
-				line.transform.parent = gameObject.transform;
-				lines.Add(idNum, line);									
-				}
-		}
-}
-	//public function to be called by nodeController if we need to remove a connection
-public void removeLine(GameObject otherNode){
-		int idNum = otherNode.GetComponent<NodeController>().idNum;
-		if(lines.ContainsKey(idNum)){
-			lines.Remove(idNum);
-			Destroy(GameObject.Find ("line_" + data.idNum + idNum ));
-		}
-}
+    //public function to be called by nodeController if we need to add a connection
+    public void addLine(GameObject otherNode)
+    {
+        int idNum = otherNode.GetComponent<NodeController>().idNum;
+        if (otherNode.GetComponent<NodeController>().idNum < gameObject.GetComponent<NodeController>().idNum)
+        {
+            if (!lines.ContainsKey(idNum))
+            {
+                GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
+                line.tag = "Line";
+                line.name = "line_" + gameObject.GetComponent<NodeController>().idNum.ToString() + otherNode.GetComponent<NodeController>().idNum.ToString();
+                line.transform.parent = gameObject.transform;
+                lines.Add(idNum, line);
+            }
+        }
+    }
+    //public function to be called by nodeController if we need to remove a connection
+    public void removeLine(GameObject otherNode)
+    {
+        int idNum = otherNode.GetComponent<NodeController>().idNum;
+        if (lines.ContainsKey(idNum))
+        {
+            lines.Remove(idNum);
+            Destroy(GameObject.Find("line_" + data.idNum + idNum));
+        }
+    }
+
+    public void drawDefaultLines()
+    {
+        GameObject source = gameObject;
+
+        //loop through all the lines in our container and update accordingly
+        foreach (DictionaryEntry entry in lines)
+        {
+            GameObject line = (GameObject)entry.Value;
+            if (line)
+            {//check to see if its been destroyed already
+                line.GetComponent<LineRenderer>().enabled = true;
+                GameObject dest = GameObject.Find("Node " + entry.Key);
 
 
-//called every frame.
-void Update(){
-		//if we're not paused
-		if(!simValues.paused){
-			//if lines are disabled in the "in-simulation" menu
+                line.GetComponent<LineRenderer>().SetPosition(0, source.transform.position);
+                line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
+                lineColor = Color.white;
+
+                if (netValues.adaptiveNetworkColor)
+                {
+                    float distance = Vector3.Distance(source.transform.position, dest.transform.position);
+                    if (line != null)
+                    {
+                        lineColor = Color.black;
+                        //Lots of RGB math here... basically spilts the line into two categories, halfway and less
+                        // than half way and adjusts the color accordly.  
+
+                        //greater than midway show Red - Yellow
+                        if (distance > midPoint)
+                        {
+                            float delta = ((netValues.nodeCommRange - distance) / midPoint);
+                            lineColor.r = 255;
+                            lineColor.g = (delta * colorStep) * 3;
+                            line.GetComponent<LineRenderer>().SetWidth(2f, 2f);
+                        }
+                        //less than midway, show Yellow - Green				
+                        if (distance <= midPoint)
+                        {
+                            line.GetComponent<LineRenderer>().SetWidth(4, 4);
+                            float delta = (distance / midPoint);
+                            lineColor.g = 255;
+                            lineColor.r = (delta * colorStep) - 10;
+                        }
+
+                        //extra bonus for being close
+                        if (distance < 20)
+                        {
+                            lineColor.g = 255;
+                            lineColor.r = 0;
+                            line.GetComponent<LineRenderer>().SetWidth(6, 6);
+                        }
+                    }
+                }
+                line.GetComponent<LineRenderer>().SetColors(lineColor, lineColor);
+            }
+        }
+    }
+
+
+    //called every frame.
+    void Update()
+    {
+        //if we're not paused
+        if (!simValues.paused)
+        {
+            //if lines are disabled in the "in-simulation" menu
             if (!netValues.drawLine)
             {
-				foreach(DictionaryEntry entry in lines){
-					GameObject line = (GameObject)entry.Value;
-                    if(line)
-					line.GetComponent<LineRenderer>().enabled = false;
-				}
-			}
-			}
-		//if lines are enabled in the "in-simulation" menu		
-        if (netValues.drawLine)
-        {
-            if (netValues.updateLines)
-            {
-				GameObject source = gameObject;
-			
-				//loop through all the lines in our container and update accordingly
                 foreach (DictionaryEntry entry in lines)
                 {
                     GameObject line = (GameObject)entry.Value;
                     if (line)
-                    {//check to see if its been destroyed already
-                        line.GetComponent<LineRenderer>().enabled = true;
-                        GameObject dest = GameObject.Find("Node " + entry.Key);
-
-
-                        line.GetComponent<LineRenderer>().SetPosition(0, source.transform.position);
-                        line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
-                        lineColor = Color.white;
-
-                        if (netValues.adaptiveNetworkColor)
-                        {
-                            float distance = Vector3.Distance(source.transform.position, dest.transform.position);
-                            if (line != null)
-                            {
-                                lineColor = Color.black;
-                                //Lots of RGB math here... basically spilts the line into two categories, halfway and less
-                                // than half way and adjusts the color accordly.  
-
-                                //greater than midway show Red - Yellow
-                                if (distance > midPoint)
-                                {
-                                    float delta = ((netValues.nodeCommRange - distance) / midPoint);
-                                    lineColor.r = 255;
-                                    lineColor.g = (delta * colorStep) * 3;
-                                    line.GetComponent<LineRenderer>().SetWidth(2f, 2f);
-                                }
-                                //less than midway, show Yellow - Green				
-                                if (distance <= midPoint)
-                                {
-                                    line.GetComponent<LineRenderer>().SetWidth(4, 4);
-                                    float delta = (distance / midPoint);
-                                    lineColor.g = 255;
-                                    lineColor.r = (delta * colorStep) - 10;
-                                }
-
-                                //extra bonus for being close
-                                if (distance < 20)
-                                {
-                                    lineColor.g = 255;
-                                    lineColor.r = 0;
-                                    line.GetComponent<LineRenderer>().SetWidth(6, 6);
-                                }
-                            }
-                        }
-                        line.GetComponent<LineRenderer>().SetColors(lineColor, lineColor);
-                    }
+                        line.GetComponent<LineRenderer>().enabled = false;
                 }
-		}
-		}
-}
+            }
+        }
+        //if lines are enabled in the "in-simulation" menu		
+        if (netValues.drawLine)
+        {
+            if (netValues.useDefaultLine)
+            {
+                if (netValues.updateLines)
+                {
+                    drawDefaultLines();
+
+                }
+            }
+            else
+            {
+                //call network model specific line update funciton
+                data.networkBehavior.drawLines();
+            }
+
+        }
+    }
+
+
 }

@@ -73,6 +73,7 @@ public class LoadOptionsGUI : MonoBehaviour {
         movementBehaviorLoader.Add(3, "Orbit");
         networkBehaviorLoader.Add(0, "none");
         networkBehaviorLoader.Add(1, "AODV");
+        networkBehaviorLoader.Add(2, "MCDSGA");
 
 		flightControllerList = new GUIContent[movementBehaviorLoader.Count];
         

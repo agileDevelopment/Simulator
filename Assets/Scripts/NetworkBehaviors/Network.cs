@@ -8,6 +8,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
     public List<GameObject> neighbors;
     public Object nodeLock = new Object();
     public NodeLine lineController;
+    protected Hashtable routes;
 	// Use this for initialization
 
 
@@ -39,9 +40,49 @@ public class Network : MonoBehaviour, INetworkBehavior {
         }
     }
 
-    public virtual void recMessage(MSGPacket packet) { }
+    public virtual void drawLines() { }
 
-    public virtual void sendMessage(MSGPacket packet) { }
+    protected virtual void performRecMessage(MSGPacket packet) { }
+
+    public virtual void sendMessage(MSGPacket packet) {
+    }
+
+    public virtual void discoverPath(GameObject node)
+    {
+
+    }
+
+
+    public void initMessage(GameObject destination)
+    {
+        MSGPacket packetToSend = new MSGPacket();
+        packetToSend.destination = destination;
+        packetToSend.message = " I am a test message";
+        packetToSend.retries = (int)simValues.numNodes / 10;
+        packetToSend.TTL = (int)simValues.numNodes / 2;
+        packetToSend.source = gameObject;
+        packetToSend.startTime = Time.time;
+        //    print(gameObject.name + " Initiating MSG to " + destination.name);
+
+        sendMessage(packetToSend);
+    }
+
+    public virtual void recMessage(MSGPacket packet)
+    {
+        if (netValues.useLatency)
+            StartCoroutine(delayRecMessage(packet));
+        else
+            performRecMessage(packet);
+    }
+
+    IEnumerator delayRecMessage(MSGPacket packet)
+    {
+
+        float distance = Vector3.Distance(gameObject.transform.position, packet.sender.transform.position);
+        distance = distance / 20000;
+        yield return new WaitForSeconds(distance);
+        performRecMessage(packet);
+    }
 
     public void setValues(){
         simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
@@ -49,6 +90,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
         neighbors = new List<GameObject>();
         lineController = gameObject.GetComponent<NodeLine>();
         gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
+        routes = new Hashtable();
     }
 };
 
@@ -60,4 +102,11 @@ public struct MSGPacket
     public float startTime;
     public string message;
     public int retries;
+    public int TTL;
+}
+
+public class RouteEntry
+{
+    public GameObject destination;
+    public GameObject nextHop;
 }

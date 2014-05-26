@@ -26,6 +26,8 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public float foundTime;
     public float startTime;
     public float endTime;
+    public bool useDefaultLine = true;
+    string useDefaultLineStr = "Default Lines Enabled";
 
 //----------------Unity Functions------------------------------------
 
@@ -171,8 +173,6 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         GUILayout.Label("Node Comm Range", GUILayout.Width(simValues.menuLabelWidth));
         nodeCommRangeString = GUILayout.TextField(nodeCommRangeString, 4);
         GUILayout.EndHorizontal();
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Latency:");
         if (GUILayout.Button(useLatencyStr))
         {
             if (!useLatency)
@@ -181,7 +181,14 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
                 useLatencyStr = "Latency Disabled";
             useLatency = !useLatency;
         }
-        GUILayout.EndHorizontal();
+        if (GUILayout.Button(useDefaultLineStr))
+        {
+            if (!useDefaultLine)
+                useDefaultLineStr = "Default Lines Enabled";
+            if (useDefaultLine)
+                useDefaultLineStr = "Default Lines Disabled";
+            useDefaultLine = !useDefaultLine;
+        }
         GUILayout.EndArea();
         GUI.EndGroup();
     
