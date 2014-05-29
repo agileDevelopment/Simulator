@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+  <PopulationSize>100</PopulationSize>
+  <SpecieCount>30</SpecieCount>
+  <Activation>
+    <Scheme>CyclicFixedIters</Scheme>
+    <Iters>2</Iters>
+  </Activation>
+  <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
+  <ComplexityThreshold>100</ComplexityThreshold>
+  <Lifespan>100</Lifespan>
+  <Description>
+    UAV ANN Navigation Evolution - The goal is to evolve an AI to fly a UAV to a
+    fixed destination point while avoiding obstacles. Individuals are evaluated 
+    by rewarding them for reaching checkpoints and they live for a lifetime as defined
+    above.
+  </Description>
+</Config>

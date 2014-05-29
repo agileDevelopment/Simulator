@@ -79,4 +79,14 @@ public class OrbitGUI : MonoBehaviour, IFlightGUIOptions {
     }
 
 
+
+    public Vector3 getGoalLocation()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public Vector3 getSpawnLocation()
+    {
+        throw new System.NotImplementedException();
+    }
 }

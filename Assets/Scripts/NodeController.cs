@@ -98,6 +98,7 @@ public class NodeController : MonoBehaviour {
 	}
 	//-------------------Custome Functions---------------------------------	
 	void updateLocation(){
+        //print("Object is: " + gameObject + ", Behavior is: " + flightBehavior);
 		flightBehavior.updateLocation();
 	}
 	

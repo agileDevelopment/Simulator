@@ -17,36 +17,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RTPopulationManager : MonoBehaviour
+public abstract class PopulationManager : MonoBehaviour
 {
     public GameObject nodePrefab;
     public LoadOptionsGUI loadData;
-    string movementBehaviorClassName = "";
-    string networkClassBehavior = "";
-    int globalCount = 0;
-    private object buildMemberLock = new object(); // We need this to prevent many members dying and the count being messed up by threading
+    public string movementBehaviorClassName = "";
+    public string networkClassBehavior = "";
+    public int globalCount = 0;
+    public object buildMemberLock = new object(); // We need this to prevent many members dying and the count being messed up by threading
     public bool replaceMembers = true; // Can add a toggle later for programs that want to just kill members without replacement
-
-    public Dictionary<GameObject, MemberInfo> populationInfo = new Dictionary<GameObject, MemberInfo>();
 
     public void initializePopulation(string movementBehaviorClassName, string networkClassBehavior)
     {
-        loadData = gameObject.GetComponent<LoadOptionsGUI>();
         this.movementBehaviorClassName = movementBehaviorClassName;
         this.networkClassBehavior = networkClassBehavior;
-
-        for (int i = 0; i < loadData.numNodes; i++)
-        {
-            GameObject node = buildMemberNode();
-            populationInfo.Add(node, new MemberInfo());
-        }
-        gameObject.GetComponent<LoadOptionsGUI>().paused = false;
     }
 
     public GameObject buildMemberNode()
     {
+        GameObject node;
         // These next lines will instantiate an game object with the appropriate data
-        GameObject node = (GameObject)GameObject.Instantiate(nodePrefab);
+        node = (GameObject)GameObject.Instantiate(nodePrefab);
         lock (buildMemberLock) // We need to lock on the global node count
         {
             NodeController data = node.GetComponent<NodeController>();
@@ -65,7 +56,7 @@ public class RTPopulationManager : MonoBehaviour
             else
                 data.networkBehavior = null;
 
-            node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange / 200;
+            //node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange / 200;
 
             globalCount++;
         }
@@ -73,25 +64,8 @@ public class RTPopulationManager : MonoBehaviour
         return node;
     }
 
-    public void maintainPopulation()
+    public void removeMemberNode(GameObject node)
     {
-        if (replaceMembers)
-        {
-            GameObject newNode = buildMemberNode();
-            populationInfo.Add(newNode, new MemberInfo());
-            ((IFlightGUIOptions)newNode.GetComponent(movementBehaviorClassName + "GUI")).setSpawnLocation(newNode);
-        }
-    }
-
-    public bool checkMember(GameObject member)
-    {
-        MemberInfo info = populationInfo[member];
-        if (loadData.maxAge != 0 && loadData.maxAge < info.age)
-        {
-            populationInfo.Remove(member);
-            maintainPopulation();
-            return false;
-        }
-        return true;            
+        DestroyImmediate(node);
     }
 }

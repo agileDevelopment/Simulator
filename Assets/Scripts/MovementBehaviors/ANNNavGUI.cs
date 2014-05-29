@@ -4,26 +4,18 @@ using System.Collections.Generic;
 
 public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 	LoadOptionsGUI simValues;
-    public RTPopulationManager popManager;
-    public NEATManager movementManager;
+    public NEATPopulationManager popManager;
 
-    public string spawnPointXString, spawnPointYString, spawnPointZString;
-    public string goalPointXString, goalPointYString, goalPointZString;
-	public string nodeOrbitString="50";
-	public string nodeMaxSpeedString="20";
+    public string spawnPointXString = "10", spawnPointYString = "100", spawnPointZString = "10";
+    public string goalPointXString = "390", goalPointYString = "10", goalPointZString = "390";
+	public string nodeMaxSpeedString="150";
 	public int spawnPointX, spawnPointY, spawnPointZ, goalPointX, goalPointY, goalPointZ;
 	public int nodeMaxSpeed;
 
 	// Use this for initialization
 	void Start () {
         simValues = gameObject.GetComponent<LoadOptionsGUI>();
-        popManager = gameObject.GetComponent<RTPopulationManager>();
-        movementManager = new NEATManager(simValues.numNodes, 15);
-	    
-        nodeMaxSpeedString="15";
-        spawnPointXString = spawnPointYString = spawnPointZString = "10";
-        goalPointXString = goalPointZString = "390";
-        goalPointYString = "10";
+        popManager = gameObject.GetComponent<NEATPopulationManager>();
 	}
 	
 	// Update is called once per frame
@@ -66,33 +58,39 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         goalPointY = int.Parse(goalPointYString);
         goalPointZ = int.Parse(goalPointZString);
         nodeMaxSpeed = int.Parse(nodeMaxSpeedString);
-        movementManager.maxSpeed = nodeMaxSpeed;
     }
 
-    public void setSpawnLocation()
+    public Vector3 getGoalLocation()
     {
-        foreach (KeyValuePair<GameObject, MemberInfo> key_value in popManager.populationInfo)
-        {
-            key_value.Key.transform.position = new Vector3(spawnPointX, spawnPointY, spawnPointZ);
-        }
+        return new Vector3(goalPointX, goalPointY, goalPointZ);
     }
 
-    public void setSpawnLocation(GameObject gameObject)
+    public Vector3 getSpawnLocation()
     {
-        gameObject.transform.position = new Vector3(spawnPointX, spawnPointY, spawnPointZ);
+        return new Vector3(spawnPointX, spawnPointY, spawnPointZ);
     }
 
     public void setFloor()
     {
-        int floorSize = int.Parse(goalPointXString) + 10;
+        int floorSize = 400;
         int center = floorSize / 2;
         GameObject floor = GameObject.Find("Floor");
         floor.transform.position = (new Vector3(center, -10, center));
         floor.transform.localScale = (new Vector3(floorSize, .1f, floorSize));
-        Camera.main.transform.position = (new Vector3(center, floorSize / 2, center));
-        Camera.main.isOrthoGraphic = true;
-        Camera.main.orthographicSize = floor.transform.localScale.x / 2 + 50;
+        foreach (Camera c in Camera.allCameras)
+        {
+            print(c.gameObject.name);
+            if (c.gameObject.name == "Main Camera")
+            {
+                c.transform.position = (new Vector3(5 * floorSize / 4, 200, -2 * floorSize / 4));
+                c.transform.LookAt(new Vector3(center, -10, center));
+            }
+            else if (c.gameObject.name == "Second Camera")
+            {
+                c.transform.position = (new Vector3(-10, 110, -center));
+                c.transform.LookAt(new Vector3(center, -10, center));
+            }
+        }
         floor.renderer.material.mainTextureScale = new Vector2(floorSize / 10, floorSize / 10);
     }
-
 }

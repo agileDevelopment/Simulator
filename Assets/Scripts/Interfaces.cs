@@ -53,18 +53,15 @@ public interface IFlightBehavior{
 //
 //--------------------------------------------------------------
 public interface IFlightGUIOptions{
-	
-	void setSpawnLocation();
+    Vector3 getGoalLocation();
 
-    void setSpawnLocation(GameObject singleNode);
+    Vector3 getSpawnLocation();
 	
 	void showGUI();
 	
 	void setGuiValues();
 	
 	void setFloor();
-	
-	
 }
 
 //------------------------------------------------------------
@@ -108,5 +105,6 @@ public interface INetworkGUIOptions{
 
 public interface IMovementManager
 {
-    Vector3 getDestination(ArrayList inputs);
+    ArrayList updateLocation(GameObject node, ArrayList inputs);
+    void checkpointNotify(GameObject node, double checkpointReward);
 }

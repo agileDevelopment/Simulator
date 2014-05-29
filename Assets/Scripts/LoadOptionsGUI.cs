@@ -34,7 +34,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public string simRunTimeString="0";
 	public int simRunTime;
 	public string nodeCommRangeString="100";
-	public int nodeCommRange;
+	public int nodeCommRange = 100;
 	public string drawLinesString = "Hide Lines";
 	public bool drawLine=false;
 	public string pauseString = "Pause Simulation";
@@ -44,7 +44,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public string movementChoice = "";
     public string networkChoice = "";
     public int commLinesChoice = 0;
-    public int commLinesOn = 0;
+    public int commLinesOn = 1;
 	public int menuLabelWidth = 170;
 	public int menuFieldWidth = 100;
 	public int nodesSqrt;
@@ -65,7 +65,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 	
 	void Start () {
 		numberButtons=5;
-		numNodesString="75";
+		numNodesString="50";
 		slowMoRateString = "2";
 	    showMainGui = true;
         drawLine = true;
@@ -112,7 +112,8 @@ public class LoadOptionsGUI : MonoBehaviour {
         networkComboBoxControl = new ComboBox(new Rect(5, buttonHeight * numberButtons + 30, 240, 20),
              networkControllerList[0], networkControllerList, "button", "box", listStyle);
 
-        GUIContent[] commLinesList = { new GUIContent("Comm Lines On"), new GUIContent("Comm Lines Off") };
+        commLinesOn = 1;
+        GUIContent[] commLinesList = { new GUIContent("Comm Lines Off"), new GUIContent("Comm Lines On")};
         commLinesComboBox = new ComboBox(new Rect(5, buttonHeight * numberButtons + 50, 240, 20),
              commLinesList[0], commLinesList, "button", "box", listStyle);
 
@@ -146,7 +147,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 
 			GUI.EndGroup();
 
-			GUILayout.BeginArea(new Rect((Screen.width- buttonWidth)/2 , Screen.height/2+250, buttonWidth,buttonHeight*numberButtons));
+			GUILayout.BeginArea(new Rect((Screen.width - buttonWidth)/2 , Screen.height/2+250, buttonWidth,buttonHeight*numberButtons));
 			if(GUILayout.Button("Load Simulation",GUILayout.Width(buttonWidth),GUILayout.Height(50))){
                 if (movementChoice != movementBehaviorLoader[0])
                 {
@@ -164,8 +165,8 @@ public class LoadOptionsGUI : MonoBehaviour {
                         networkChoice = "";
                     }
 
-                    gameObject.GetComponent<RTPopulationManager>().initializePopulation(movementChoice, networkChoice);
-                    flightGUI.setSpawnLocation();
+                    gameObject.GetComponent<NEATPopulationManager>().initializePopulation(movementChoice, networkChoice);
+                    paused = false;
                 }
 			}
 			
