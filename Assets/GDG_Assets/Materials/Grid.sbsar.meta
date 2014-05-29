@@ -167,9 +167,9 @@ SubstanceImporter:
       textureFormat: 0
       loadingBehavior: 1
   - serializedVersion: 10
-    name: 1MBlock
+    name: GoalBlock
     prototypeName: Grid
-    shaderName: Bumped Specular
+    shaderName: Diffuse
     inputs:
     - name: $normalformat
       value:
@@ -222,7 +222,7 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: SelectDecal
       value:
-        scalar[0]: 0
+        scalar[0]: 3
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
@@ -283,15 +283,8 @@ SubstanceImporter:
             name: _MainTex
           second:
             texture: {instanceID: 0}
-            scale: {x: .25, y: .25}
-            offset: {x: .75, y: 0}
-        data:
-          first:
-            name: _BumpMap
-          second:
-            texture: {instanceID: 0}
-            scale: {x: .25, y: .25}
-            offset: {x: .75, y: 0}
+            scale: {x: 1, y: 1}
+            offset: {x: 0, y: 0}
       floats:
         data:
           first:
@@ -301,23 +294,23 @@ SubstanceImporter:
         data:
           first:
             name: _Color
-          second: {r: 1, g: 1, b: 1, a: 1}
+          second: {r: .925490201, g: .109803922, b: .141176477, a: 1}
         data:
           first:
             name: _SpecColor
           second: {r: .5, g: .5, b: .5, a: 1}
     textureParameters:
-    - name: 1MBlock_diffuse
+    - name: GoalBlock_diffuse
       alphaSource: 5
       filterMode: 1
       aniso: 1
       wrapMode: 0
-    - name: 1MBlock_output
+    - name: GoalBlock_output
       alphaSource: 0
       filterMode: 1
       aniso: 1
       wrapMode: 0
-    - name: 1MBlock_specular
+    - name: GoalBlock_specular
       alphaSource: 0
       filterMode: 1
       aniso: 1

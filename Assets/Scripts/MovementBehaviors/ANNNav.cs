@@ -49,6 +49,8 @@ public class ANNNav : NodeMove
     {
         try
         {
+            populationManager.checkpointNotify(gameObject, 500.0 / Mathf.Pow(Vector3.Distance(transform.position, goal), 2.0f));
+
             Vector3 tmp = new Vector3(transform.position.x, transform.position.y, transform.position.z);
             tmpTransform.position = tmp;
             tmpTransform.LookAt(goal);
@@ -58,8 +60,6 @@ public class ANNNav : NodeMove
             inputs[0] = in_yaw;
             inputs[1] = in_pitch;
             inputs[2] = 0.0f; inputs[3] = 0.0f; inputs[4] = 0.0f; inputs[5] = 0.0f; inputs[6] = 0.0f; inputs[7] = 0.0f;
-
-            populationManager.checkpointNotify(gameObject, 500.0 / Mathf.Pow(Vector3.Distance(transform.position, goal), 2.0f));
 
             newDirection = populationManager.updateLocation(gameObject, inputs);
 
@@ -79,5 +79,10 @@ public class ANNNav : NodeMove
             //print("After: " + transform.position);
         }
         catch { } // If the object was already destroyed we don't really care...
+    }
+
+    public void checkpointNotify()
+    {
+        populationManager.checkpointNotify(gameObject, 500.0 / Mathf.Pow(Vector3.Distance(transform.position, goal), 2.0f));
     }
 }

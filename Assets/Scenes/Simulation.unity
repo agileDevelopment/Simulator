@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0929c15991588434c8ab9505a4828d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 100000, guid: f469a7361ca502b4796b8823fe65c797, type: 2}
+  nodePrefab: {fileID: 100000, guid: d3bb063479ca7fa43ada43ab643fe106, type: 2}
   loadData: {fileID: 0}
   movementBehaviorClassName: 
   networkClassBehavior: 

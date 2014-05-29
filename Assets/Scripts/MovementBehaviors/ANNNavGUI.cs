@@ -12,10 +12,13 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 	public int spawnPointX, spawnPointY, spawnPointZ, goalPointX, goalPointY, goalPointZ;
 	public int nodeMaxSpeed;
 
+    GameObject goalPrefab;
+
 	// Use this for initialization
 	void Start () {
         simValues = gameObject.GetComponent<LoadOptionsGUI>();
         popManager = gameObject.GetComponent<NEATPopulationManager>();
+        goalPrefab = (GameObject)Resources.Load("GoalPrefab");
 	}
 	
 	// Update is called once per frame
@@ -74,14 +77,18 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
     {
         int floorSize = 400;
         int center = floorSize / 2;
+
         GameObject floor = GameObject.Find("Floor");
         floor.transform.position = (new Vector3(center, -10, center));
         floor.transform.localScale = (new Vector3(floorSize, .1f, floorSize));
+
+        Camera mainCamera = null;
         foreach (Camera c in Camera.allCameras)
         {
             print(c.gameObject.name);
             if (c.gameObject.name == "Main Camera")
             {
+                mainCamera = c; 
                 c.transform.position = (new Vector3(5 * floorSize / 4, 200, -2 * floorSize / 4));
                 c.transform.LookAt(new Vector3(center, -10, center));
             }
@@ -92,5 +99,22 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
             }
         }
         floor.renderer.material.mainTextureScale = new Vector2(floorSize / 10, floorSize / 10);
+
+        GameObject goalNode;
+        goalNode = (GameObject)GameObject.Instantiate(goalPrefab);
+        goalNode.name = "GoalNode";
+
+        float spawnToGoal = Vector3.Distance(getSpawnLocation(), getGoalLocation());
+        int numCheckpoints = 12;
+        float spacing = spawnToGoal / (numCheckpoints + 1) / 10;
+        for (int i = 1; i <= numCheckpoints; i++)
+        {
+            SphereCollider collider = goalNode.AddComponent<SphereCollider>();
+            collider.collider.name = "GoalCollider " + i;
+            collider.center = Vector3.zero;
+            collider.radius = i * spacing;
+        }
+
+        goalNode.transform.position = getGoalLocation();
     }
 }

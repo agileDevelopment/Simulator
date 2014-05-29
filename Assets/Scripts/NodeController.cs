@@ -63,12 +63,17 @@ public class NodeController : MonoBehaviour {
 	//----------------Unity Functions------------------------------
 	void OnTriggerEnter (Collider col)
 	{
-
         if (col.gameObject.tag == "Node")
 		{
-            GameObject otherNode = col.gameObject;
-			lineController.addLine(otherNode);
-            if (networkBehavior != null) networkBehavior.addNeighbor(otherNode);
+            //GameObject otherNode = col.gameObject;
+			////lineController.addLine(otherNode);
+            //if (networkBehavior != null) networkBehavior.addNeighbor(otherNode);
+        }
+        else if (col.gameObject.tag == "Goal")
+        {
+            print(col.);
+            //int index = int.Parse(col.name.Substring(13));
+            //print("Collided with: " + index);
         }
 		
 	}
@@ -76,9 +81,9 @@ public class NodeController : MonoBehaviour {
 	void OnTriggerExit(Collider col){
 		if(col.gameObject.tag == "Node")
 		{
-			GameObject otherNode = col.gameObject;
-            lineController.removeLine(otherNode);
-            if (networkBehavior != null) networkBehavior.removeNeighbor(otherNode);
+			//GameObject otherNode = col.gameObject;
+            //lineController.removeLine(otherNode);
+            //if (networkBehavior != null) networkBehavior.removeNeighbor(otherNode);
 		}
 	}
 	
