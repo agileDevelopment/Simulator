@@ -67,6 +67,7 @@ public class NEATPopulationManager : PopulationManager, IMovementManager, IPheno
         //print("Node expired");
 
         fitness = Math.Max(nav.fitness, 0);
+        if (nav.isAlive) fitness *= 1.5;
         _evalCount++;
         lambda(fitness);
         removeMemberNode(node);
@@ -102,17 +103,19 @@ public class NEATPopulationManager : PopulationManager, IMovementManager, IPheno
 
     static void ea_UpdateEvent(object sender, EventArgs e)
     {
-        Debug.Log(string.Format("gen={0:N0} bestFitness={1:N6}", algorithm.CurrentGeneration, algorithm.Statistics._maxFitness));
+        Debug.Log(string.Format("Generation={0:N0}, Evaluations={1:N0}, Best Fitness={2:N6}, Mean Fitness={3:N6}, Mean Complexity={4:N6}", 
+            algorithm.CurrentGeneration, algorithm.Statistics._totalEvaluationCount, algorithm.Statistics._maxFitness, 
+            algorithm.Statistics._meanFitness, algorithm.Statistics._meanComplexity));
 
         // Save the best genome to file
         //var doc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { _ea.CurrentChampGenome }, false);
         //doc.Save(CHAMPION_FILE);
     }
 
-    public ArrayList updateLocation(GameObject node, ArrayList sensorInfo)
+    public ArrayList updateLocation(GameObject node, ArrayList sensorInfo, bool isAlive)
     {
         NEATNavigator navigator = population[node];
-        ArrayList destination = navigator.updateLocation(sensorInfo);
+        ArrayList destination = navigator.updateLocation(sensorInfo, isAlive);
         return destination;
     }
 

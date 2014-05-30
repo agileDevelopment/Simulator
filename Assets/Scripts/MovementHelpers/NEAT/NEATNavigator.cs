@@ -9,6 +9,7 @@ public class NEATNavigator
     ArrayList outputs = new ArrayList(new float[] {0.0f,0.0f,0.0f});
     public int age = 0;
     public double fitness = 0;
+    public bool isAlive = true;
     
     public NEATNavigator(IBlackBox brain)
     {
@@ -27,8 +28,9 @@ public class NEATNavigator
         inputs[7] = (float)sensorInfo[7];
     }
 
-    public ArrayList updateLocation(ArrayList sensorInfo)
+    public ArrayList updateLocation(ArrayList sensorInfo, bool isAlive)
     {
+        isAlive = false;
         age++;
 
         brain.ResetState();

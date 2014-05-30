@@ -6,11 +6,12 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 	LoadOptionsGUI simValues;
     public NEATPopulationManager popManager;
 
-    public string spawnPointXString = "10", spawnPointYString = "300", spawnPointZString = "10";
-    public string goalPointXString = "390", goalPointYString = "10", goalPointZString = "390";
+    public string spawnPointXString = "25", spawnPointYString = "300", spawnPointZString = "25";
+    public string goalPointXString = "375", goalPointYString = "25", goalPointZString = "375";
 	public string nodeMaxSpeedString="150", numCheckpointsString="20";
 	public int spawnPointX, spawnPointY, spawnPointZ, goalPointX, goalPointY, goalPointZ, numCheckpoints;
 	public int nodeMaxSpeed;
+    int floorSize = 400;
 
     GameObject goalPrefab;
 	GameObject obstaclePrefab;
@@ -82,7 +83,6 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 
     public void setFloor()
     {
-        int floorSize = 400;
         int center = floorSize / 2;
 
         GameObject floor = GameObject.Find("Floor");
@@ -97,43 +97,71 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
             {
                 mainCamera = c; 
                 c.transform.position = (new Vector3(5 * floorSize / 4, 450, -2 * floorSize / 4));
-                c.transform.LookAt(new Vector3(center, -10, center));
+                c.transform.LookAt(new Vector3(center, 40, center));
             }
             else if (c.gameObject.name == "Second Camera")
             {
-                c.transform.position = (new Vector3(-10, 350, -3*center/4));
-                c.transform.LookAt(new Vector3(center, -10, center));
+                c.transform.position = (new Vector3(-30, 370, -center));
+                c.transform.LookAt(new Vector3(center, 50, center));
             }
 			else if (c.gameObject.name == "Third Camera")
 			{
-				c.transform.position = (getGoalLocation() + new Vector3(50, 0, 20));
+				c.transform.position = (getGoalLocation() + new Vector3(80, 0, 40));
 				c.transform.LookAt(getSpawnLocation() - new Vector3(0, 150, 0));
 			}
         }
         floor.renderer.material.mainTextureScale = new Vector2(floorSize / 10, floorSize / 10);
 
 		float spawnToGoal = Vector3.Distance(getSpawnLocation(), getGoalLocation());
-		float spacing = spawnToGoal / (numCheckpoints + 1) / 10;
+		float spacing = spawnToGoal / (numCheckpoints + 1);
 
 		GameObject goalNode;
 		goalNode = (GameObject)GameObject.Instantiate(goalPrefab);
 		goalNode.name = "GoalNode 0";
+        goalNode.layer = 2;
 		goalNode.transform.position = getGoalLocation();
+        goalNode.transform.LookAt(getSpawnLocation());
 
-		for (int i = 1; i <= numCheckpoints; i++)
+        GameObject checkpointNode;
+		for (int i = 1; i < numCheckpoints; i++)
 		{
-	        goalNode = (GameObject)GameObject.Instantiate(goalPrefab);
-	        goalNode.name = "GoalNode " + i;
-			goalNode.transform.position = getGoalLocation();
+            checkpointNode = (GameObject)GameObject.Instantiate(goalPrefab);
+            checkpointNode.name = "GoalNode " + i;
+            checkpointNode.layer = 2;
+            checkpointNode.transform.localScale = new Vector3(1, 1, 1);
+            checkpointNode.transform.position = goalNode.transform.position + (goalNode.transform.forward * spacing * i);
 
-            SphereCollider collider = goalNode.AddComponent<SphereCollider>();
+            SphereCollider collider = checkpointNode.AddComponent<SphereCollider>();
             collider.center = Vector3.zero;
-            collider.radius = i * spacing;
+            collider.radius = 1.5f * spacing / checkpointNode.transform.localScale.x;
         }
+        goalNode.transform.rotation = Quaternion.LookRotation(Vector3.forward);
+        layObstacles();
+    }
 
-		GameObject obstacleNode;
-		obstacleNode = (GameObject)GameObject.Instantiate (obstaclePrefab);
-		obstacleNode.transform.position = getSpawnLocation () + new Vector3 (0, 0, 75);
-		obstacleNode.transform.localScale += new Vector3(20, 9, 20);
+    void layObstacles()
+    {
+        int cubeScale = 10;
+        int spacing = 50;
+        int totalSpacing = cubeScale + spacing;
+        for (int i = 0; i <= getSpawnLocation().y + spacing; i += totalSpacing)
+        {
+            layObstacleLayer(i, cubeScale, totalSpacing);
+        }
+    }
+
+    void layObstacleLayer(int yOffset, int size, int spacing)
+    {
+        GameObject obstacleNode;
+        int numObstacles = floorSize / spacing;
+        for (int i = 0; i <= numObstacles; i++)
+        {
+            for (int j = 0; j <= numObstacles; j++)
+            {
+                obstacleNode = (GameObject)GameObject.Instantiate(obstaclePrefab);
+                obstacleNode.transform.position = new Vector3(i * spacing, yOffset, j * spacing);
+                obstacleNode.transform.localScale *= size;
+            }
+        }
     }
 }

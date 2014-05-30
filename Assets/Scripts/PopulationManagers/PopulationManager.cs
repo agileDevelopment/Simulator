@@ -48,6 +48,8 @@ public abstract class PopulationManager : MonoBehaviour
 
             node.name = "Node " + globalCount;
             node.renderer.material.color = Color.blue;
+            node.layer = 2;
+
             data.idNum = globalCount;
             data.idString = "Node " + globalCount;
             data.flightBehavior = (NodeMove)node.GetComponent(movementBehaviorClassName);

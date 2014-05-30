@@ -8,7 +8,7 @@
   </Activation>
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   <ComplexityThreshold>100</ComplexityThreshold>
-  <Lifespan>150</Lifespan>
+  <Lifespan>200</Lifespan>
   <Description>
     UAV ANN Navigation Evolution - The goal is to evolve an AI to fly a UAV to a
     fixed destination point while avoiding obstacles. Individuals are evaluated 

@@ -32,6 +32,7 @@ public class ANNNav : NodeMove
     int maxSpeed = 0, maxAcceleration = 0, numCheckpoints = 0;
     public Transform tmpTransform;
 	bool isAlive = true;
+    Sensor[] sensors = new Sensor[6];
 
     // Use this for initialization
     void Start()
@@ -48,6 +49,11 @@ public class ANNNav : NodeMove
 
         tmpTransform = new GameObject().transform;
         tmpTransform.parent = gameObject.transform;
+
+        for (int i = 0; i < sensors.Length; i++)
+        {
+            sensors[i] = new Sensor(gameObject, i, 64);
+        }
     }
 
     public override void updateLocation()
@@ -59,32 +65,30 @@ public class ANNNav : NodeMove
 			tmpTransform.LookAt (goal);
 			float in_pitch = (180.0f - tmpTransform.eulerAngles.x) / 360.0f; // Make it be between 0 and 1
 			float in_yaw = (180.0f - tmpTransform.eulerAngles.y) / 360.0f;
-			//print ("Inputs: " + in_yaw + ", "  + in_pitch);
 			
 			inputs [0] = in_yaw;
 			inputs [1] = in_pitch;
-			inputs [2] = 0.0f;
-			inputs [3] = 0.0f;
-			inputs [4] = 0.0f;
-			inputs [5] = 0.0f;
-			inputs [6] = 0.0f;
-			inputs [7] = 0.0f;
-			
-			newDirection = populationManager.updateLocation (gameObject, inputs); // Must do this to update age
-			//print("Outputs: " + (float)newDirection[0] + ", " + (float)newDirection[1] + ", " + (float)newDirection[2]);
+            for (int i = 0; i < sensors.Length; i++)
+            {
+                inputs[i + 2] = sensors[i].getSensorData();
+            }
+
+            //print("Forward Sensor: " + inputs[2]);
+
+            newDirection = populationManager.updateLocation(gameObject, inputs, isAlive); // Must do this to update age
 
 			if (isAlive) {
-				yaw = (yaw + ((float)newDirection [0] - 0.5f) * 15); // Max yaw change rate of 15 degrees
+				yaw = (yaw + ((float)newDirection [0] - 0.5f) * 2 * 30); // Max yaw change rate of 15 degrees
 				if (yaw < 0)
 						yaw = 0;
 				if (yaw > 360)
 						yaw = 360;
-				pitch = (pitch + ((float)newDirection [1] - 0.5f) * 15); // Max descent change rate of 5 degrees
+				pitch = (pitch + ((float)newDirection [1] - 0.5f) * 2 * 30); // Max descent change rate of 5 degrees
 				if (pitch < 0)
 						pitch = 0;
 				if (pitch > 360)
 						pitch = 360;
-				speed += ((float)newDirection [2] - 0.5f) * maxAcceleration;
+				speed += ((float)newDirection [2] - 0.5f) * 2 * maxAcceleration;
 				if (speed >= maxSpeed)
 					speed = (float)maxSpeed;
 				if (speed <= -maxSpeed)
@@ -92,10 +96,6 @@ public class ANNNav : NodeMove
 
 				transform.eulerAngles = new Vector3 (yaw, pitch, transform.eulerAngles.z);
 				transform.position += transform.forward * speed * Time.deltaTime;
-				if (transform.position.y <= 0) {
-					transform.position = new Vector3 (transform.position.x, 0.0f, transform.position.z);
-					isAlive = false;
-				}
 			}
         }
         catch { } // If the object was already destroyed we don't really care...

@@ -89,8 +89,8 @@ public class NodeController : MonoBehaviour {
 		}
 		else if (col.gameObject.tag == "Goal")
 		{
-			int index = int.Parse(col.gameObject.name.Substring(9));
-			flightBehavior.checkpointNotify(-index);
+			//int index = int.Parse(col.gameObject.name.Substring(9));
+			//flightBehavior.checkpointNotify(-index);
 		}
 	}
 	
@@ -101,12 +101,13 @@ public class NodeController : MonoBehaviour {
 		//	gameObject.GetComponent<SphereCollider>().radius += .1f;
         //if (selected)
         //    gameObject.renderer.material.color = Color.green;
+
+        updateLocation();
 	}
 		
 	void LateUpdate(){
-		if(!simValues.paused && simValues.enableUpdate){
-			updateLocation();
-		}
+		//if(!simValues.paused && simValues.enableUpdate){
+		//}
 	}
 	//-------------------Custome Functions---------------------------------	
 	void updateLocation(){

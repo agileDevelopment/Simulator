@@ -169,7 +169,7 @@ SubstanceImporter:
   - serializedVersion: 10
     name: GoalBlock
     prototypeName: Grid
-    shaderName: Diffuse
+    shaderName: Transparent/Parallax Diffuse
     inputs:
     - name: $normalformat
       value:
@@ -257,7 +257,7 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: SpecularIntensity
       value:
-        scalar[0]: .5
+        scalar[0]: 0
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
@@ -283,6 +283,20 @@ SubstanceImporter:
             name: _MainTex
           second:
             texture: {instanceID: 0}
+            scale: {x: .25, y: .25}
+            offset: {x: .75, y: 0}
+        data:
+          first:
+            name: _BumpMap
+          second:
+            texture: {instanceID: 0}
+            scale: {x: .25, y: .25}
+            offset: {x: .75, y: 0}
+        data:
+          first:
+            name: _ParallaxMap
+          second:
+            texture: {instanceID: 0}
             scale: {x: 1, y: 1}
             offset: {x: 0, y: 0}
       floats:
@@ -290,6 +304,10 @@ SubstanceImporter:
           first:
             name: _Shininess
           second: .078125
+        data:
+          first:
+            name: _Parallax
+          second: .0199999996
       colors:
         data:
           first:

@@ -109,6 +109,6 @@ public interface INetworkGUIOptions{
 
 public interface IMovementManager
 {
-    ArrayList updateLocation(GameObject node, ArrayList inputs);
+    ArrayList updateLocation(GameObject node, ArrayList inputs, bool isAlive);
     void checkpointNotify(GameObject node, double checkpointReward);
 }
