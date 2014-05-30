@@ -29,6 +29,10 @@ public abstract class NodeMove : MonoBehaviour, IFlightBehavior {
     }
 
 	public abstract void updateLocation();
+
+	public abstract void checkpointNotify (int index);
+
+	public abstract void hitObstacle ();
 	
 	public void setOptions(LoadOptionsGUI a){
 		simValues = a;

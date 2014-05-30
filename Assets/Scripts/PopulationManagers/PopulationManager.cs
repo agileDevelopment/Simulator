@@ -56,8 +56,6 @@ public abstract class PopulationManager : MonoBehaviour
             else
                 data.networkBehavior = null;
 
-            //node.GetComponent<SphereCollider>().radius = loadData.nodeCommRange / 200;
-
             globalCount++;
         }
 

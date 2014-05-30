@@ -63,18 +63,20 @@ public class NodeController : MonoBehaviour {
 	//----------------Unity Functions------------------------------
 	void OnTriggerEnter (Collider col)
 	{
-        if (col.gameObject.tag == "Node")
+        if (col.gameObject.tag == "Node") 
 		{
-            //GameObject otherNode = col.gameObject;
+			//GameObject otherNode = col.gameObject;
 			////lineController.addLine(otherNode);
-            //if (networkBehavior != null) networkBehavior.addNeighbor(otherNode);
-        }
-        else if (col.gameObject.tag == "Goal")
-        {
-            print(col.);
-            //int index = int.Parse(col.name.Substring(13));
-            //print("Collided with: " + index);
-        }
+			//if (networkBehavior != null) networkBehavior.addNeighbor(otherNode);
+		} else if (col.gameObject.tag == "Goal") 
+		{
+			//print ("Collided with " + col.gameObject.name);
+			int index = int.Parse (col.gameObject.name.Substring (9));
+			flightBehavior.checkpointNotify (index);
+		} else if (col.gameObject.tag == "Obstacle") 
+		{
+			flightBehavior.hitObstacle();
+		}
 		
 	}
 	
@@ -85,16 +87,21 @@ public class NodeController : MonoBehaviour {
             //lineController.removeLine(otherNode);
             //if (networkBehavior != null) networkBehavior.removeNeighbor(otherNode);
 		}
+		else if (col.gameObject.tag == "Goal")
+		{
+			int index = int.Parse(col.gameObject.name.Substring(9));
+			flightBehavior.checkpointNotify(-index);
+		}
 	}
 	
 	
 	// Update is called once per frame
 	void Update () {
-		if(gameObject.GetComponent<SphereCollider>().radius < simValues.nodeCommRange/20)
-			gameObject.GetComponent<SphereCollider>().radius += .1f;
-        if (selected)
-            gameObject.renderer.material.color = Color.green;
-		}
+		//if(gameObject.GetComponent<SphereCollider>().radius < simValues.nodeCommRange/20)
+		//	gameObject.GetComponent<SphereCollider>().radius += .1f;
+        //if (selected)
+        //    gameObject.renderer.material.color = Color.green;
+	}
 		
 	void LateUpdate(){
 		if(!simValues.paused && simValues.enableUpdate){

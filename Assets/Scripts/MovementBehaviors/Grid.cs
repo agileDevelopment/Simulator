@@ -56,5 +56,10 @@ public class Grid : NodeMove
         transform.position = Vector3.MoveTowards(transform.position, desiredPosition, Time.deltaTime * radiusSpeed);
     }
 
+	public override void checkpointNotify(int index)
+	{}
 
+	public override void hitObstacle ()
+	{
+	}
 }

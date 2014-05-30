@@ -121,4 +121,10 @@ public class NEATPopulationManager : PopulationManager, IMovementManager, IPheno
         NEATNavigator navigator = population[node];
         navigator.checkpointNotify(checkpointReward);
     }
+
+	public void goalReachedNotify(GameObject node) 
+	{
+		NEATNavigator navigator = population[node];
+		navigator.goalReachedNotify();
+	}
 }

@@ -31,6 +31,10 @@ using System.Collections;
 public interface IFlightBehavior{
 
 	void updateLocation();
+
+	void checkpointNotify(int index);
+
+	void hitObstacle();
 	
 	//void showGUI();
 	

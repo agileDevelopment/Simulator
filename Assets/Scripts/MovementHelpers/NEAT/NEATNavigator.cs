@@ -42,6 +42,11 @@ public class NEATNavigator
 
     public void checkpointNotify(double checkpointReward)
     {
-        fitness += checkpointReward * 50 / (age/2 + 1);
+        fitness += checkpointReward * 10 / (age/2 + 1);
     }
+
+	public void goalReachedNotify() 
+	{
+		fitness *= 2;
+	}
 }
