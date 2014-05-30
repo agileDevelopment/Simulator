@@ -30,7 +30,11 @@ public class NEATNavigator
 
     public ArrayList updateLocation(ArrayList sensorInfo, bool isAlive)
     {
-        isAlive = false;
+        if (this.isAlive && !isAlive)
+        {
+            this.isAlive = isAlive;
+            fitness *= 0.95;
+        }
         age++;
 
         brain.ResetState();

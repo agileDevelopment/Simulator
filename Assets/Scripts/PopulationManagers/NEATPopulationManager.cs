@@ -18,6 +18,8 @@ public class NEATPopulationManager : PopulationManager, IMovementManager, IPheno
     bool _stopConditionSatisfied = false;
     Vector3 goal;
     int _lifespan;
+    double maxFitness = 0;
+    GameObject maxFitnessNode;
 
     static NeatEvolutionAlgorithm<NeatGenome> algorithm;
     public Dictionary<GameObject, NEATNavigator> population = new Dictionary<GameObject, NEATNavigator>();
@@ -54,20 +56,28 @@ public class NEATPopulationManager : PopulationManager, IMovementManager, IPheno
     IEnumerator _Evaluate(IBlackBox box, SharpNeat.Core.Func<double> lambda)
     {
         double fitness = 0;
+        maxFitness = 0;
         GameObject node = buildMemberNode();
+        maxFitnessNode = node;
         //print("Built new Node");
         NEATNavigator nav = new NEATNavigator(box);
         population.Add(node, nav);
 
         while (nav.age < _lifespan)
         {
+            if (nav.fitness > maxFitness)
+            {
+                maxFitness = nav.fitness;
+                node.renderer.material.color = Color.yellow;
+                maxFitnessNode.renderer.material.color = Color.blue;
+                maxFitnessNode = node;
+            }
             yield return null;
         }
 
         //print("Node expired");
 
         fitness = Math.Max(nav.fitness, 0);
-        if (nav.isAlive) fitness *= 1.5;
         _evalCount++;
         lambda(fitness);
         removeMemberNode(node);

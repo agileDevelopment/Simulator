@@ -32,7 +32,9 @@ public class ANNNav : NodeMove
     int maxSpeed = 0, maxAcceleration = 0, numCheckpoints = 0;
     public Transform tmpTransform;
 	bool isAlive = true;
+
     Sensor[] sensors = new Sensor[6];
+    int[] checkpointsReached;
 
     // Use this for initialization
     void Start()
@@ -46,8 +48,10 @@ public class ANNNav : NodeMove
         maxAcceleration = maxSpeed / 15;
 
 		numCheckpoints = guiValues.numCheckpoints;
+        checkpointsReached = new int[numCheckpoints];
+        for (int i = 0; i < numCheckpoints; i++) checkpointsReached[i] = 0;
 
-        tmpTransform = new GameObject().transform;
+            tmpTransform = new GameObject().transform;
         tmpTransform.parent = gameObject.transform;
 
         for (int i = 0; i < sensors.Length; i++)
@@ -110,7 +114,11 @@ public class ANNNav : NodeMove
 		} 
 		else 
 		{
-			populationManager.checkpointNotify(gameObject, Mathf.Pow((float)numCheckpoints / index, 2));
+            if (checkpointsReached[index] == 0) // Only get the reward for hitting it once.
+            {
+                checkpointsReached[index] = 1;
+                populationManager.checkpointNotify(gameObject, Mathf.Pow((float)numCheckpoints / index, 2));
+            }
 		}
     }
 
