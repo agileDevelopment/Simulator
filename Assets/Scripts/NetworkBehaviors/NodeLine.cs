@@ -17,10 +17,11 @@
 
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class NodeLine : MonoBehaviour
 {
-    public Hashtable lines;
+    public Dictionary<GameObject, GameObject> lines;
     LoadOptionsGUI simValues;
     NetworkGUI netValues;
     NodeController data;
@@ -32,7 +33,7 @@ public class NodeLine : MonoBehaviour
 
     void Start()
     {
-        lines = new Hashtable();
+        lines = new Dictionary<GameObject, GameObject>();
         data = gameObject.GetComponent<NodeController>();
         simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
         netValues = simValues.networkGUI;
@@ -46,16 +47,15 @@ public class NodeLine : MonoBehaviour
     //public function to be called by nodeController if we need to add a connection
     public void addLine(GameObject otherNode)
     {
-        int idNum = otherNode.GetComponent<NodeController>().idNum;
         if (otherNode.GetComponent<NodeController>().idNum < gameObject.GetComponent<NodeController>().idNum)
         {
-            if (!lines.ContainsKey(idNum))
+            if (!lines.ContainsKey(otherNode))
             {
                 GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
                 line.tag = "Line";
                 line.name = "line_" + gameObject.GetComponent<NodeController>().idNum.ToString() + otherNode.GetComponent<NodeController>().idNum.ToString();
                 line.transform.parent = gameObject.transform;
-                lines.Add(idNum, line);
+                lines.Add(otherNode, line);
             }
         }
     }
@@ -63,9 +63,9 @@ public class NodeLine : MonoBehaviour
     public void removeLine(GameObject otherNode)
     {
         int idNum = otherNode.GetComponent<NodeController>().idNum;
-        if (lines.ContainsKey(idNum))
+        if (lines.ContainsKey(otherNode))
         {
-            lines.Remove(idNum);
+            lines.Remove(otherNode);
             Destroy(GameObject.Find("line_" + data.idNum + idNum));
         }
     }
@@ -75,13 +75,13 @@ public class NodeLine : MonoBehaviour
         GameObject source = gameObject;
 
         //loop through all the lines in our container and update accordingly
-        foreach (DictionaryEntry entry in lines)
+        foreach (KeyValuePair<GameObject,GameObject> entry in lines)
         {
             GameObject line = (GameObject)entry.Value;
-            if (line)
-            {//check to see if its been destroyed already
+            if (line)//check to see if its been destroyed already
+            {
                 line.GetComponent<LineRenderer>().enabled = true;
-                GameObject dest = GameObject.Find("Node " + entry.Key);
+                GameObject dest = entry.Key;
 
 
                 line.GetComponent<LineRenderer>().SetPosition(0, source.transform.position);
@@ -108,7 +108,7 @@ public class NodeLine : MonoBehaviour
                         //less than midway, show Yellow - Green				
                         if (distance <= midPoint)
                         {
-                            line.GetComponent<LineRenderer>().SetWidth(4, 4);
+                            line.GetComponent<LineRenderer>().SetWidth(1, 1);
                             float delta = (distance / midPoint);
                             lineColor.g = 255;
                             lineColor.r = (delta * colorStep) - 10;
@@ -119,7 +119,7 @@ public class NodeLine : MonoBehaviour
                         {
                             lineColor.g = 255;
                             lineColor.r = 0;
-                            line.GetComponent<LineRenderer>().SetWidth(6, 6);
+                            line.GetComponent<LineRenderer>().SetWidth(2, 2);
                         }
                     }
                 }
@@ -138,9 +138,9 @@ public class NodeLine : MonoBehaviour
             //if lines are disabled in the "in-simulation" menu
             if (!netValues.drawLine)
             {
-                foreach (DictionaryEntry entry in lines)
+                foreach (KeyValuePair<GameObject,GameObject> entry in lines)
                 {
-                    GameObject line = (GameObject)entry.Value;
+                    GameObject line = entry.Value;
                     if (line)
                         line.GetComponent<LineRenderer>().enabled = false;
                 }

@@ -40,6 +40,10 @@ public class Network : MonoBehaviour, INetworkBehavior {
         }
     }
 
+    public int getNeighborCount(){
+        return neighbors.Count;
+    }
+
     public virtual void drawLines() { }
 
     protected virtual void performRecMessage(MSGPacket packet) { }

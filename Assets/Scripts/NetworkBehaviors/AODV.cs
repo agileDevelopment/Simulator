@@ -27,19 +27,13 @@ public class AODV : Network
     Hashtable currentRREQ;
     float active_route_timer;
     int nodeSeqNum;
-    int broadcastID;
+    public int broadcastID;
 
     //--------------------------------------Unity Functions---------------------------------------
     // Use this for initialization
     void Start()
     {
-
-        setValues(); // initialize parent class since its not added to the spawner...
-        active_route_timer = 3.0f;  // used to delete route information;
-        nodeSeqNum = 0;
-        broadcastID = 0;
-        currentRREQ = new Hashtable();
-  
+        initializeValues();
     }
 
     // Update is called once per frame
@@ -74,7 +68,15 @@ public class AODV : Network
     }
 
     //--------------------------------------Custom Functions------------------------------------------
+    public void initializeValues()
+    {
 
+        setValues(); // initialize parent class since its not added to the spawner...
+        active_route_timer = 3.0f;  // used to delete route information;
+        nodeSeqNum = 0;
+        broadcastID = 0;
+        currentRREQ = new Hashtable();
+    }
 
     IEnumerator delayRecRREQ(RREQpacket packet)
     {
