@@ -39,8 +39,8 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public bool showMainGui;
 	public string movementChoice = "0";
     public string networkChoice = "none";
-    private string lastNetComponentStr = "";
-    private string lastMoveComponentStr = "";
+    public string lastNetComponentStr = "";
+    public string lastMoveComponentStr = "";
 	public int menuLabelWidth = 170;
 	public int menuFieldWidth = 100;
 	public int nodesSqrt;
@@ -101,22 +101,27 @@ public class LoadOptionsGUI : MonoBehaviour {
 
         networkComboBoxControl = new ComboBox(new Rect((Screen.width - buttonWidth) / 2 - 140, Screen.height / 2 - 120, 135, 20), networkControllerList[0], networkControllerList, "button", "box", listStyle);
 	}
-	
-	void OnGUI () {
-		//main interface to be shown when program first runs;
-		if(showMainGui){
-            showMainMenu();
-		}
 
-		//show this menu while simulation is running
-		else{
+    void OnGUI()
+    {
+        //main interface to be shown when program first runs;
+        if (showMainGui)
+        {
+            showMainMenu();
+        }
+
+        //show this menu while simulation is running
+        else
+        {
             showRunningMenu();
-		}	
-	}
+        }
+    }
+        void LateUpdate(){
+                if (showMainGui)
+            updateComponents();
+        }
 
 	void Update(){
-        if (showMainGui)
-            updateComponents();
 		if(slowMotion){
 			slowMoRate = int.Parse(slowMoRateString);
 			enableUpdate = false;
@@ -254,12 +259,18 @@ public class LoadOptionsGUI : MonoBehaviour {
                 gameObject.AddComponent(lastNetComponentStr);
                 networkGUI = (NetworkGUI)gameObject.GetComponent(lastNetComponentStr);
             }
+            else if (networkChoice + "GUI" != lastNetComponentStr)
+            {
+                DestroyImmediate(networkGUI);
+                lastNetComponentStr = networkChoice + "GUI";
+                gameObject.AddComponent(lastNetComponentStr);
+                networkGUI = (NetworkGUI)gameObject.GetComponent(networkChoice + "GUI");
+            }
+
         }
-        else
-        {
-            if (networkGUI != null)
-                Destroy(networkGUI);
-        }
+
+
+
         // Attach/Remove the FlightkGUI Component to the Spawner
         if (movementChoice != defaultMoveString && movementChoice != "")
         {
@@ -269,12 +280,15 @@ public class LoadOptionsGUI : MonoBehaviour {
                 gameObject.AddComponent(lastMoveComponentStr);
                 flightGUI = (FlightGUI)gameObject.GetComponent(lastMoveComponentStr);
             }
+            else if (movementChoice + "GUI" != lastMoveComponentStr)
+            {
+                DestroyImmediate(flightGUI);
+                lastMoveComponentStr = movementChoice + "GUI";
+                gameObject.AddComponent(lastMoveComponentStr);
+                flightGUI = (FlightGUI)gameObject.GetComponent(lastMoveComponentStr);
+            }
         }
-        else
-        {
-            if (flightGUI != null)
-                Destroy(flightGUI);
-        }
+
     }
 }
 //code to generate Combo box.  Taking off Unity Forums 
