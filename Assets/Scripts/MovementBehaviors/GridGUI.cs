@@ -4,7 +4,7 @@ using System.Collections;
 public class GridGUI : FlightGUI
 {
     LoadOptionsGUI simValues;
-    public string nodeSpacingString = "70";
+    public string nodeSpacingString = "45";
     public string nodeOrbitString = "50";
     public string nodeMaxSpeedString = "20";
     public int nodeSpacing;
@@ -15,8 +15,8 @@ public class GridGUI : FlightGUI
     void Start()
     {
         simValues = gameObject.GetComponent<LoadOptionsGUI>();
-        nodeSpacingString = "75";
-        nodeOrbitString = "40";
+        nodeSpacingString = "45";
+        nodeOrbitString = "30";
         nodeMaxSpeedString = "15";
     }
 

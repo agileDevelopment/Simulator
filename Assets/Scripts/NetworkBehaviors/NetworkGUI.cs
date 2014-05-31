@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
 {
@@ -13,7 +14,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public int nodeCommRange;
     public bool updateLines = false;
     public bool useLatency = true;
-    string useLatencyStr = "Latency Enabled";
+    protected string useLatencyStr = "Latency Enabled";
     public LoadOptionsGUI simValues;
     public GameObject nodeToFind;
     public GameObject source;
@@ -26,8 +27,9 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public float foundTime;
     public float startTime;
     public float endTime;
-
-//----------------Unity Functions------------------------------------
+    public bool useDefaultLine = true;
+    public string useDefaultLineStr = "Default Lines Enabled";
+    //----------------Unity Functions------------------------------------
 
     // Update is called once per frame
     //Here we are figuring out whether to update lines or not.
@@ -35,14 +37,14 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     {
 
         if (simValues.counter == simValues.slowMoRate)
-            {
-                updateLines = true;
-            }
+        {
+            updateLines = true;
+        }
 
-        
+
         if (!simValues.slowMotion)
         {
-   
+
             updateLines = false;
             if (simValues.counter >= 64 / (1f / Time.deltaTime * 2))
             {
@@ -51,119 +53,126 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         }
     }
 
+    public virtual void showRunningGUI()
+    {
+        GUI.Box(new Rect(0, Screen.height / 2, 175, 400), "Network Options");
+        GUILayout.BeginArea(new Rect(10, Screen.height / 2 + 5, 175, 400));
+        GUILayout.Space(30);
+        if (GUILayout.Button(useLatencyStr, GUILayout.Width(140)))
+        {
+            if (!useLatency)
+                useLatencyStr = "Enable Latency";
+            if (useLatency)
+                useLatencyStr = "Disable Latency";
+            useLatency = !useLatency;
+        }
+
+
+        if (GUILayout.Button(drawLinesString, GUILayout.Width(140)))
+        {
+            if (drawLine)
+            {
+                drawLinesString = "Show Lines";
+            }
+            else drawLinesString = "Hide Lines";
+            drawLine = !drawLine;
+        }
+        adaptiveNetworkColor = GUILayout.Toggle(adaptiveNetworkColor, "Adaptive Color");
+
+        GUILayout.BeginVertical();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Source Node: ", GUILayout.Width(100));
+        GUILayout.Label(sourceStr, GUILayout.Width(100));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Node to Find", GUILayout.Width(100));
+        nodeToFindString = GUILayout.TextField(nodeToFindString, GUILayout.Width(30));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Time Required: ", GUILayout.Width(100));
+        GUILayout.Label(timeToFind.ToString(), GUILayout.Width(100));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Number of Hops: ", GUILayout.Width(100));
+        GUILayout.Label(numHops.ToString(), GUILayout.Width(100));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Next Hop: ", GUILayout.Width(100));
+        GUILayout.Label(nextHop, GUILayout.Width(175));
+        GUILayout.EndHorizontal();
+        if (GUILayout.Button("Find", GUILayout.Width(140)))
+        {
+            GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+
+            foreach (GameObject node in nodes)
+            {
+                if (node)
+                    node.renderer.material.color = Color.blue;
+
+            }
+            nodeToFindID = int.Parse(nodeToFindString);
+            foundTime = 0;
+            startTime = Time.time;
+            endTime = 0;
+
+            if (nodeToFindID < simValues.numNodes)
+            {
+                nodeToFind = GameObject.Find("Node " + nodeToFindID);
+                source.GetComponent<AODV>().discoverPath(nodeToFind);
+                nodeToFind.renderer.material.color = Color.magenta;
+
+
+            }
+        }
+        if (GUILayout.Button("Send Message", GUILayout.Width(140)))
+        {
+            GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+
+            foreach (GameObject node in nodes)
+            {
+                if (node)
+                    node.renderer.material.color = Color.blue;
+
+            }
+            nodeToFindID = int.Parse(nodeToFindString);
+            foundTime = 0;
+            startTime = Time.time;
+            endTime = 0;
+
+            if (nodeToFindID < simValues.numNodes)
+            {
+                nodeToFind = GameObject.Find("Node " + nodeToFindID);
+                source.GetComponent<AODV>().initMessage(nodeToFind);
+                nodeToFind.renderer.material.color = Color.magenta;
+
+            }
+        }
+
+
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+    }
+
+
     void OnGUI()
     {
 
-
-            if (!simValues.showMainGui)
-            {
-                GUI.Box(new Rect(0, Screen.height / 2, 175, 400), "Network Options");
-                GUILayout.BeginArea(new Rect(10, Screen.height / 2 + 5, 175, 400));
-                GUILayout.Space(30);
-                if (GUILayout.Button(useLatencyStr, GUILayout.Width(140)))
-                {
-                    if (!useLatency)
-                        useLatencyStr = "Enable Latency";
-                    if (useLatency)
-                        useLatencyStr = "Disable Latency";
-                    useLatency = !useLatency;
-                }
-
-
-                if (GUILayout.Button(drawLinesString, GUILayout.Width(140)))
-                {
-                    if (drawLine)
-                    {
-                        drawLinesString = "Show Lines";
-                    }
-                    else drawLinesString = "Hide Lines";
-                    drawLine = !drawLine;
-                }
-                    adaptiveNetworkColor = GUILayout.Toggle(adaptiveNetworkColor, "Adaptive Color");
-
-            GUILayout.BeginVertical();
-               GUILayout.BeginHorizontal();
-                GUILayout.Label("Source Node: ", GUILayout.Width(100));
-                GUILayout.Label(sourceStr, GUILayout.Width(100));
-              GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-                GUILayout.Label("Node to Find", GUILayout.Width(100));
-                nodeToFindString = GUILayout.TextField(nodeToFindString, GUILayout.Width(30));
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Time Required: ", GUILayout.Width(100));
-            GUILayout.Label(timeToFind.ToString(), GUILayout.Width(100));
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Number of Hops: ", GUILayout.Width(100));
-            GUILayout.Label(numHops.ToString(), GUILayout.Width(100));
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Next Hop: ", GUILayout.Width(100));
-            GUILayout.Label(nextHop, GUILayout.Width(175));
-            GUILayout.EndHorizontal();
-            if (GUILayout.Button("Find", GUILayout.Width(140)))
-            {
-                GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
-
-                foreach (GameObject node in nodes)
-                {
-                    if (node)
-                        node.renderer.material.color = Color.blue;
-
-                }
-                nodeToFindID = int.Parse(nodeToFindString);
-                foundTime = 0;
-                startTime = Time.time;
-                endTime = 0;
-
-                if (nodeToFindID < simValues.numNodes)
-                {
-                    nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                    source.GetComponent<AODV>().discoverPath(nodeToFind);
-                    nodeToFind.renderer.material.color = Color.magenta;
-
-
-                }
-            }
-            if (GUILayout.Button("Send Message", GUILayout.Width(140)))
-            {
-                GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
-
-                foreach (GameObject node in nodes)
-                {
-                    if (node)
-                        node.renderer.material.color = Color.blue;
-
-                }
-                nodeToFindID = int.Parse(nodeToFindString);
-                foundTime = 0;
-                startTime = Time.time;
-                endTime = 0;
-
-                if (nodeToFindID < simValues.numNodes)
-                {
-                    nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                    source.GetComponent<AODV>().initMessage(nodeToFind);
-                    nodeToFind.renderer.material.color = Color.magenta;
-
-                }
-            }
-
-
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+        if (!simValues.showMainGui)
+        {
+            showRunningGUI();
         }
-    }
-
-//------------------INetworkGUIOptions Functions----------------------
-   public void setGuiValues(){
-       nodeCommRange = int.Parse(nodeCommRangeString);
 
     }
 
-   public void showGUI()
-   {
+    //------------------INetworkGUIOptions Functions----------------------
+    public void setGuiValues()
+    {
+        nodeCommRange = int.Parse(nodeCommRangeString);
+
+    }
+
+    public virtual void showGUI()
+    {
         GUI.BeginGroup(new Rect(((Screen.width - simValues.buttonWidth) / 2) + 250, Screen.height / 2 + 50, 250, 100));
         GUI.Box(new Rect(0, 0, 250, 400), "Network Options");
         GUILayout.BeginArea(new Rect(5, 30, simValues.buttonWidth, simValues.buttonHeight * simValues.numberButtons));
@@ -171,8 +180,6 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         GUILayout.Label("Node Comm Range", GUILayout.Width(simValues.menuLabelWidth));
         nodeCommRangeString = GUILayout.TextField(nodeCommRangeString, 4);
         GUILayout.EndHorizontal();
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Latency:");
         if (GUILayout.Button(useLatencyStr))
         {
             if (!useLatency)
@@ -181,24 +188,31 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
                 useLatencyStr = "Latency Disabled";
             useLatency = !useLatency;
         }
-        GUILayout.EndHorizontal();
+        if (GUILayout.Button(useDefaultLineStr))
+        {
+            if (!useDefaultLine)
+                useDefaultLineStr = "Default Lines Enabled";
+            if (useDefaultLine)
+                useDefaultLineStr = "Default Lines Disabled";
+            useDefaultLine = !useDefaultLine;
+        }
         GUILayout.EndArea();
         GUI.EndGroup();
-    
-   }
 
-   public void setOptions()
-   {
-       simValues = gameObject.GetComponent<LoadOptionsGUI>();
-       nodeToFindString = "0";
-       timeToFind = 0;
-       numHops = 0;
-       nextHop = "";
+    }
+
+    public virtual void setOptions()
+    {
+        simValues = gameObject.GetComponent<LoadOptionsGUI>();
+        nodeToFindString = "0";
+        timeToFind = 0;
+        numHops = 0;
+        nextHop = "";
 
 
-       drawLine = true;
-       updateLines = true;
-       adaptiveNetworkColor = true;
+        drawLine = true;
+        updateLines = true;
+        adaptiveNetworkColor = true;
 
-   }
+    }
 }

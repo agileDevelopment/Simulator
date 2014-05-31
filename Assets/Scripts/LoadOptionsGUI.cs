@@ -31,7 +31,7 @@ public class LoadOptionsGUI : MonoBehaviour {
 	public int numberButtons;
 	public string numNodesString;
 	public int numNodes;
-	public string simRunTimeString="0";
+	public string simRunTimeString="30";
 	public int simRunTime;
     static string defaultMoveString = "Select Behavior";
 	public string pauseString = "Pause Simulation";
@@ -60,7 +60,8 @@ public class LoadOptionsGUI : MonoBehaviour {
 
 	void Start () {
 		numberButtons=5;
-		numNodesString="75";
+		numNodesString="100";
+        simRunTimeString = "30";
 		slowMoRateString = "2";
         showMainGui = true;
 		//List for types of Flight Controllers
@@ -73,6 +74,7 @@ public class LoadOptionsGUI : MonoBehaviour {
         movementBehaviorLoader.Add(3, "Orbit");
         networkBehaviorLoader.Add(0, "none");
         networkBehaviorLoader.Add(1, "AODV");
+        networkBehaviorLoader.Add(2, "MCDSGA");
 
 		flightControllerList = new GUIContent[movementBehaviorLoader.Count];
         
