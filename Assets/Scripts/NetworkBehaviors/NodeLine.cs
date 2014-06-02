@@ -103,12 +103,12 @@ public class NodeLine : MonoBehaviour
                             float delta = ((netValues.nodeCommRange - distance) / midPoint);
                             lineColor.r = 255;
                             lineColor.g = (delta * colorStep) * 3;
-                            line.GetComponent<LineRenderer>().SetWidth(2f, 2f);
+                            line.GetComponent<LineRenderer>().SetWidth(.7f, .7f);
                         }
                         //less than midway, show Yellow - Green				
                         if (distance <= midPoint)
                         {
-                            line.GetComponent<LineRenderer>().SetWidth(1, 1);
+                            line.GetComponent<LineRenderer>().SetWidth(1f, 1f);
                             float delta = (distance / midPoint);
                             lineColor.g = 255;
                             lineColor.r = (delta * colorStep) - 10;
@@ -119,7 +119,7 @@ public class NodeLine : MonoBehaviour
                         {
                             lineColor.g = 255;
                             lineColor.r = 0;
-                            line.GetComponent<LineRenderer>().SetWidth(2, 2);
+                            line.GetComponent<LineRenderer>().SetWidth(1.5f, 1.5f);
                         }
                     }
                 }

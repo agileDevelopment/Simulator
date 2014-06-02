@@ -65,18 +65,18 @@ public class MCDSGAGUI : AODVGUI
 
     //--------------------Unity Functions-----------------------
     #region Unity Functions
-    void Awake()
-    {
-        Application.runInBackground = true;
-    }
+
 
     // Use this for initialization
-    void Start()
+    protected override void Start()
     {
+        base.Start();
+        setOptions();
+
         mutate = 0;
         rejects = 0;
         population = new List<CDS>();
-        setOptions();
+       
         useDefaultLine = false;
         useDefaultLineStr = " Default Lines Disabled";
         maxPop = "20";
@@ -84,8 +84,9 @@ public class MCDSGAGUI : AODVGUI
     }
 
     // Update is called once per frame
-    void Update()
+    protected override void Update()
     {
+        base.Update();
         if (runningSim)
         {
             counter++;
@@ -590,6 +591,7 @@ public class CDS
     List<GameObject> inCDS;
     List<GameObject> outCDS;
     List<GameObject> edgeCDS;
+    public Dictionary<GameObject, List<GameObject>> network;
     public GameObject owner;
     float fitness;
     public int size;
@@ -602,6 +604,7 @@ public class CDS
         inCDS = new List<GameObject>();
         outCDS = new List<GameObject>();
         edgeCDS = new List<GameObject>();
+        network = new Dictionary<GameObject, List<GameObject>>();
 
         //init all nodes to the out of CDS list
         GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
@@ -689,7 +692,12 @@ public class CDS
             }
         }
     }
-
+    public bool nodeInCDS(GameObject node)
+    {
+        if (inCDS.Contains(node))
+            return true;
+        return false;
+    }
 
     public List<GameObject> getInCDS()
     {
@@ -702,6 +710,13 @@ public class CDS
     public List<GameObject> getEdgeCDS()
     {
         return edgeCDS;
+    }
+
+    public bool nodeInEdge(GameObject node)
+    {
+        if (edgeCDS.Contains(node))
+            return true;
+        return false;
     }
 
     public bool[] getEncoding()

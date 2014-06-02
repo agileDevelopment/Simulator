@@ -24,41 +24,51 @@ using System.Collections.Generic;
 
 public class AODV : Network
 {
-    Hashtable currentRREQ;
-    float active_route_timer;
-    int nodeSeqNum;
+    public Dictionary<string, RevPath> currentRREQ;
+    protected float active_route_timer;
+    protected int nodeSeqNum;
     public int broadcastID;
+    public int delayFactor;
+    public int messageQueue;
 
     //--------------------------------------Unity Functions---------------------------------------
     // Use this for initialization
-    void Start()
+    protected override void Start()
     {
-        initializeValues();
+        base.Start();
+        delayFactor = 4000;
+        active_route_timer = 3.0f;  // used to delete route information;
+        nodeSeqNum = 0;
+        broadcastID = 0;
+        currentRREQ = new Dictionary<string, RevPath>();
+   
     }
 
     // Update is called once per frame
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+        messageQueue = currentRREQ.Count;
     }
 
-    void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         //clear requests if they have expired.
-        Hashtable temp = (Hashtable)currentRREQ.Clone();
-        foreach (DictionaryEntry revPath in temp)
+        Dictionary<string, RevPath> temp = new Dictionary<string, RevPath>(currentRREQ);
+        foreach (RevPath r in temp.Values)
         {
-            RevPath r = (RevPath)revPath.Value;
             if (r.expTimer < Time.time)
                currentRREQ.Remove(r.source.name + "-" + r.broadcast_id);
         }
 
         //clear routes if they have expired.
-        Hashtable temp2 = (Hashtable)routes.Clone();
-        foreach (DictionaryEntry revPath in temp2)
+        Dictionary<GameObject, RouteEntry> temp2 = new Dictionary<GameObject, RouteEntry>(routes);
+        foreach (RouteEntry entry in temp2.Values)
         {
-            AODVRouteEntry r = (AODVRouteEntry)revPath.Value;
+            AODVRouteEntry r = (AODVRouteEntry)entry;
+
             if (r.expirationTime < Time.time)
-                routes.Remove(r.destination);
+              routes.Remove(r.destination);
         }
     }
     void OnMouseDown()
@@ -68,20 +78,11 @@ public class AODV : Network
     }
 
     //--------------------------------------Custom Functions------------------------------------------
-    public void initializeValues()
-    {
-
-        setValues(); // initialize parent class since its not added to the spawner...
-        active_route_timer = 3.0f;  // used to delete route information;
-        nodeSeqNum = 0;
-        broadcastID = 0;
-        currentRREQ = new Hashtable();
-    }
 
     IEnumerator delayRecRREQ(RREQpacket packet)
     {
         float distance = Vector3.Distance(gameObject.transform.position, packet.intermediate.transform.position);
-        distance = distance / 2000;
+        distance = distance / delayFactor;
         yield return new WaitForSeconds(distance);
         performRecRREQ(packet);
     }
@@ -102,7 +103,7 @@ public class AODV : Network
             AODVRouteEntry route;
             string rreqStr = dataIn.source.name + "-" + dataIn.broadcast_id.ToString();
             //check to see if we already have a RREQ on record with same source and broadcast_id
-            if (!currentRREQ.Contains(rreqStr))
+            if (!currentRREQ.ContainsKey(rreqStr))
             {
                 // check to see if we are the destination... (shouldn't be here)
                 if (gameObject == dataIn.destination)
@@ -125,7 +126,7 @@ public class AODV : Network
 
                 }
                 //if we have a route to the destination in our routing table
-                else if (routes.Contains(dataIn.destination))
+                else if (routes.ContainsKey(dataIn.destination))
                 {
                     route = (AODVRouteEntry)routes[dataIn.destination];
                     //check to see if our route is stale...if so, don't use it.
@@ -192,10 +193,10 @@ public class AODV : Network
                     //    sendRREQ(dataIn);
                 }
 
-                if (currentRREQ.Contains(rreqStr))
+                if (currentRREQ.ContainsKey(rreqStr))
                 {
                     AODVRouteEntry routeToSource;
-                    if (routes.Contains(dataIn.source))
+                    if (routes.ContainsKey(dataIn.source))
                     {
                         routeToSource = (AODVRouteEntry)routes[dataIn.source];
                     }
@@ -237,7 +238,7 @@ public class AODV : Network
     {
         bool fwdRREP = false;
         string id = rrepPacket.source.name + "-" + rrepPacket.broadcast_id.ToString();
-        if (currentRREQ.Contains(id))
+        if (currentRREQ.ContainsKey(id))
         {
          
             RevPath  revpath = (RevPath)currentRREQ[id];
@@ -289,7 +290,7 @@ public class AODV : Network
     {
 
         float distance = Vector3.Distance(gameObject.transform.position, packet.intermediate.transform.position);
-        distance = distance / 2000;
+        distance = distance / delayFactor;
         yield return new WaitForSeconds(distance);
         performRecRREP(packet);
     }
@@ -300,7 +301,7 @@ public class AODV : Network
     //update route table with rrepPacket info
     void updateRouteFromRREP(RREPpacket rrepPacketIn)
     {
-            if (routes.Contains(rrepPacketIn.destination))
+            if (routes.ContainsKey(rrepPacketIn.destination))
             {
                 AODVRouteEntry path = (AODVRouteEntry)routes[rrepPacketIn.destination];
                 path.expirationTime = Time.time + active_route_timer;
@@ -308,7 +309,7 @@ public class AODV : Network
 
             else
             {
-                if (!routes.Contains(rrepPacketIn.destination))
+                if (!routes.ContainsKey(rrepPacketIn.destination))
                 {
                     AODVRouteEntry path = new AODVRouteEntry();
                     path.destination = rrepPacketIn.destination;
@@ -328,7 +329,7 @@ public class AODV : Network
     {
         lock (nodeLock)
         {
-            if (routes.Contains(rreqPacketIn.destination))
+            if (routes.ContainsKey(rreqPacketIn.destination))
             {
                 AODVRouteEntry path = (AODVRouteEntry)routes[rreqPacketIn.destination];
                 path.expirationTime = Time.time + active_route_timer;
@@ -336,7 +337,7 @@ public class AODV : Network
             }
             else
             {
-                if (!routes.Contains(rreqPacketIn.destination))
+                if (!routes.ContainsKey(rreqPacketIn.destination))
                 {
                     AODVRouteEntry source = new AODVRouteEntry();
                     source.dest_sequence_num = rreqPacketIn.source_seq;
@@ -366,7 +367,7 @@ public class AODV : Network
         bool haveRoute = false;
         lock (nodeLock)
         {
-            if (routes.Contains(packet.destination))
+            if (routes.ContainsKey(packet.destination))
             {
                 //         print(gameObject.name + " has route");
                 haveRoute = true;
@@ -379,7 +380,7 @@ public class AODV : Network
                     //         print(gameObject.name + " waiting for route");
                     discoverPath(packet.destination);
                     yield return new WaitForSeconds(.1f);
-                    if (routes.Contains(packet.destination))
+                    if (routes.ContainsKey(packet.destination))
                     {
                         haveRoute = true;
                         //             print(gameObject.name + " has route");
@@ -415,10 +416,17 @@ public class AODV : Network
 
     protected override void performRecMessage(MSGPacket packet)
     {
-        gameObject.renderer.material.color = Color.white;
+      //  gameObject.renderer.material.color = Color.white;
         if (gameObject == packet.destination)
         {
-            gameObject.renderer.material.color = Color.green;
+            if(packet.message == "ping"){
+               initMessage(packet.source,"ack");
+            }
+            if (packet.message == "ack")
+            {
+
+            }
+      //      gameObject.renderer.material.color = Color.green;
       //      float tTime  = Time.time - packet.startTime;
       //      print(packet.message + "Time to Send: " + tTime );
         }
@@ -446,7 +454,7 @@ public class AODV : Network
         entry.numberHops = rrepPacketIn.hop_count;
         lock (nodeLock)
         {
-            if (!routes.Contains(rrepPacketIn.destination))
+            if (!routes.ContainsKey(rrepPacketIn.destination))
             {
                 routes.Add(rrepPacketIn.destination, entry);
             }
@@ -478,7 +486,7 @@ public class AODV : Network
         }
 
         string id = rrepPacketIn.source.name + "-" + rrepPacketIn.broadcast_id.ToString();
-        if (currentRREQ.Contains(id))
+        if (currentRREQ.ContainsKey(id))
         {
             RevPath revpath = new RevPath();
             revpath = (RevPath)currentRREQ[id];
@@ -514,7 +522,7 @@ public class AODV : Network
         dataOut.broadcast_id = ++broadcastID;
         lock (nodeLock)
         {
-            if (routes.Contains(node))
+            if (routes.ContainsKey(node))
             {
                 dataOut.dest_sequence_num = ((AODVRouteEntry)routes[node]).dest_sequence_num;
             }

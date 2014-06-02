@@ -33,7 +33,19 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
 
     // Update is called once per frame
     //Here we are figuring out whether to update lines or not.
-    void Update()
+    protected virtual void Start()
+    {
+        simValues = gameObject.GetComponent<LoadOptionsGUI>();
+        nodeToFindString = "0";
+        timeToFind = 0;
+        numHops = 0;
+        nextHop = "";
+        drawLine = true;
+        updateLines = true;
+        adaptiveNetworkColor = true;
+    }
+
+    protected virtual void Update()
     {
 
         if (simValues.counter == simValues.slowMoRate)
@@ -142,7 +154,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
             if (nodeToFindID < simValues.numNodes)
             {
                 nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                source.GetComponent<AODV>().initMessage(nodeToFind);
+                source.GetComponent<AODV>().initMessage(nodeToFind, "Test Message");
                 nodeToFind.renderer.material.color = Color.magenta;
 
             }
@@ -203,16 +215,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
 
     public virtual void setOptions()
     {
-        simValues = gameObject.GetComponent<LoadOptionsGUI>();
-        nodeToFindString = "0";
-        timeToFind = 0;
-        numHops = 0;
-        nextHop = "";
 
-
-        drawLine = true;
-        updateLines = true;
-        adaptiveNetworkColor = true;
 
     }
 }

@@ -57,10 +57,13 @@ public class LoadOptionsGUI : MonoBehaviour {
     public int maxAge = 0;
 
 //-----------------------Unity Defined Functions-------------------------------
-
+    void Awake()
+    {
+        Application.runInBackground = true;
+    }
 	void Start () {
 		numberButtons=5;
-		numNodesString="100";
+		numNodesString="36";
         simRunTimeString = "30";
 		slowMoRateString = "2";
         showMainGui = true;
@@ -74,7 +77,8 @@ public class LoadOptionsGUI : MonoBehaviour {
         movementBehaviorLoader.Add(3, "Orbit");
         networkBehaviorLoader.Add(0, "none");
         networkBehaviorLoader.Add(1, "AODV");
-        networkBehaviorLoader.Add(2, "MCDSGA");
+        networkBehaviorLoader.Add(2, "ACOVB");
+        networkBehaviorLoader.Add(3, "MCDSGA");
 
 		flightControllerList = new GUIContent[movementBehaviorLoader.Count];
         
@@ -100,6 +104,10 @@ public class LoadOptionsGUI : MonoBehaviour {
         }
 
         networkComboBoxControl = new ComboBox(new Rect((Screen.width - buttonWidth) / 2 - 140, Screen.height / 2 - 120, 135, 20), networkControllerList[0], networkControllerList, "button", "box", listStyle);
+
+        
+
+
 	}
 
     void OnGUI()

@@ -119,6 +119,8 @@ MonoBehaviour:
   showMainGui: 0
   movementChoice: 
   networkChoice: 
+  lastNetComponentStr: 
+  lastMoveComponentStr: 
   menuLabelWidth: 170
   menuFieldWidth: 100
   nodesSqrt: 0

@@ -8,18 +8,30 @@ public class Network : MonoBehaviour, INetworkBehavior {
     public List<GameObject> neighbors;
     public Object nodeLock = new Object();
     public NodeLine lineController;
-    protected Hashtable routes;
+
+    public int routeCount;
+    protected Dictionary<GameObject, RouteEntry> routes;
 	// Use this for initialization
 
 
 //--------------------Unity Functions------------------------
-	void Start () {
+	protected virtual void Start () {
+        simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
+        netValues = simValues.networkGUI;
+        neighbors = new List<GameObject>();
+        lineController = gameObject.GetComponent<NodeLine>();
+        gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
+        routes = new Dictionary<GameObject, RouteEntry>();
  	}
 	
 	// Update is called once per frame-----------------------
-	void Update () {
-	
+	protected virtual void Update () {
+        routeCount = routes.Count;
 	}
+    protected virtual void Fixed()
+    {
+
+    }
 
 //---------------------INetworkBehavior Implemenations
     public virtual void addNeighbor(GameObject node)
@@ -57,13 +69,13 @@ public class Network : MonoBehaviour, INetworkBehavior {
     }
 
 
-    public void initMessage(GameObject destination)
+    public void initMessage(GameObject destination, string message)
     {
         MSGPacket packetToSend = new MSGPacket();
         packetToSend.destination = destination;
-        packetToSend.message = " I am a test message";
-        packetToSend.retries = (int)simValues.numNodes / 10;
-        packetToSend.TTL = (int)simValues.numNodes / 2;
+        packetToSend.message = message;
+        packetToSend.retries = (int)simValues.numNodes / 2;
+        packetToSend.TTL = (int)simValues.numNodes ;
         packetToSend.source = gameObject;
         packetToSend.startTime = Time.time;
         //    print(gameObject.name + " Initiating MSG to " + destination.name);
@@ -86,15 +98,6 @@ public class Network : MonoBehaviour, INetworkBehavior {
         distance = distance / 20000;
         yield return new WaitForSeconds(distance);
         performRecMessage(packet);
-    }
-
-    public void setValues(){
-        simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
-        netValues = simValues.networkGUI;
-        neighbors = new List<GameObject>();
-        lineController = gameObject.GetComponent<NodeLine>();
-        gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
-        routes = new Hashtable();
     }
 };
 

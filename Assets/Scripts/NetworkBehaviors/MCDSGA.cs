@@ -35,12 +35,12 @@ public class MCDSGA : AODV
     //------------------------------Unity Functions---------------------------
     #region Unity Functions
     // Use this for initialization
-    void Start()
+    protected override void Start()
     {
+        base.Start();
 
         broadcastID = 0;
         broadcasts = new List<string>();
-        initializeValues();
         Random.seed = gameObject.GetComponent<NodeController>().idNum;
         VBlines = new Dictionary<GameObject, GameObject>();
         guiSettings = GameObject.Find("Spawner").GetComponent<MCDSGAGUI>();
@@ -49,9 +49,11 @@ public class MCDSGA : AODV
             gotBroadcast[i] = false;
 
     }
+
     //called every frame
-    void Update()
+    protected override void Update()
     {
+        base.Update();
         foreach (KeyValuePair<GameObject, GameObject> entry in VBlines)
         {
             GameObject line = (GameObject)entry.Value;
