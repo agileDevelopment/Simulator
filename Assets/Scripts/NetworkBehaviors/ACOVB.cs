@@ -18,6 +18,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 public class ACOVB : AODV {
     public Dictionary<GameObject, GameObject> VBlines;
@@ -28,7 +29,7 @@ public class ACOVB : AODV {
     ACOVBGUI guiSettings;
     int counter=0;
     Dictionary<string, CDSAnt> antUpdates;
-    public bool partOfCDS = false;
+    public bool memberOfCDS = false;
     bool cdsUpdated = false;
 
 
@@ -41,7 +42,7 @@ public class ACOVB : AODV {
         guiSettings = GameObject.Find("Spawner").GetComponent<ACOVBGUI>();
         myPhereLevel = 0.01f;
         antRoutes = new Dictionary<GameObject, ACORouteEntry>();
-        antUpdates = new Dictionary<string, CDSAnt>();  
+        antUpdates = new Dictionary<string, CDSAnt>();
     }
   	
 
@@ -73,7 +74,7 @@ public class ACOVB : AODV {
         if (myCurrentCDS != null)
         {
             if (myCurrentCDS.getInCDS().Contains(gameObject))
-                partOfCDS = true;
+                memberOfCDS = true;
 
             if (cdsUpdated)
             {
@@ -89,13 +90,13 @@ public class ACOVB : AODV {
                 VBlines.Clear();
             }
             //If I'm part of a CDS..
-            if (partOfCDS)
+            if (memberOfCDS)
             {
                 gameObject.renderer.material.color = Color.black;
                 foreach (GameObject node in neighbors)
                 //foreach (GameObject node in myCurrentCDS.network[gameObject])
                 {
-                    if (node.GetComponent<ACOVB>().partOfCDS)
+                    if (node.GetComponent<ACOVB>().memberOfCDS)
                     {
                         if (!VBlines.ContainsKey(node))
                         {
@@ -230,8 +231,9 @@ public class ACOVB : AODV {
         
         }
 
-        if (node.GetComponent<ACOVB>().partOfCDS)
+        if (node.GetComponent<ACOVB>().memberOfCDS)
         {
+            if (myCurrentCDS != null)
             if(!myCurrentCDS.getInCDS().Contains(node)){
                 myCurrentCDS.moveToInCDS(node);
                 
@@ -378,7 +380,6 @@ public class ACOVB : AODV {
     public void startAnt(GameObject dest)
     {
         Ant ant = new Ant(gameObject, dest);
-        performSendAnt(ant);
     }
 
 
@@ -567,19 +568,49 @@ public class ACOVB : AODV {
         performSendCDSAnt(ant);
     }
 
+
+    protected void updateRoutes(ACORouteEntry route)
+    {
+        lock (nodeLock)
+        {
+            if (routes.ContainsKey(route.destination))
+            {
+                AODVRouteEntry temp = (AODVRouteEntry)routes[route.destination];
+                if (route.dest_sequence_num > temp.dest_sequence_num)
+                {
+                    AODVRouteEntry path = (AODVRouteEntry)routes[route.destination];
+                    path.expirationTime = Time.time + active_route_timer;
+                }
+            }
+            else
+            {
+                routes.Remove(route.destination);
+                routes.Add(route.destination, route);
+            }
+        }
+
+    }
+
+
+
+   // void initCDSBroadcast()
+
     void performSendCDSAnt(CDSAnt ant)
     {
+        memberOfCDS = true;
         if (ant.myCDS.getInCDS().Count == 0)
             ant.myCDS.owner = gameObject;
+
+        //Initialize heuristic values
         GameObject nextHop = null;
         float tempProb = 0;
         float totalTau = 0;
         float qualityValue = 0;
-     //   gameObject.renderer.material.color = Color.black;
 
         //CDS build isn't finished...
         if (ant.myCDS.getOutCDS().Count > 0)
         {
+            //add this node the the CDS list
             ant.myCDS.moveToInCDS(gameObject);
             foreach (GameObject neighbor in neighbors)
             {
@@ -757,16 +788,13 @@ public class ACOVB : AODV {
             //and send it on if I'm a CDS node
             if (ant.myCDS.getInCDS().Contains(gameObject))
             {
+                memberOfCDS = true;
                 gameObject.renderer.material.color = Color.black;
           //      print(gameObject + "forwarding update");
                 foreach (GameObject neighbor in neighbors)
                 {
                     neighbor.GetComponent<ACOVB>().sendPheremoneUpdate(ant);
                 }
-            }
-            else
-            {
-                gameObject.renderer.material.color = Color.white;
             }
         }
     }
@@ -797,12 +825,10 @@ public class ACORouteEntry : AODVRouteEntry{
 }
 
 
-public class Ant
-{
-    public int hop_count;
+public class Ant: ACORouteEntry{
     public int maxHop;
     public GameObject source;
-    public GameObject destination;
+    public GameObject sender;
     public List<GameObject> seenNodes;
     public Dictionary<int, RevAntPath> nodeData;
 
@@ -823,7 +849,7 @@ public class Ant
    }
     
 }
-public class CDSAnt
+public class CDSAnt: ACORouteEntry
 {
     public string label="";
     public float exploreRate;

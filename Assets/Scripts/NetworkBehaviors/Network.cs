@@ -99,7 +99,23 @@ public class Network : MonoBehaviour, INetworkBehavior {
         yield return new WaitForSeconds(distance);
         performRecMessage(packet);
     }
+
+    protected virtual void updateRoutes(RouteEntry newRoute)
+    {
+        if (!routes.ContainsKey(newRoute.destination))
+        {
+            routes.Add(newRoute.destination, newRoute);
+        }
+        else
+        {
+            routes[newRoute.destination].nextHop = newRoute.nextHop;
+        }
+    }
 };
+
+
+
+
 
 public struct MSGPacket
 {

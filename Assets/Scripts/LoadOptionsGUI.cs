@@ -217,9 +217,6 @@ public class LoadOptionsGUI : MonoBehaviour {
     void showRunningMenu()
     {
         //Left hand column options
-        GUI.color = Color.green;
-        GUI.backgroundColor = Color.blue;
-
         GUI.Box(new Rect(5, 5, buttonWidth + 10, buttonHeight * numberButtons + 30), "UAV Simulator Options");
         GUILayout.BeginArea(new Rect(10, 30, buttonWidth, buttonHeight * numberButtons));
         if (GUILayout.Button("Exit"))

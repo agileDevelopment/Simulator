@@ -63,9 +63,9 @@ public class AODV : Network
 
         //clear routes if they have expired.
         Dictionary<GameObject, RouteEntry> temp2 = new Dictionary<GameObject, RouteEntry>(routes);
-        foreach (RouteEntry entry in temp2.Values)
+        foreach (AODVRouteEntry entry in temp2.Values)
         {
-            AODVRouteEntry r = (AODVRouteEntry)entry;
+            AODVRouteEntry r = entry;
 
             if (r.expirationTime < Time.time)
               routes.Remove(r.destination);
@@ -203,20 +203,22 @@ public class AODV : Network
                     else
                     {
                         routeToSource = new AODVRouteEntry();
-                        routeToSource.numberHops = 10000000;
+                        routeToSource.hop_count = 10000000;
                     }
-                    if (dataIn.hop_count < routeToSource.numberHops)
+                    if (dataIn.hop_count < routeToSource.hop_count)
                     {
                         routeToSource.dest_sequence_num = dataIn.source_seq;
                         routeToSource.destination = dataIn.source;
                         routeToSource.expirationTime = Time.time + active_route_timer;
                         routeToSource.nextHop = dataIn.intermediate;
-                        routeToSource.numberHops = dataIn.hop_count;
+                        routeToSource.hop_count = dataIn.hop_count;
                     }
                 }
             }
         }
     }
+
+
     public void sendRREQ(RREQpacket dataOut)
     {
         string cameFrom = dataOut.intermediate.name;
@@ -301,61 +303,51 @@ public class AODV : Network
     //update route table with rrepPacket info
     void updateRouteFromRREP(RREPpacket rrepPacketIn)
     {
-            if (routes.ContainsKey(rrepPacketIn.destination))
-            {
-                AODVRouteEntry path = (AODVRouteEntry)routes[rrepPacketIn.destination];
-                path.expirationTime = Time.time + active_route_timer;
-            }
+        AODVRouteEntry path = new AODVRouteEntry();
+        path.destination = rrepPacketIn.destination;
+        path.dest_sequence_num = rrepPacketIn.dest_sequence_num;
+        path.expirationTime = Time.time + active_route_timer;
+        path.hop_count = rrepPacketIn.hop_count;
+        path.nextHop = rrepPacketIn.intermediate;
 
-            else
-            {
-                if (!routes.ContainsKey(rrepPacketIn.destination))
-                {
-                    AODVRouteEntry path = new AODVRouteEntry();
-                    path.destination = rrepPacketIn.destination;
-                    path.dest_sequence_num = rrepPacketIn.dest_sequence_num;
-                    path.expirationTime = Time.time + active_route_timer;
-                    path.numberHops = rrepPacketIn.hop_count;
-                    path.nextHop = rrepPacketIn.intermediate;
-                    lock (nodeLock)
-                    {
-                        routes.Add(rrepPacketIn.destination, path);
-                    }
-                }
-            }
+        updateRoutes(path);
+    
     }
 
     void updateRouteFromRREQ(RREQpacket rreqPacketIn)
     {
+        AODVRouteEntry source = new AODVRouteEntry();
+        source.dest_sequence_num = rreqPacketIn.source_seq;
+        source.destination = rreqPacketIn.source;
+        source.expirationTime = Time.time + active_route_timer;
+        source.nextHop = rreqPacketIn.intermediate;
+        source.hop_count = rreqPacketIn.hop_count;
+
+        updateRoutes(source);
+   
+    }
+
+    protected void updateRoutes(AODVRouteEntry route)
+    {
         lock (nodeLock)
         {
-            if (routes.ContainsKey(rreqPacketIn.destination))
+            if (routes.ContainsKey(route.destination))
             {
-                AODVRouteEntry path = (AODVRouteEntry)routes[rreqPacketIn.destination];
-                path.expirationTime = Time.time + active_route_timer;
-                updateRouteFromRREQ(rreqPacketIn);
+                AODVRouteEntry temp = (AODVRouteEntry)routes[route.destination];
+                if (route.dest_sequence_num > temp.dest_sequence_num)
+                {
+                    AODVRouteEntry path = (AODVRouteEntry)routes[route.destination];
+                    path.expirationTime = Time.time + active_route_timer;
+                }
             }
             else
             {
-                if (!routes.ContainsKey(rreqPacketIn.destination))
-                {
-                    AODVRouteEntry source = new AODVRouteEntry();
-                    source.dest_sequence_num = rreqPacketIn.source_seq;
-                    source.destination = rreqPacketIn.source;
-                    source.expirationTime = Time.time + active_route_timer;
-                    source.nextHop = rreqPacketIn.intermediate;
-                    source.numberHops = rreqPacketIn.hop_count;
-
-                        routes.Remove(source.destination);
-                        routes.Add(source.destination, source);
- 
-
+                    routes.Remove(route.destination);
+                    routes.Add(route.destination, route);
                 }
             }
-        }
+        
     }
-
-
 
     public override void sendMessage(MSGPacket packet)
     {
@@ -451,7 +443,7 @@ public class AODV : Network
         entry.expirationTime = Time.time + active_route_timer;
        // print("GO = " + gameObject.name + "Int = " + rrepPacketIn.intermediate);
         entry.nextHop = rrepPacketIn.intermediate;
-        entry.numberHops = rrepPacketIn.hop_count;
+        entry.hop_count = rrepPacketIn.hop_count;
         lock (nodeLock)
         {
             if (!routes.ContainsKey(rrepPacketIn.destination))
@@ -465,13 +457,13 @@ public class AODV : Network
                 if (temp.dest_sequence_num < entry.dest_sequence_num)
                 {
                     temp.nextHop = entry.nextHop;
-                    temp.numberHops = entry.numberHops;
+                    temp.hop_count = entry.hop_count;
                     temp.dest_sequence_num = entry.dest_sequence_num;
                 }
-                if ((temp.dest_sequence_num == entry.dest_sequence_num) && (temp.numberHops > entry.numberHops))
+                if ((temp.dest_sequence_num == entry.dest_sequence_num) && (temp.hop_count > entry.hop_count))
                 {
                     temp.nextHop = entry.nextHop;
-                    temp.numberHops = entry.numberHops;
+                    temp.hop_count = entry.hop_count;
                     temp.dest_sequence_num = entry.dest_sequence_num;
                 }
 
@@ -503,7 +495,7 @@ public class AODV : Network
                 float totalTime = netValues.endTime - netValues.startTime;
                 AODVRouteEntry routetoDest = (AODVRouteEntry)routes[rrepPacketIn.destination];
                 netValues.timeToFind = totalTime;
-                netValues.numHops = routetoDest.numberHops;
+                netValues.numHops = routetoDest.hop_count;
                netValues.nextHop = routetoDest.nextHop.name;
             }
         }
@@ -555,7 +547,7 @@ public class AODV : Network
 
 public class AODVRouteEntry: RouteEntry
 {
-    public int numberHops;
+    public int hop_count;
     public int dest_sequence_num;
     public int activeNeighbors;
     public float expirationTime;

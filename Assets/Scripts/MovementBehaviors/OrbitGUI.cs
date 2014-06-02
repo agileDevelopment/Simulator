@@ -13,7 +13,7 @@ public class OrbitGUI : FlightGUI {
 	// Use this for initialization
 	void Start () {
 		simValues = gameObject.GetComponent<LoadOptionsGUI>();
-		nodeOrbitString="75";
+		nodeOrbitString="200";
 		nodeMaxSpeedString="30";
 	}
 	
@@ -70,10 +70,10 @@ public class OrbitGUI : FlightGUI {
     {}
 		
     public override void setFloor(){
-		    floorSize = (int)((simValues.nodesSqrt)*radius*2.5);
+		    floorSize = (int)(radius*2.5);
     center = floorSize/2;
     GameObject floor = GameObject.Find("Floor");
-    floor.transform.position = (new Vector3(center,-10,center));
+    floor.transform.position = (new Vector3(center, -center, center));
     floor.transform.localScale = (new Vector3(floorSize,.1f,floorSize));	
     Camera.main.isOrthoGraphic = true;
     Camera.main.orthographicSize = floor.transform.localScale.x / 2 + 50;

@@ -26,6 +26,8 @@ public class Grid : NodeMove
     GridGUI gridValues;
     Vector3 center;
     Vector3 axis = Vector3.up;
+    Vector3 axis2 = Vector3.back;
+    Vector3 axis3 = Vector3.right;
     Vector3 desiredPosition;
     float radius;
     float radiusSpeed;
@@ -44,6 +46,7 @@ public class Grid : NodeMove
             rotationSpeed = 0 - rotationSpeed;
         }
         center = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        axis = center;
         center.x = center.x - radius;
         transform.position = (transform.position).normalized * radius + center;
     }
@@ -52,6 +55,8 @@ public class Grid : NodeMove
     {
 
         transform.RotateAround(center, axis, rotationSpeed * Time.deltaTime);
+        transform.RotateAround(center, axis2, rotationSpeed*1.2f * Time.deltaTime);
+    //    transform.RotateAround(center, axis3, rotationSpeed * Time.deltaTime);
         desiredPosition = (transform.position - center).normalized * radius + center;
         transform.position = Vector3.MoveTowards(transform.position, desiredPosition, Time.deltaTime * radiusSpeed);
     }
