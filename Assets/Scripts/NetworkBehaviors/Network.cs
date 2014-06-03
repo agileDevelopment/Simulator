@@ -8,9 +8,9 @@ public class Network : MonoBehaviour, INetworkBehavior {
     public List<GameObject> neighbors;
     public Object nodeLock = new Object();
     public NodeLine lineController;
-
-    public int routeCount;
+    int routeCount=0;
     protected Dictionary<GameObject, RouteEntry> routes;
+
 	// Use this for initialization
 
 
@@ -22,12 +22,31 @@ public class Network : MonoBehaviour, INetworkBehavior {
         lineController = gameObject.GetComponent<NodeLine>();
         gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
         routes = new Dictionary<GameObject, RouteEntry>();
+
+
  	}
 	
 	// Update is called once per frame-----------------------
 	protected virtual void Update () {
         routeCount = routes.Count;
+        if (gameObject.GetComponent<NodeController>().selected)
+        {
+            netValues.myUIElements["nodeID"] = gameObject.name;
+            netValues.myUIElements["numRoutes"] = "# of Rts:" + routes.Count.ToString();
+        }
+
 	}
+    protected virtual void LateUpdate()
+    { 
+    //do something
+    }
+
+    void OnMouseDown()
+    {
+        netValues.source = gameObject;
+        netValues.sourceStr = gameObject.name;
+    }
+
     protected virtual void Fixed()
     {
 
@@ -69,10 +88,12 @@ public class Network : MonoBehaviour, INetworkBehavior {
     }
 
 
-    public void initMessage(GameObject destination, string message)
+    public void initMessage(GameObject destination, string mType, string message)
     {
+        print("At node: " + gameObject.name + " Method: initMessage()");
         MSGPacket packetToSend = new MSGPacket();
         packetToSend.destination = destination;
+        packetToSend.messageType = mType;
         packetToSend.message = message;
         packetToSend.retries = (int)simValues.numNodes / 2;
         packetToSend.TTL = (int)simValues.numNodes ;
@@ -85,6 +106,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
 
     public virtual void recMessage(MSGPacket packet)
     {
+        netValues.messageCounter++;
         if (netValues.useLatency)
             StartCoroutine(delayRecMessage(packet));
         else
@@ -123,6 +145,7 @@ public struct MSGPacket
     public GameObject sender;
     public GameObject destination;
     public float startTime;
+    public string messageType;
     public string message;
     public int retries;
     public int TTL;

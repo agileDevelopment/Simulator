@@ -29,9 +29,17 @@ public class MouseLook : MonoBehaviour {
 	public float maximumY = 60F;
 
 	float rotationY = 0F;
+    bool cameraLock = true;
 
 	void Update ()
 	{
+        if (Input.GetMouseButtonDown(1))
+        {
+            cameraLock = !cameraLock;
+        }
+
+        if (!cameraLock)
+        {
             if (axes == RotationAxes.MouseXAndY)
             {
                 float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sensitivityX;
@@ -52,6 +60,7 @@ public class MouseLook : MonoBehaviour {
 
                 transform.localEulerAngles = new Vector3(-rotationY, transform.localEulerAngles.y, 0);
             }
+        }
 	}
 	
 	void Start ()

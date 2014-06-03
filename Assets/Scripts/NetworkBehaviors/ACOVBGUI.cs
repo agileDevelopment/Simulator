@@ -8,9 +8,10 @@ public class ACOVBGUI : AODVGUI {
     public string newTrailInfluence;
     public string localUpdate;
     public string startStr = "Start";
-    float maxPheremoneLevel;
+    public float maxPheremoneLevel;
     public bool start= false;
     public bool displayCDS = false;
+    public List<string> runningCDSs;
     int counter = 0;
 
 	// Use this for initialization
@@ -18,21 +19,32 @@ public class ACOVBGUI : AODVGUI {
         base.Start();
         myLock = new object();
         currentCDS = null;
+        runningCDSs = new List<string>();
         maxPheremoneLevel = 0f;
         weightFactor = ".8";
         newTrailInfluence = ".8";
         localUpdate = ".8";
+        myUIElements.Add("pLevel", "");
+        myUIElements.Add("CDS Running", "");
+        
 
 	}
 	
 	// Update is called once per frame
     protected override void Update()
     {
+        myUIElements["Tot Messages"] = "Tot# Mess: " + messageCounter.ToString();
         counter++;
         if (counter % 2 == 0)
         {
         //    displayCurrentCDS();
             counter = 0;
+        }
+        if (runningCDSs.Count > 0)
+            myUIElements["CDS Running"] = "CDS Running";
+        else
+        {
+            myUIElements["CDS Running"] = "";
         }
 	}
 
@@ -40,8 +52,8 @@ public class ACOVBGUI : AODVGUI {
     //--------------------------Algorithm Functions--------------------------------
     public override void showRunningGUI()
     {
-        GUI.Box(new Rect(5, Screen.height / 2, 220, 420), "Network Options");
-        GUILayout.BeginArea(new Rect(10, Screen.height / 2 + 5, 200, 400));
+        GUI.Box(new Rect(5, Screen.height / 2-150, 220, 520), "Network Options");
+        GUILayout.BeginArea(new Rect(10, Screen.height / 2 - 145, 200,500));
         GUILayout.Space(30);
 
         useLatency = GUILayout.Toggle(useLatency, "Latency Enabled");
@@ -57,8 +69,8 @@ public class ACOVBGUI : AODVGUI {
         weightFactor = GUILayout.TextField(weightFactor, 4);
         GUILayout.Label("Freshness Factor:", GUILayout.Width(120));
         newTrailInfluence = GUILayout.TextField(newTrailInfluence, 4);
-      //  GUILayout.Label("Local Factor:", GUILayout.Width(120));
-     //   localUpdate= GUILayout.TextField(localUpdate, 4);
+        GUILayout.Label("Local Factor:", GUILayout.Width(120));
+        localUpdate= GUILayout.TextField(localUpdate, 4);
         GUILayout.BeginVertical();
         GUILayout.BeginHorizontal();
         GUILayout.Label("Source Node: ", GUILayout.Width(100));
@@ -67,6 +79,14 @@ public class ACOVBGUI : AODVGUI {
         GUILayout.BeginHorizontal();
         GUILayout.Label("Node to Find", GUILayout.Width(100));
         nodeToFindString = GUILayout.TextField(nodeToFindString, GUILayout.Width(30));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Time Required: ", GUILayout.Width(100));
+        GUILayout.Label(timeToFind.ToString(), GUILayout.Width(100));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Number of Hops: ", GUILayout.Width(100));
+        GUILayout.Label(numHops.ToString(), GUILayout.Width(100));
         GUILayout.EndHorizontal();
         if (GUILayout.Button("Find", GUILayout.Width(140)))
         {
@@ -110,21 +130,12 @@ public class ACOVBGUI : AODVGUI {
             if (nodeToFindID < simValues.numNodes)
             {
                 nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                source.GetComponent<AODV>().initMessage(nodeToFind, "Test Message");
+                source.GetComponent<AODV>().initMessage(nodeToFind, "mess", "Test Message");
                 nodeToFind.renderer.material.color = Color.magenta;
 
             }
         }
-        if (GUILayout.Button("Send Ant", GUILayout.Width(140)))
-        {
-            if (nodeToFindID < simValues.numNodes)
-            {
-                nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                source.GetComponent<ACOVB>().startAnt(nodeToFind);
-                nodeToFind.renderer.material.color = Color.magenta;
 
-            }
-        }
         if (GUILayout.Button(startStr, GUILayout.Width(140)))
         {
             if (start)
@@ -144,8 +155,7 @@ public class ACOVBGUI : AODVGUI {
                   node.renderer.material.color = Color.white;
               }
             int rand = Random.Range(0, simValues.numNodes);
-         //   GameObject.Find("Node " + rand).GetComponent<ACOVB>().generateAntCDS();
-            GameObject.Find("Node 10").GetComponent<ACOVB>().generateAntCDS();
+            GameObject.Find("Node " + rand).GetComponent<ACOVB>().generateAntCDS();
         }
         displayCDS = GUILayout.Toggle(displayCDS, "Display CDS");
 

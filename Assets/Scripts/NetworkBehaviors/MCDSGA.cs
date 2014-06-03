@@ -427,7 +427,6 @@ public class MCDSGA : AODV
 
     public bool checkFeasibility(CDS CDStoCheck)
     {
-        int counter = simValues.numNodes * simValues.numNodes;
         List<GameObject> openList = new List<GameObject>(CDStoCheck.getInCDS());
         List<GameObject> closedList = new List<GameObject>();
         GameObject node = openList[0];

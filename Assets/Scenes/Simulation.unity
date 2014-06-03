@@ -90,6 +90,7 @@ GameObject:
   - 114: {fileID: 6927366}
   - 114: {fileID: 6927365}
   - 114: {fileID: 6927368}
+  - 45: {fileID: 6927369}
   m_Layer: 0
   m_Name: Second Camera
   m_TagString: Camera2
@@ -183,31 +184,31 @@ MonoBehaviour:
   canControl: 1
   useFixedUpdate: 1
   movement:
-    maxForwardSpeed: 30
-    maxSidewaysSpeed: 30
-    maxBackwardsSpeed: 30
+    maxForwardSpeed: 20
+    maxSidewaysSpeed: 20
+    maxBackwardsSpeed: 20
     slopeSpeedMultiplier:
       serializedVersion: 2
       m_Curve:
       - time: -89.6472855
-        value: .977898121
+        value: .965893924
         inSlope: 0
         outSlope: 0
         tangentMode: 0
-      - time: 53.443058
-        value: .501942813
-        inSlope: -.0113754217
-        outSlope: -.0113754217
+      - time: 8.46843338
+        value: .666307688
+        inSlope: -.00648193713
+        outSlope: -.00648193713
         tangentMode: 0
       - time: 87.314743
-        value: .398944557
+        value: .38694039
         inSlope: 0
         outSlope: 0
         tangentMode: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
     maxGroundAcceleration: 30
-    maxAirAcceleration: 50
+    maxAirAcceleration: 30
     gravity: 0
     maxFallSpeed: 0
   jumping:
@@ -217,10 +218,10 @@ MonoBehaviour:
     perpAmount: 0
     steepPerpAmount: .5
   movingPlatform:
-    enabled: 1
+    enabled: 0
     movementTransfer: 2
   sliding:
-    enabled: 1
+    enabled: 0
     slidingSpeed: 15
     sidewaysControl: 1
     speedControl: .400000006
@@ -250,12 +251,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   axes: 0
-  sensitivityX: 5
-  sensitivityY: 5
+  sensitivityX: .5
+  sensitivityY: .5
   minimumX: -360
   maximumX: 360
   minimumY: -60
   maximumY: 60
+--- !u!45 &6927369
+Skybox:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 6927359}
+  m_Enabled: 1
+  m_CustomSkybox: {fileID: 2100000, guid: 53412155bc1016547b1a77b2333c0380, type: 2}
 --- !u!1 &143568324
 GameObject:
   m_ObjectHideFlags: 0
@@ -349,6 +358,7 @@ GameObject:
   - 92: {fileID: 532098892}
   - 124: {fileID: 532098891}
   - 81: {fileID: 532098890}
+  - 45: {fileID: 532098895}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -417,6 +427,14 @@ Transform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 845107084}
+--- !u!45 &532098895
+Skybox:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 532098889}
+  m_Enabled: 1
+  m_CustomSkybox: {fileID: 2100000, guid: 53412155bc1016547b1a77b2333c0380, type: 2}
 --- !u!1 &678213362
 GameObject:
   m_ObjectHideFlags: 0

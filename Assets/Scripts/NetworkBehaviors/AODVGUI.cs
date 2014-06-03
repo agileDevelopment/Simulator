@@ -7,6 +7,7 @@ public class AODVGUI : NetworkGUI {
     protected override void Start()
     {
         base.Start();
+        myUIElements.Add("messageQueue","");
  	}
 	
 	// Update is called once per frame

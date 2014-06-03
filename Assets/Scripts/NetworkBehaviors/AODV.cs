@@ -29,18 +29,23 @@ public class AODV : Network
     protected int nodeSeqNum;
     public int broadcastID;
     public int delayFactor;
-    public int messageQueue;
+    public int messageQueue=0;
+    GUIText mCountText;
+
+    
 
     //--------------------------------------Unity Functions---------------------------------------
     // Use this for initialization
     protected override void Start()
     {
         base.Start();
+        netValues = simValues.networkGUI;
         delayFactor = 4000;
-        active_route_timer = 3.0f;  // used to delete route information;
+        active_route_timer = 5.0f;  // used to delete route information;
         nodeSeqNum = 0;
         broadcastID = 0;
         currentRREQ = new Dictionary<string, RevPath>();
+
    
     }
 
@@ -49,16 +54,27 @@ public class AODV : Network
     {
         base.Update();
         messageQueue = currentRREQ.Count;
-    }
+        if (gameObject.GetComponent<NodeController>().selected)
+        {
+            netValues.myUIElements["messageQueue"] = "# of mess:" + messageQueue.ToString();
+        }
+        netValues.myUIElements["Tot Messages"] = "Tot# Mess: " + netValues.messageCounter.ToString();
 
-    protected virtual void FixedUpdate()
-    {
-        //clear requests if they have expired.
+    }
+    protected override void LateUpdate()
+    {        //clear requests if they have expired.
         Dictionary<string, RevPath> temp = new Dictionary<string, RevPath>(currentRREQ);
         foreach (RevPath r in temp.Values)
         {
             if (r.expTimer < Time.time)
-               currentRREQ.Remove(r.source.name + "-" + r.broadcast_id);
+            {
+                if (currentRREQ.Count == 1)
+                    currentRREQ.Clear();
+                else
+                    currentRREQ.Remove(r.source.name + "-" + r.broadcast_id);      
+            }
+
+           
         }
 
         //clear routes if they have expired.
@@ -68,14 +84,11 @@ public class AODV : Network
             AODVRouteEntry r = entry;
 
             if (r.expirationTime < Time.time)
-              routes.Remove(r.destination);
+                routes.Remove(r.destination);
         }
+
     }
-    void OnMouseDown()
-    {
-        netValues.source = gameObject;
-        netValues.sourceStr = gameObject.name;
-    }
+
 
     //--------------------------------------Custom Functions------------------------------------------
 
@@ -229,6 +242,7 @@ public class AODV : Network
             if (cameFrom != node.name && node.name != dataOut.destination.name)
             {
                 dataOut.intermediate = gameObject;
+                netValues.messageCounter++;
                 node.GetComponent<AODV>().recRREQ(dataOut);
                // node.GetComponent<AODV>().StartCoroutine("recRREQ", dataOut);
 
@@ -275,8 +289,11 @@ public class AODV : Network
                 rrepPacket.intermediate = gameObject;
                 if(gameObject.renderer.material.color == Color.blue)
                     gameObject.renderer.material.color = Color.red;
-                if(gameObject!= rrepPacket.source)
+                if (gameObject != rrepPacket.source)
+                {
+                    netValues.messageCounter++;
                     returnP.GetComponent<AODV>().recRREP(rrepPacket);
+                }
             }
         }
     }
@@ -349,11 +366,6 @@ public class AODV : Network
         
     }
 
-    public override void sendMessage(MSGPacket packet)
-    {
-        StartCoroutine(delaySendMessage(packet));
-    }
-
     IEnumerator delaySendMessage(MSGPacket packet)
     {
         bool haveRoute = false;
@@ -395,6 +407,7 @@ public class AODV : Network
                     if (packet.TTL > 0)
                     {
                         packet.TTL--;
+                        netValues.messageCounter++;
                         nextHop.GetComponent<AODV>().recMessage(packet);
                     }
                     else
@@ -408,23 +421,30 @@ public class AODV : Network
 
     protected override void performRecMessage(MSGPacket packet)
     {
-      //  gameObject.renderer.material.color = Color.white;
+        bool fwd = true;
         if (gameObject == packet.destination)
         {
-            if(packet.message == "ping"){
-               initMessage(packet.source,"ack");
-            }
-            if (packet.message == "ack")
+            if (packet.messageType == "mess")
             {
-
+                //do something
             }
-      //      gameObject.renderer.material.color = Color.green;
-      //      float tTime  = Time.time - packet.startTime;
-      //      print(packet.message + "Time to Send: " + tTime );
+
+            else if (packet.messageType == "cmd")
+            {
+                if (packet.message == "ping")
+                {
+                    initMessage(packet.source, "cmd", "ack");
+                }
+                if (packet.message == "ack")
+                {
+
+                }
+            }
+
         }
-        else
+        else if (fwd)
         {
-             sendMessage(packet);
+            sendMessage(packet);
         }
     }
 
@@ -525,7 +545,7 @@ public class AODV : Network
         }
         dataOut.hop_count = 0;
         dataOut.source_seq = nodeSeqNum;
-        dataOut.TTL = (int)simValues.numNodes / 2;
+        dataOut.TTL = (int)simValues.numNodes;
 
         RevPath revEntry = new RevPath();
         revEntry.destination = dataOut.destination;
@@ -539,6 +559,7 @@ public class AODV : Network
         {
             currentRREQ.Add(dataOut.source + "-" + dataOut.broadcast_id, revEntry);
         }
+       
         recRREQ(dataOut);
     }
 }

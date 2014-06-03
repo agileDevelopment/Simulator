@@ -21,55 +21,71 @@ using System.Collections.Generic;
 using System.Threading;
 
 public class ACOVB : AODV {
-    public Dictionary<GameObject, GameObject> VBlines;
-    public float myPhereLevel;
-    int maxCDS = 0;
-    public Dictionary<GameObject, ACORouteEntry> antRoutes;
+    new ACOVBGUI netValues;
     CDS myCurrentCDS;
-    ACOVBGUI guiSettings;
-    int counter=0;
+
+    public Dictionary<GameObject, GameObject> VBlines;
+    public Dictionary<GameObject, ACORouteEntry> antRoutes;
     Dictionary<string, CDSAnt> antUpdates;
+
+    public float myPhereLevel;
+    public int maxCDS;
+
+    int counter=0;
+
     public bool memberOfCDS = false;
     bool cdsUpdated = false;
 
 
 	// Use this for initialization
     protected override void Start()
-    {    
+    {
         base.Start();
         myCurrentCDS = null;
         VBlines = new Dictionary<GameObject, GameObject>();
-        guiSettings = GameObject.Find("Spawner").GetComponent<ACOVBGUI>();
         myPhereLevel = 0.01f;
+        maxCDS = 0;
         antRoutes = new Dictionary<GameObject, ACORouteEntry>();
         antUpdates = new Dictionary<string, CDSAnt>();
+        netValues = (ACOVBGUI)simValues.networkGUI;
     }
   	
 
 	// Update is called once per frame
     protected override void Update()
     {
-  
         pollNeighbors();
         base.Update();
         counter++;
-        if (counter % 60 == 0)
+        if (counter % 5 == 0)
         {
-            //   displayCDS();
-            counter = 0;
-            if (myCurrentCDS != null)
-            {
-                int rand = Random.Range(0, 100);
-                if (rand < 5)
-                    initMessage(GameObject.Find("Node 10"),"genCDS");
-            }
 
+
+            counter = 0;
+            //if (myCurrentCDS != null)
+            //{
+            //    if (netValues.displayCDS)
+            //       displayCDS();
+            //}
+
+        }
+        if (netValues.source == gameObject)
+        {
+            netValues.myUIElements["pLevel"] = "Phereomon: " + myPhereLevel.ToString();
         }
 	}
 
+
+    //LateUpdate is called once per frame after Update
+    protected override void LateUpdate()
+    {
+        base.LateUpdate();
+    }
+
+
     protected void displayCDS()
     {
-        float minDistance = guiSettings.nodeCommRange;
+        float minDistance = netValues.nodeCommRange;
         GameObject cdsNode = gameObject;
         if (myCurrentCDS != null)
         {
@@ -84,7 +100,6 @@ public class ACOVB : AODV {
                 foreach (GameObject node in temp.Keys)
                 {
                     line = VBlines[node];
-             //       print("deleting Line" + line.name);
                     Destroy(line);
                 }
                 VBlines.Clear();
@@ -94,7 +109,6 @@ public class ACOVB : AODV {
             {
                 gameObject.renderer.material.color = Color.black;
                 foreach (GameObject node in neighbors)
-                //foreach (GameObject node in myCurrentCDS.network[gameObject])
                 {
                     if (node.GetComponent<ACOVB>().memberOfCDS)
                     {
@@ -166,46 +180,48 @@ public class ACOVB : AODV {
         }
     }
 
-
-    protected override void FixedUpdate()
-    {
-        counter++;
-        base.FixedUpdate();
-        if (guiSettings.start && counter > 30)
-        {
-
-          }
-        
-    }
     //---------------------------Utility Functions----------------------------------
     #region Utility
 
         protected override void performRecMessage(MSGPacket packet)
     {
-      //  gameObject.renderer.material.color = Color.white;
+        bool fwd=true;
         if (gameObject == packet.destination)
         {
-            if(packet.message == "ping"){
-               initMessage(packet.source,"ack");
+            if(packet.messageType == "mess"){
+                //do something
             }
-            if (packet.message == "ack")
+        
+            else if (packet.messageType == "cmd")
             {
+                if (packet.message == "ping")
+                {
+                    initMessage(packet.source, "cmd", "ack");
+                }
+                if (packet.message == "ack")
+                {
 
+                }
+                if (packet.message == "clear")
+                {
+                    maxCDS = 0;
+                }
+                if (packet.message == "genCDS")
+                {
+                    maxCDS = 0;
+                    generateAntCDS();
+                }
             }
-            if(packet.message == "clear"){
-                maxCDS = 0;
-            }
-            if (packet.message == "genCDS")
-            {
-                maxCDS = 0;
-                generateAntCDS();
-            }
-      //      gameObject.renderer.material.color = Color.green;
-      //      float tTime  = Time.time - packet.startTime;
-      //      print(packet.message + "Time to Send: " + tTime );
+
         }
-        else
+        else if(fwd)
         {
+            if(packet.messageType == "CDS"){
+                if (memberOfCDS)
+                {
+                    sendMessage(packet);
+                }
+            }
              sendMessage(packet);
         }
     }
@@ -250,33 +266,37 @@ public class ACOVB : AODV {
             routes.Remove(node);
         if (myCurrentCDS != null)
         {
-            if(myCurrentCDS.network.ContainsKey(gameObject))
-                if (myCurrentCDS.network[gameObject].Contains(node))
-                     myCurrentCDS.network[gameObject].Remove(node);
-            bool validCDS = true;
+            int cdsNeighborCount = 0;
+
+            if (myCurrentCDS.getInCDS().Contains(node))
+            {
+                myCurrentCDS.moveToOutCDS(node);
+            }
             foreach (GameObject neighbor in neighbors)
             {
                 if (myCurrentCDS.getInCDS().Contains(neighbor))
                 {
-                    initMessage(myCurrentCDS.owner, "genCDS");
-                //    validCDS = checkFeasibility(myCurrentCDS);
-                    break;
+                    cdsNeighborCount++;
                 }
-            }
-            if (!validCDS)
-            {
-                
-                generateAntCDS();
-            }
-        }
+                if (cdsNeighborCount == 0)
+                {
+                    initMessage(myCurrentCDS.owner,"cmd","genCDS");
+                }
+                else
+                {
+                    if (!checkFeasibility(myCurrentCDS))
+                        initMessage(myCurrentCDS.owner, "cmd", "genCDS");
+                }
 
-        if (VBlines.ContainsKey(node))
-        {
-            GameObject line = VBlines[node];
-            VBlines.Remove(node);
-            Destroy(line);
+            }
+
+            if (VBlines.ContainsKey(node))
+            {
+                GameObject line = VBlines[node];
+                VBlines.Remove(node);
+                Destroy(line);
+            }
         }
-        
 
     }
 
@@ -294,179 +314,6 @@ public class ACOVB : AODV {
             
         }
     }
-    //Ant implementation by Talbi
-    #region TalbiAnt
-    public void returnAnt(Ant ant)
-    {
-        
-        
-        if (netValues.useLatency)
-            StartCoroutine(delayReturnAnt(ant));
-        else
-            performReturnAnt(ant);
-    }
-
-
-    IEnumerator delayReturnAnt(Ant ant)
-    {
-        float distance = Vector3.Distance(gameObject.transform.position, ant.nodeData[ant.hop_count].previous.transform.position);
-        distance = distance / delayFactor;
-        yield return new WaitForSeconds(distance);
-        performReturnAnt(ant);
-    }
-
-    void performReturnAnt(Ant ant)
-    {
-        gameObject.renderer.material.color = Color.red;
-        if (ant.hop_count >1)
-        {
-            gameObject.GetComponent<ACOVB>().myPhereLevel += (float)simValues.numNodes / ant.maxHop;
-            foreach (GameObject neighbor in neighbors)
-            {
-                neighbor.GetComponent<ACOVB>().myPhereLevel = neighbor.GetComponent<ACOVB>().myPhereLevel / (1 + (float)simValues.numNodes / ant.maxHop);
-            }
-
-
-            ant.hop_count--;
-            ant.nodeData[ant.hop_count].previous.GetComponent<ACOVB>().returnAnt(ant);
-        }
-        else
-        {
-        }
-    }
-
-
-
-    public void sendAnt(Ant ant){
-        
-        if (netValues.useLatency)
-            StartCoroutine(delaySendAnt(ant));
-        else
-            performSendAnt(ant);
-    }
-
-    IEnumerator delaySendAnt(Ant ant)
-    {
-     
-        float distance = Vector3.Distance(gameObject.transform.position, ant.nodeData[ant.hop_count].previous.transform.position);
-        distance = distance / delayFactor;
-        yield return new WaitForSeconds(distance);
-        performSendAnt(ant);
-    }
-
-    void performSendAnt(Ant ant)
-    {
-    
-        gameObject.renderer.material.color = Color.green;
-        if (ant.destination != gameObject)
-        {
-            ant.hop_count++;
-            ant.maxHop = ant.hop_count;
-            GameObject nextNode = selectTrail(ant);
-            RevAntPath temp = new RevAntPath();
-            temp.previous = gameObject;
-            temp.stop = nextNode;
-            if(!ant.seenNodes.Contains(nextNode))
-            ant.seenNodes.Add(nextNode);
-            ant.nodeData.Add(ant.hop_count,temp);
-            nextNode.GetComponent<ACOVB>().sendAnt(ant);
-        }
-        else
-        {
-            returnAnt(ant);
-        }
-    }
-
-    public void startAnt(GameObject dest)
-    {
-        Ant ant = new Ant(gameObject, dest);
-    }
-
-
-    GameObject selectTrail(Ant ant){
-        //take a snapshot of current routes as to not interfer with other message passing
-        Dictionary<GameObject, ACORouteEntry> tempRoutes = new Dictionary<GameObject, ACORouteEntry>(antRoutes);
-        Dictionary<GameObject,float> messages = new Dictionary<GameObject,float>();
-        Dictionary<GameObject,float> nFactor = new Dictionary<GameObject,float>();
-        bool visitedAll = true;
-        float total = 0;
-          foreach (GameObject neighbor in neighbors)
-          {
-              if (tempRoutes.ContainsKey(neighbor))
-              {
-                  messages[neighbor] = tempRoutes[neighbor].messageQueue;
-              }
-              else
-              {
-                  antRoutes.Add(neighbor, new ACORouteEntry());
-                  messages[neighbor] = 1;
-              }
-              total += messages[neighbor];
-              if (total == 0)
-                  total = 1;
-              if (ant.seenNode(neighbor))
-              {
-                      visitedAll = false;
-              }
-             }
-          foreach (GameObject neighbor in neighbors)
-          {
-              nFactor[neighbor] = (float)(1 - messages[neighbor] / total);
-          }
-          if (visitedAll)
-          {
-              int rand = Random.Range(0, neighbors.Count);
-              return neighbors[rand];
-          }
-          else
-          {
-              bool selected = false;
-              float w = float.Parse(guiSettings.weightFactor);
-              float tempProb;
-              int counter = 0;
-              while (!selected)
-              {
-                  tempProb = 0;
-                    foreach(GameObject neighbor in neighbors){
-                        if (ant.seenNode(neighbor))
-                        {
-                           tempProb += 0f;   
-                        }
-                        else
-                        {
-                            float phere = w * antRoutes[neighbor].pheremoneLevel;
-                            float heur =  (float)(1 - w) * nFactor[neighbor];
-                            float normal =  (float) (1 - w) / (neighbors.Count - 1);
-                            tempProb += (float)(phere + heur) / (w + normal);
-
-                        }
-                        if (tempProb == 0)
-                        {
-                            int rand2 = Random.Range(0, neighbors.Count);
-                            return neighbors[rand2];
- 
-                        }
-
-                           float rand = (float)Random.Range(0, 100) / 100;
-                            if (rand < tempProb)
-                            {
-                                selected = true;
-                                return neighbor;
-                            }
- 
-                  }
-                    counter++;
-                    if (counter > 50)
-                    {
-                        break;
-                    }
-              }
-          }
-          print("here");
-              return null;
-          }
-    #endregion
-
     int getRREQCount(){
         return currentRREQ.Count;
     }
@@ -501,10 +348,15 @@ public class ACOVB : AODV {
 
     public bool checkFeasibility(CDS CDStoCheck)
     {
-        int counter = simValues.numNodes * simValues.numNodes;
+
         List<GameObject> openList = new List<GameObject>(CDStoCheck.getInCDS());
         List<GameObject> closedList = new List<GameObject>();
-        GameObject node = openList[0];
+        GameObject node = null;
+        if (openList.Count > 0)
+        {
+            node = openList[0];
+        }
+        else return false;
         openList.Remove(node);
         closedList.Add(node);
         while (openList.Count > 0)
@@ -543,10 +395,12 @@ public class ACOVB : AODV {
         broadcastID++;
         CDSAnt myAnt = new CDSAnt(gameObject);
         myAnt.label = gameObject.name + broadcastID.ToString();
+        netValues.runningCDSs.Add(myAnt.label);
         foreach (GameObject neighbor in neighbors)
         {
             myAnt.myCDS.moveToEdgeCDS(neighbor);
         }
+        print("At node: " + gameObject.name + " Method: genAntCDS()");
          performSendCDSAnt(myAnt);
     }
 
@@ -561,7 +415,7 @@ public class ACOVB : AODV {
 
     IEnumerator delaySendCDSAnt(CDSAnt ant)
     {
-
+        print("At node: " + gameObject.name + " Method: delaySendAntCDS()");
         float distance = Vector3.Distance(gameObject.transform.position, ant.nodeData[ant.hop_count].previous.transform.position);
         distance = distance / delayFactor;
         yield return new WaitForSeconds(distance);
@@ -597,6 +451,7 @@ public class ACOVB : AODV {
 
     void performSendCDSAnt(CDSAnt ant)
     {
+        print("At node: " + gameObject.name + " Method: performSendCDSAnt()");
         memberOfCDS = true;
         if (ant.myCDS.getInCDS().Count == 0)
             ant.myCDS.owner = gameObject;
@@ -698,38 +553,29 @@ public class ACOVB : AODV {
                 }
             }
 
-            //check to see if we have route to our destination          
+
+
+            //check to see if we have route to our destination , if we don't, send a ping        
             if (!routes.ContainsKey(nextHop))
             {
-                initMessage(nextHop, "ping");
+              //  discoverPath(nextHop);
+               initMessage(nextHop, "cmd", "ping");
             }
-
-            ant.hop_count++;
-            RevAntPath pathBack = new RevAntPath();
-            pathBack.previous = gameObject;
-            pathBack.stop = nextHop;
-            ant.nodeData.Add(ant.hop_count, pathBack);
-            
-            //Local update of PheremoneValues...
-            float tau_i = (1 - float.Parse(guiSettings.localUpdate)) * nextHop.GetComponent<ACOVB>().myPhereLevel + 2;//float.Parse(guiSettings.localUpdate)* qualityValue;
-            nextHop.GetComponent<ACOVB>().myPhereLevel = tau_i;
 
             StartCoroutine(waitForPath(nextHop, ant));
         
             }
 
         //Last node reached, CDS is complete....
-
-        
         else
         {
+            netValues.runningCDSs.Remove(ant.label);
             bool sendResult = true;
             if (myCurrentCDS != null)
                 if (ant.myCDS.getInCDS().Count > myCurrentCDS.getInCDS().Count)
                     sendResult = false;
            if(sendResult) 
-            {
-                print("Generated CDS is feasible: " + checkFeasibility(ant.myCDS));
+           {
 
                 foreach (GameObject node in ant.myCDS.getInCDS())
                 {
@@ -746,6 +592,7 @@ public class ACOVB : AODV {
                 foreach (GameObject neighbor in neighbors)
                 {
                     if (ant.myCDS.getInCDS().Contains(neighbor))
+                        netValues.messageCounter++;
                         neighbor.GetComponent<ACOVB>().sendPheremoneUpdate(ant);
                 }
             }
@@ -776,14 +623,13 @@ public class ACOVB : AODV {
         {
             //add it to my list
             antUpdates.Add(ant.label, ant);
-            myPhereLevel = (float)((1 - float.Parse(guiSettings.newTrailInfluence)) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
+            myPhereLevel = (float)((1 - float.Parse(netValues.newTrailInfluence)) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
 
             myCurrentCDS = ant.myCDS;
             cdsUpdated = true;
             if (ant.source == gameObject)
             {
-         //       print("Sending out new ant...");
-         //       generateAntCDS(); 
+
             }
             //and send it on if I'm a CDS node
             if (ant.myCDS.getInCDS().Contains(gameObject))
@@ -793,6 +639,7 @@ public class ACOVB : AODV {
           //      print(gameObject + "forwarding update");
                 foreach (GameObject neighbor in neighbors)
                 {
+                    netValues.messageCounter++;
                     neighbor.GetComponent<ACOVB>().sendPheremoneUpdate(ant);
                 }
             }
@@ -800,10 +647,12 @@ public class ACOVB : AODV {
     }
 
     IEnumerator waitForPath(GameObject nextHop, CDSAnt ant){
+        print("At node: " + gameObject.name + " Method: waitForPath()");
         while(!routes.ContainsKey(nextHop)){
         yield return null;
         }
       //  print("got a path to " + nextHop.name);
+        netValues.messageCounter++;
         nextHop.GetComponent<ACOVB>().sendCDSAnt(ant);
     }
 
@@ -853,7 +702,6 @@ public class CDSAnt: ACORouteEntry
 {
     public string label="";
     public float exploreRate;
-    public int hop_count;
     public int maxHop;
     public GameObject source;
     public Dictionary<int, RevAntPath> nodeData;
@@ -886,4 +734,172 @@ public class NeighborData
     public float tau;
 }
 
+ //Ant implementation by Talbi
+    #region TalbiAnt
+/*
+    public void returnAnt(Ant ant)
+    {
+        
+        
+        if (netValues.useLatency)
+            StartCoroutine(delayReturnAnt(ant));
+        else
+            performReturnAnt(ant);
+    }
 
+
+    IEnumerator delayReturnAnt(Ant ant)
+    {
+        float distance = Vector3.Distance(gameObject.transform.position, ant.nodeData[ant.hop_count].previous.transform.position);
+        distance = distance / delayFactor;
+        yield return new WaitForSeconds(distance);
+        performReturnAnt(ant);
+    }
+
+    void performReturnAnt(Ant ant)
+    {
+        gameObject.renderer.material.color = Color.red;
+        if (ant.hop_count >1)
+        {
+            gameObject.GetComponent<ACOVB>().myPhereLevel += (float)simValues.numNodes / ant.maxHop;
+            foreach (GameObject neighbor in neighbors)
+            {
+                neighbor.GetComponent<ACOVB>().myPhereLevel = neighbor.GetComponent<ACOVB>().myPhereLevel / (1 + (float)simValues.numNodes / ant.maxHop);
+            }
+
+
+            ant.hop_count--;
+            ant.nodeData[ant.hop_count].previous.GetComponent<ACOVB>().returnAnt(ant);
+        }
+        else
+        {
+        }
+    }
+
+
+
+    public void sendAnt(Ant ant){
+        
+        if (netValues.useLatency)
+            StartCoroutine(delaySendAnt(ant));
+        else
+            performSendAnt(ant);
+    }
+
+    IEnumerator delaySendAnt(Ant ant)
+    {
+     
+        float distance = Vector3.Distance(gameObject.transform.position, ant.nodeData[ant.hop_count].previous.transform.position);
+        distance = distance / delayFactor;
+        yield return new WaitForSeconds(distance);
+        performSendAnt(ant);
+    }
+
+    void performSendAnt(Ant ant)
+    {
+    
+        gameObject.renderer.material.color = Color.green;
+        if (ant.destination != gameObject)
+        {
+            ant.hop_count++;
+            ant.maxHop = ant.hop_count;
+            GameObject nextNode = selectTrail(ant);
+            RevAntPath temp = new RevAntPath();
+            temp.previous = gameObject;
+            temp.stop = nextNode;
+            if(!ant.seenNodes.Contains(nextNode))
+            ant.seenNodes.Add(nextNode);
+            ant.nodeData.Add(ant.hop_count,temp);
+            netValues.messageCounter++;
+            nextNode.GetComponent<ACOVB>().sendAnt(ant);
+        }
+        else
+        {
+            returnAnt(ant);
+        }
+    }
+
+    GameObject selectTrail(Ant ant){
+        //take a snapshot of current routes as to not interfer with other message passing
+        Dictionary<GameObject, ACORouteEntry> tempRoutes = new Dictionary<GameObject, ACORouteEntry>(antRoutes);
+        Dictionary<GameObject,float> messages = new Dictionary<GameObject,float>();
+        Dictionary<GameObject,float> nFactor = new Dictionary<GameObject,float>();
+        bool visitedAll = true;
+        float total = 0;
+          foreach (GameObject neighbor in neighbors)
+          {
+              if (tempRoutes.ContainsKey(neighbor))
+              {
+                  messages[neighbor] = tempRoutes[neighbor].messageQueue;
+              }
+              else
+              {
+                  antRoutes.Add(neighbor, new ACORouteEntry());
+                  messages[neighbor] = 1;
+              }
+              total += messages[neighbor];
+              if (total == 0)
+                  total = 1;
+              if (ant.seenNode(neighbor))
+              {
+                      visitedAll = false;
+              }
+             }
+          foreach (GameObject neighbor in neighbors)
+          {
+              nFactor[neighbor] = (float)(1 - messages[neighbor] / total);
+          }
+          if (visitedAll)
+          {
+              int rand = Random.Range(0, neighbors.Count);
+              return neighbors[rand];
+          }
+          else
+          {
+              bool selected = false;
+              float w = float.Parse(netValues.weightFactor);
+              float tempProb;
+              int counter = 0;
+              while (!selected)
+              {
+                  tempProb = 0;
+                    foreach(GameObject neighbor in neighbors){
+                        if (ant.seenNode(neighbor))
+                        {
+                           tempProb += 0f;   
+                        }
+                        else
+                        {
+                            float phere = w * antRoutes[neighbor].pheremoneLevel;
+                            float heur =  (float)(1 - w) * nFactor[neighbor];
+                            float normal =  (float) (1 - w) / (neighbors.Count - 1);
+                            tempProb += (float)(phere + heur) / (w + normal);
+
+                        }
+                        if (tempProb == 0)
+                        {
+                            int rand2 = Random.Range(0, neighbors.Count);
+                            return neighbors[rand2];
+ 
+                        }
+
+                           float rand = (float)Random.Range(0, 100) / 100;
+                            if (rand < tempProb)
+                            {
+                                selected = true;
+                                return neighbor;
+                            }
+ 
+                  }
+                    counter++;
+                    if (counter > 50)
+                    {
+                        break;
+                    }
+              }
+          }
+              return null;
+          }
+
+*/
+#endregion
