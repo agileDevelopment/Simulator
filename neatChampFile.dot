@@ -10,7 +10,8 @@ N7[shape=box label=?]
 N8[shape=triangle]
 N9[shape=triangle]
 N10[shape=triangle]
-N3 -> N9 [color=red] [arrowType=inv]
+N1 -> N10 [color=black] 
+N6 -> N8 [color=black] 
  { rank=same; 
 N8
 N9

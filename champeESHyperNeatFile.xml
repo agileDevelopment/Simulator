@@ -1,9 +1,12 @@
 <Root>
   <ActivationFunctions>
-    <Fn id="0" name="SteepenedSigmoid" prob="1" />
+    <Fn id="0" name="Linear" prob="0.25" />
+    <Fn id="1" name="BipolarSigmoid" prob="0.25" />
+    <Fn id="2" name="Gaussian" prob="0.25" />
+    <Fn id="3" name="Sine" prob="0.25" />
   </ActivationFunctions>
   <Networks>
-    <Network id="41" birthGen="0" fitness="5.7777406966676388">
+    <Network id="7745" birthGen="158" fitness="0.88392961334591569">
       <Nodes>
         <Node type="bias" id="0" />
         <Node type="in" id="1" />
@@ -11,9 +14,11 @@
         <Node type="in" id="3" />
         <Node type="in" id="4" />
         <Node type="out" id="5" />
+        <Node type="out" id="6" />
       </Nodes>
       <Connections>
-        <Con id="7" src="1" tgt="5" wght="-3.9744788175448775" />
+        <Con id="16" src="4" tgt="6" wght="-1.5092671217830163" />
+        <Con id="27" src="3" tgt="5" wght="-0.064827203236325653" />
       </Connections>
     </Network>
   </Networks>

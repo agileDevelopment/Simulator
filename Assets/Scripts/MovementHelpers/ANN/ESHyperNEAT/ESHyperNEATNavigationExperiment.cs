@@ -13,6 +13,7 @@ using SharpNeat.DistanceMetrics;
 using SharpNeat.EvolutionAlgorithms;
 using SharpNeat.EvolutionAlgorithms.ComplexityRegulation;
 using SharpNeat.Genomes.Neat;
+using SharpNeat.Genomes.HyperNeat;
 using SharpNeat.Network;
 using SharpNeat.Phenomes;
 using SharpNeat.SpeciationStrategies;
@@ -35,6 +36,15 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         base.Initialize(name, xmlConfig);
         _activationSchemeCppn = ExperimentUtils.CreateActivationScheme(xmlConfig, "ActivationCppn");
     }
+
+	/// <summary>
+	/// Create a genome2 factory for the experiment.
+	/// Create a genome2 factory with our neat genome2 parameters object and the appropriate number of input and output neuron genes.
+	/// </summary>
+	public override IGenomeFactory<NeatGenome> CreateGenomeFactory()
+	{
+		return new CppnGenomeFactory(InputCount, OutputCount);
+	}
 
     /// <summary>
     /// Creates a new ESHyperNEAT genome decoder that can be used to convert a genome into a phenome.

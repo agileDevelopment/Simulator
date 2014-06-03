@@ -94,7 +94,7 @@ public abstract class SimpleNeatExperiment : INeatExperiment
     /// Create a genome2 factory for the experiment.
     /// Create a genome2 factory with our neat genome2 parameters object and the appropriate number of input and output neuron genes.
     /// </summary>
-    public IGenomeFactory<NeatGenome> CreateGenomeFactory()
+    public virtual IGenomeFactory<NeatGenome> CreateGenomeFactory()
     {
         return new NeatGenomeFactory(InputCount, OutputCount, _neatGenomeParams);
     }

@@ -32,7 +32,7 @@ public class BlackBoxNavigator
         if (this.isAlive && !isAlive)
         {
             this.isAlive = isAlive;
-            //fitness *= 0.95;
+            fitness *= 0.95;
         }
         age++;
 
@@ -47,10 +47,10 @@ public class BlackBoxNavigator
 
     public void checkpointNotify(double checkpointReward)
     {
-        fitness += checkpointReward * 10 / (age/2 + 1);
+        fitness += checkpointReward / (age/2 + 1);
     }
 
-	public void goalReachedNotify() 
+	public virtual void goalReachedNotify() 
 	{
 		fitness *= 2;
 	}

@@ -180,17 +180,13 @@ public class BackPropNeuralNet
         else return Math.Tanh(x);
     }
 
-    public void UpdateWeights(double[] tValues, double learn, double mom) // back-propagation
+    public void UpdateWeights(double errorVal, double learn, double mom) // back-propagation
     {
-        // assumes that SetWeights and ComputeOutputs have been called and so inputs and outputs have values
-        if (tValues.Length != numOutput)
-            throw new Exception("target values not same Length as output in UpdateWeights");
-
         // 1. compute output gradients. assumes log-sigmoid!
         for (int i = 0; i < oGrads.Length; ++i)
         {
             double derivative = (1 - outputs[i]) * outputs[i]; // derivative of log-sigmoid is y(1-y)
-            oGrads[i] = derivative * (tValues[i] - outputs[i]); // oGrad = (1 - O)(O) * (T-O)
+			oGrads[i] = derivative * errorVal; // oGrad = (1 - O)(O) * (T-O)
         }
 
         // 2. compute hidden gradients. assumes tanh!

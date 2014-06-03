@@ -28,6 +28,7 @@ public class ANNNav : NodeMove
     public ArrayList newDirection;
     Vector3 goal;
     Vector3 goalDirection;
+	Vector3 prevPosition;
     float yaw = 0, pitch = 0, speed = 0;
     int maxSpeed = 0, maxAcceleration = 0, numCheckpoints = 0;
     public Transform tmpTransform;
@@ -59,6 +60,8 @@ public class ANNNav : NodeMove
         {
             sensors[i] = new Sensor(gameObject, i, 64);
         }
+
+		prevPosition = new Vector3 (transform.position.x, transform.position.y, transform.position.z);
     }
 
     public bool checkBounds()
@@ -94,8 +97,11 @@ public class ANNNav : NodeMove
             newDirection = populationManager.updateLocation(gameObject, inputs, isAlive); // Must do this to update age
 
 			if (isAlive) {
-                if (checkBounds()) // Only get fitness points in the maze
-                    populationManager.checkpointNotify(gameObject, 1/(Vector3.Distance(gameObject.transform.position, goal) + 1) );
+                if (checkBounds() && prevPosition != transform.position) // Only get fitness points in the maze
+				{
+                    populationManager.checkpointNotify(gameObject, Mathf.Pow (guiValues.floorSize/2/(Vector3.Distance(gameObject.transform.position, goal) + 1), 2) );
+					prevPosition = new Vector3 (transform.position.x, transform.position.y, transform.position.z);
+				}
 
 				yaw = (yaw + ((float)newDirection [0] - 0.5f) * 2 * 30); // Max yaw change rate of 15 degrees
 				if (yaw < 0)

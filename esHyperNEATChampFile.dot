@@ -5,9 +5,12 @@ N2[shape=box label=Y1]
 N3[shape=box label=X2]
 N4[shape=box label=Y2]
 N5[shape=triangle]
-N1 -> N5 [color=red] [arrowType=inv]
+N6[shape=triangle]
+N4 -> N6 [color=red] [arrowType=inv]
+N3 -> N5 [color=red] [arrowType=inv]
  { rank=same; 
 N5
+N6
  } 
  { rank=same; 
 N1 ->N2 ->N3 ->N4 ->N0 [style=invis]
