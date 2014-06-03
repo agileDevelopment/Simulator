@@ -92,8 +92,8 @@ GameObject:
   - 114: {fileID: 6927368}
   - 45: {fileID: 6927369}
   m_Layer: 0
-  m_Name: Second Camera
-  m_TagString: Camera2
+  m_Name: Main Camera
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -343,7 +343,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0929c15991588434c8ab9505a4828d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 100000, guid: f469a7361ca502b4796b8823fe65c797, type: 2}
+  nodePrefab: {fileID: 100002, guid: f05998c99229d9a4cad03faf7817f591, type: 2}
   loadData: {fileID: 0}
   replaceMembers: 1
 --- !u!1 &532098889
@@ -360,8 +360,8 @@ GameObject:
   - 81: {fileID: 532098890}
   - 45: {fileID: 532098895}
   m_Layer: 0
-  m_Name: Main Camera
-  m_TagString: MainCamera
+  m_Name: Second Camera
+  m_TagString: Camera2
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

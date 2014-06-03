@@ -100,12 +100,12 @@ public class GridGUI : FlightGUI
         GameObject floor = GameObject.Find("Floor");
         floor.transform.position = (new Vector3(center, -radius -10, center));
         floor.transform.localScale = (new Vector3(floorSize, .1f, floorSize));
-        Camera.main.transform.position = (new Vector3(center, floorSize / 2, center));
-        Camera.main.isOrthoGraphic = true;
-        Camera.main.rect = new Rect(.7f, .7f, .3f, .3f);
-        Camera.main.orthographicSize = floor.transform.localScale.x / 2;
-        camera2.transform.position = (new Vector3(floorSize, floorSize / 2, floorSize));
-        camera2.transform.LookAt(new Vector3(center, 0, center));
+        camera2.transform.position = (new Vector3(center, floorSize / 2, center));
+        camera2.isOrthoGraphic = true;
+        camera2.rect = new Rect(.7f, .7f, .3f, .3f);
+        camera2.orthographicSize = floor.transform.localScale.x / 2;
+        Camera.main.transform.position = (new Vector3(floorSize, floorSize / 2, floorSize));
+        Camera.main.transform.LookAt(new Vector3(center, 0, center));
         floor.renderer.material.mainTextureScale = new Vector2(floorSize / 10, floorSize / 10);
     }
 
