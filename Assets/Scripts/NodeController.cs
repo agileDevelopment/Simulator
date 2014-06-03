@@ -20,11 +20,13 @@ using System.Collections;
 public class NodeController : MonoBehaviour {
 	public NodeMove flightBehavior;
     public Network networkBehavior;
+    public GameObject nodeText;
 	LoadOptionsGUI simValues;
-
 	public int idNum;
 	public string idString;
     public bool selected;
+    Color oldColor;
+ 
 	
 	// Use this for initialization
 	void Awake(){
@@ -32,7 +34,9 @@ public class NodeController : MonoBehaviour {
 	//	flightBehavior = gameObject.AddComponent<Orbit>();
 	}
 	void Start () {
+        nodeText = (GameObject)gameObject.transform.FindChild("Node Text").gameObject;
         selected = false;
+        oldColor = Color.blue;
 
 		//change this to implement a different movement controller
 	
@@ -42,6 +46,7 @@ public class NodeController : MonoBehaviour {
     {
         unselectNodes();
         selected = true;
+        oldColor = gameObject.renderer.material.color;
         gameObject.renderer.material.color = Color.green;
 
     }
@@ -54,7 +59,7 @@ public class NodeController : MonoBehaviour {
         {
             if(node)
             node.GetComponent<NodeController>().selected = false;
-            node.renderer.material.color = Color.blue;
+           node.renderer.material.color = oldColor;
         }
 
     }
@@ -96,6 +101,7 @@ public class NodeController : MonoBehaviour {
         }
         if (selected)
             gameObject.renderer.material.color = Color.green;
+
 		}
 		
 	void LateUpdate(){

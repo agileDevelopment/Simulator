@@ -4,15 +4,17 @@ using System.Collections;
 public class AODVGUI : NetworkGUI {
 
 	// Use this for initialization
-	void Start () {
-        setOptions();
-	}
+    protected override void Start()
+    {
+        base.Start();
+        myUIElements.Add("messageQueue","");
+ 	}
 	
 	// Update is called once per frame
-	void Update () {
-	
+    protected override void Update()
+    {
+        base.Update();
 	}
-
 
 }
 

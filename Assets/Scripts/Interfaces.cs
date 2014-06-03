@@ -83,6 +83,7 @@ public interface IFlightGUIOptions{
 //--------------------------------------------------------------
 public interface INetworkBehavior
 {
+
     void addNeighbor(GameObject node);
     void removeNeighbor(GameObject node);
     void recMessage(MSGPacket packet);

@@ -3,6 +3,8 @@ using System.Collections;
 
 public class GridGUI : FlightGUI
 {
+    Camera mainCamera;
+    Camera camera2;
     LoadOptionsGUI simValues;
     public string nodeSpacingString = "45";
     public string nodeOrbitString = "50";
@@ -11,19 +13,27 @@ public class GridGUI : FlightGUI
     public int nodeMaxSpeed;
     public float radius;
     public float rotationSpeed;
+    bool mainActive = true;
     // Use this for initialization
     void Start()
     {
         simValues = gameObject.GetComponent<LoadOptionsGUI>();
         nodeSpacingString = "45";
         nodeOrbitString = "30";
-        nodeMaxSpeedString = "15";
+        nodeMaxSpeedString = "20";
+        mainCamera = Camera.main;
+        camera2 = (Camera)GameObject.Find("Second Camera").camera;
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (Input.GetKeyDown("space"))
+        {
+            mainCamera.enabled = !mainActive;
+            camera2.enabled = mainActive;
+            mainActive = !mainActive;
+        }
     }
 
     public override void showGUI()
@@ -46,6 +56,7 @@ public class GridGUI : FlightGUI
         GUILayout.EndArea();
         GUI.EndGroup();
     }
+
 
     public override void setGuiValues()
     {
@@ -87,11 +98,14 @@ public class GridGUI : FlightGUI
         int floorSize = (int)(simValues.nodesSqrt * nodeSpacing + radius * 3);
         int center = floorSize / 2;
         GameObject floor = GameObject.Find("Floor");
-        floor.transform.position = (new Vector3(center, -10, center));
+        floor.transform.position = (new Vector3(center, -radius -10, center));
         floor.transform.localScale = (new Vector3(floorSize, .1f, floorSize));
-        Camera.main.transform.position = (new Vector3(center, floorSize / 2, center));
-        Camera.main.isOrthoGraphic = true;
-        Camera.main.orthographicSize = floor.transform.localScale.x / 2 + 50;
+        camera2.transform.position = (new Vector3(center, floorSize / 2, center));
+        camera2.isOrthoGraphic = true;
+        camera2.rect = new Rect(.7f, .7f, .3f, .3f);
+        camera2.orthographicSize = floor.transform.localScale.x / 2;
+        Camera.main.transform.position = (new Vector3(floorSize, floorSize / 2, floorSize));
+        Camera.main.transform.LookAt(new Vector3(center, 0, center));
         floor.renderer.material.mainTextureScale = new Vector2(floorSize / 10, floorSize / 10);
     }
 

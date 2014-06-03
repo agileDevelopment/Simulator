@@ -29,13 +29,33 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public float endTime;
     public bool useDefaultLine = true;
     public string useDefaultLineStr = "Default Lines Enabled";
+    public long messageCounter = 0;
+    public Dictionary<string, string> myUIElements;
     //----------------Unity Functions------------------------------------
 
     // Update is called once per frame
     //Here we are figuring out whether to update lines or not.
-    void Update()
+    protected virtual void Start()
     {
+        simValues = gameObject.GetComponent<LoadOptionsGUI>();
+        nodeToFindString = "0";
+        timeToFind = 0;
+        numHops = 0;
+        nextHop = "";
+        drawLine = true;
+        updateLines = true;
+        adaptiveNetworkColor = true;
+        messageCounter = 0;
 
+        myUIElements = new Dictionary<string, string>();
+        myUIElements.Add("nodeID", gameObject.name);
+        myUIElements.Add("numRoutes", "# of Routes: " );
+        myUIElements.Add("Tot Messages", "Tot# ");
+    }
+
+    protected virtual void Update()
+    {
+        myUIElements["Tot Messages"] = "Tot# Mess: " + messageCounter.ToString();
         if (simValues.counter == simValues.slowMoRate)
         {
             updateLines = true;
@@ -52,6 +72,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
             }
         }
     }
+
 
     public virtual void showRunningGUI()
     {
@@ -96,10 +117,6 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         GUILayout.Label("Number of Hops: ", GUILayout.Width(100));
         GUILayout.Label(numHops.ToString(), GUILayout.Width(100));
         GUILayout.EndHorizontal();
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Next Hop: ", GUILayout.Width(100));
-        GUILayout.Label(nextHop, GUILayout.Width(175));
-        GUILayout.EndHorizontal();
         if (GUILayout.Button("Find", GUILayout.Width(140)))
         {
             GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
@@ -142,7 +159,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
             if (nodeToFindID < simValues.numNodes)
             {
                 nodeToFind = GameObject.Find("Node " + nodeToFindID);
-                source.GetComponent<AODV>().initMessage(nodeToFind);
+                source.GetComponent<AODV>().initMessage(nodeToFind, "mess","Test Message");
                 nodeToFind.renderer.material.color = Color.magenta;
 
             }
@@ -151,6 +168,27 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
 
         GUILayout.EndVertical();
         GUILayout.EndArea();
+
+    }
+
+    protected virtual void showNodeDataGUI()
+    {
+                //show selected node data
+        if (source != null)
+        if (source.GetComponent<NodeController>().selected)
+        {
+        GUI.Box(new Rect(Screen.width - 200, Screen.height / 2, 200, myUIElements.Count * 30 + 40), "Node Data");
+        GUILayout.BeginArea(new Rect(Screen.width - 195, Screen.height / 2 + 5, 190, myUIElements.Count * 30));
+
+        GUILayout.BeginVertical();
+        foreach (string item in myUIElements.Values)
+        {
+            GUILayout.Label(item, GUILayout.Width(180));
+        }
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+            }
+
     }
 
 
@@ -160,6 +198,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         if (!simValues.showMainGui)
         {
             showRunningGUI();
+            showNodeDataGUI();
         }
 
     }
@@ -203,16 +242,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
 
     public virtual void setOptions()
     {
-        simValues = gameObject.GetComponent<LoadOptionsGUI>();
-        nodeToFindString = "0";
-        timeToFind = 0;
-        numHops = 0;
-        nextHop = "";
 
-
-        drawLine = true;
-        updateLines = true;
-        adaptiveNetworkColor = true;
 
     }
 }
