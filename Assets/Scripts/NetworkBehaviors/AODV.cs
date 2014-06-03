@@ -366,6 +366,12 @@ public class AODV : Network
         
     }
 
+
+    public override void sendMessage(MSGPacket packet)
+    {
+        StartCoroutine(delaySendMessage(packet));
+    }
+
     IEnumerator delaySendMessage(MSGPacket packet)
     {
         bool haveRoute = false;

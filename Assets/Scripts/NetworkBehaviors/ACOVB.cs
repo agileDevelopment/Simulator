@@ -465,6 +465,7 @@ public class ACOVB : AODV {
         //CDS build isn't finished...
         if (ant.myCDS.getOutCDS().Count > 0)
         {
+ 
             //add this node the the CDS list
             ant.myCDS.moveToInCDS(gameObject);
             foreach (GameObject neighbor in neighbors)
