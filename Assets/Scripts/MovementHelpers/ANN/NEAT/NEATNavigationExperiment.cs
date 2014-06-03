@@ -12,11 +12,11 @@ using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
 using SharpNeat.SpeciationStrategies;
 
-public class NavigationExperiment : SimpleNeatExperiment
+public class NEATNavigationExperiment : SimpleNeatExperiment
 {
     IPhenomeEvaluator<IBlackBox> _phenomeEvaluator;
 
-    public NavigationExperiment(IPhenomeEvaluator<IBlackBox> phenomeEvaluator)
+    public NEATNavigationExperiment(IPhenomeEvaluator<IBlackBox> phenomeEvaluator)
     {
         _phenomeEvaluator = phenomeEvaluator;
     }
@@ -28,7 +28,7 @@ public class NavigationExperiment : SimpleNeatExperiment
 
     public override int InputCount
     {
-        get { return 8; }
+        get { return 7; }
     }
 
     public override int OutputCount

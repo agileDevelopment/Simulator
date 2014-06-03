@@ -1,0 +1,20 @@
+<Root>
+  <ActivationFunctions>
+    <Fn id="0" name="SteepenedSigmoid" prob="1" />
+  </ActivationFunctions>
+  <Networks>
+    <Network id="41" birthGen="0" fitness="5.7777406966676388">
+      <Nodes>
+        <Node type="bias" id="0" />
+        <Node type="in" id="1" />
+        <Node type="in" id="2" />
+        <Node type="in" id="3" />
+        <Node type="in" id="4" />
+        <Node type="out" id="5" />
+      </Nodes>
+      <Connections>
+        <Con id="7" src="1" tgt="5" wght="-3.9744788175448775" />
+      </Connections>
+    </Network>
+  </Networks>
+</Root>

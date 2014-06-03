@@ -1,0 +1,122 @@
+fileFormatVersion: 2
+guid: d82baa46a285c0c45bd5eaee27305fd0
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Antenna
+    100002: OuterPipe
+    100004: pCylinder1
+    100006: pCylinder2
+    100008: pPyramid1
+    100010: pPyramid2
+    100012: pPyramid3
+    100014: pTorus6
+    100016: Pyramids
+    100018: Ring1
+    100020: Ring2
+    100022: Ring3
+    100024: transform1
+    100026: transform2
+    100028: transform3
+    100030: transform4
+    100032: transform5
+    100034: transform6
+    100036: UFFO
+    100038: //RootNode
+    100040: UFOAll
+    400000: Antenna
+    400002: OuterPipe
+    400004: pCylinder1
+    400006: pCylinder2
+    400008: pPyramid1
+    400010: pPyramid2
+    400012: pPyramid3
+    400014: pTorus6
+    400016: Pyramids
+    400018: Ring1
+    400020: Ring2
+    400022: Ring3
+    400024: transform1
+    400026: transform2
+    400028: transform3
+    400030: transform4
+    400032: transform5
+    400034: transform6
+    400036: UFFO
+    400038: //RootNode
+    400040: UFOAll
+    2300000: Antenna
+    2300002: OuterPipe
+    2300004: Pyramids
+    2300006: Ring1
+    2300008: Ring2
+    2300010: Ring3
+    2300012: UFFO
+    3300000: Antenna
+    3300002: OuterPipe
+    3300004: Pyramids
+    3300006: Ring1
+    3300008: Ring2
+    3300010: Ring3
+    3300012: UFFO
+    4300000: UFFO
+    4300002: OuterPipe
+    4300004: Ring1
+    4300006: Ring2
+    4300008: Ring3
+    4300010: Pyramids
+    4300012: Antenna
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 

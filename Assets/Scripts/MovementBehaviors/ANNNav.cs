@@ -23,7 +23,7 @@ using System.Collections;
 public class ANNNav : NodeMove
 {
     //other data
-    public NEATPopulationManager populationManager;
+    public ANNPopulationManager populationManager;
     public ArrayList inputs = new ArrayList(new float[] {0,0,0,0,0,0,0,0});
     public ArrayList newDirection;
     Vector3 goal;
@@ -32,14 +32,15 @@ public class ANNNav : NodeMove
     int maxSpeed = 0, maxAcceleration = 0, numCheckpoints = 0;
     public Transform tmpTransform;
 	bool isAlive = true;
+    ANNNavGUI guiValues;
 
-    Sensor[] sensors = new Sensor[6];
+    Sensor[] sensors = new Sensor[5];
     int[] checkpointsReached;
 
     // Use this for initialization
     void Start()
     {
-        ANNNavGUI guiValues = GameObject.Find("Spawner").GetComponent<ANNNavGUI>();
+        guiValues = GameObject.Find("Spawner").GetComponent<ANNNavGUI>();
         populationManager = guiValues.popManager;
         gameObject.transform.position = guiValues.getSpawnLocation();
         goal = guiValues.getGoalLocation();
@@ -51,13 +52,24 @@ public class ANNNav : NodeMove
         checkpointsReached = new int[numCheckpoints];
         for (int i = 0; i < numCheckpoints; i++) checkpointsReached[i] = 0;
 
-            tmpTransform = new GameObject().transform;
+        tmpTransform = new GameObject().transform;
         tmpTransform.parent = gameObject.transform;
 
         for (int i = 0; i < sensors.Length; i++)
         {
             sensors[i] = new Sensor(gameObject, i, 64);
         }
+    }
+
+    public bool checkBounds()
+    {
+        if (0 <= transform.position.x && transform.position.x <= guiValues.floorSize &&
+            0 <= transform.position.y && transform.position.y <= guiValues.floorSize &&
+            0 <= transform.position.z && transform.position.z <= guiValues.floorSize)
+        {
+            return true;
+        }
+        return false;
     }
 
     public override void updateLocation()
@@ -82,6 +94,9 @@ public class ANNNav : NodeMove
             newDirection = populationManager.updateLocation(gameObject, inputs, isAlive); // Must do this to update age
 
 			if (isAlive) {
+                if (checkBounds()) // Only get fitness points in the maze
+                    populationManager.checkpointNotify(gameObject, 1/(Vector3.Distance(gameObject.transform.position, goal) + 1) );
+
 				yaw = (yaw + ((float)newDirection [0] - 0.5f) * 2 * 30); // Max yaw change rate of 15 degrees
 				if (yaw < 0)
 						yaw = 0;

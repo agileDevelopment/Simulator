@@ -1,0 +1,22 @@
+digraph g { 
+N0 [shape=box, label=Bias]
+N1[shape=box label=X1]
+N2[shape=box label=Y1]
+N3[shape=box label=X2]
+N4[shape=box label=Y2]
+N5[shape=box label=Z]
+N6[shape=box label=?]
+N7[shape=box label=?]
+N8[shape=triangle]
+N9[shape=triangle]
+N10[shape=triangle]
+N3 -> N9 [color=red] [arrowType=inv]
+ { rank=same; 
+N8
+N9
+N10
+ } 
+ { rank=same; 
+N1 ->N2 ->N3 ->N4 ->N5 ->N6 ->N7 ->N0 [style=invis]
+ } 
+}

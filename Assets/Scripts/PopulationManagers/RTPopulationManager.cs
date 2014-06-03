@@ -27,7 +27,7 @@ public class RTPopulationManager : PopulationManager
 
         for (int i = 0; i < loadData.numNodes; i++)
         {
-            GameObject node = buildMemberNode();
+            GameObject node = buildMemberNode(Color.blue);
             populationInfo.Add(node, new MemberInfo());
         }
         gameObject.GetComponent<LoadOptionsGUI>().paused = false;
@@ -37,7 +37,7 @@ public class RTPopulationManager : PopulationManager
     {
         if (replaceMembers)
         {
-            GameObject newNode = buildMemberNode();
+            GameObject newNode = buildMemberNode(Color.blue);
             populationInfo.Add(newNode, new MemberInfo());
             //((IFlightGUIOptions)newNode.GetComponent(movementBehaviorClassName + "GUI")).setSpawnLocation(newNode);
         }

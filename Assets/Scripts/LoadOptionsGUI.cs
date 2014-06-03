@@ -74,6 +74,8 @@ public class LoadOptionsGUI : MonoBehaviour {
 		//List for types of Flight Controllers
 		//Must be updated when new FlightBehaviors are implemented
 
+        Time.timeScale = 1;
+
         // Initialize the various attached classes
         movementBehaviorLoader.Add(0, "Movement Behavior...");
         movementBehaviorLoader.Add(1, "ANNNav");
@@ -165,7 +167,7 @@ public class LoadOptionsGUI : MonoBehaviour {
                         networkChoice = "";
                     }
 
-                    gameObject.GetComponent<NEATPopulationManager>().initializePopulation(movementChoice, networkChoice);
+                    gameObject.GetComponent<ANNPopulationManager>().initializePopulation(movementChoice, networkChoice);
                     paused = false;
                 }
 			}

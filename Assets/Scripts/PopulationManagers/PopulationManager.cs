@@ -31,9 +31,10 @@ public abstract class PopulationManager : MonoBehaviour
     {
         this.movementBehaviorClassName = movementBehaviorClassName;
         this.networkClassBehavior = networkClassBehavior;
+        nodePrefab = (GameObject)Resources.Load("NodePrefab");
     }
 
-    public GameObject buildMemberNode()
+    public GameObject buildMemberNode(Color nodeColor)
     {
         GameObject node;
         // These next lines will instantiate an game object with the appropriate data
@@ -47,7 +48,7 @@ public abstract class PopulationManager : MonoBehaviour
                 node.AddComponent(networkClassBehavior);
 
             node.name = "Node " + globalCount;
-            node.renderer.material.color = Color.blue;
+            node.renderer.material.color = nodeColor;
             node.layer = 2;
 
             data.idNum = globalCount;
@@ -57,6 +58,8 @@ public abstract class PopulationManager : MonoBehaviour
                 data.networkBehavior = (INetworkBehavior)node.GetComponent(networkClassBehavior);
             else
                 data.networkBehavior = null;
+
+            node.GetComponent<SphereCollider>().radius = 0.5f;
 
             globalCount++;
         }

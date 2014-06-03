@@ -208,10 +208,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 143568324}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ab57026601370b4495078aaa2903f04, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d631fbb3df75614293515cc6dcea737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 100000, guid: d3bb063479ca7fa43ada43ab643fe106, type: 2}
+  nodePrefab: {fileID: 0}
   loadData: {fileID: 0}
   movementBehaviorClassName: 
   networkClassBehavior: 
@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0929c15991588434c8ab9505a4828d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: 100000, guid: d3bb063479ca7fa43ada43ab643fe106, type: 2}
+  nodePrefab: {fileID: 0}
   loadData: {fileID: 0}
   movementBehaviorClassName: 
   networkClassBehavior: 

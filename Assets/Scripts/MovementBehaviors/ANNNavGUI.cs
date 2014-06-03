@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 	LoadOptionsGUI simValues;
-    public NEATPopulationManager popManager;
+    public ANNPopulationManager popManager;
 
-    public string spawnPointXString = "25", spawnPointYString = "300", spawnPointZString = "25";
-    public string goalPointXString = "375", goalPointYString = "25", goalPointZString = "375";
+    public int floorSize = 300;
+    public string spawnPointXString = "50", spawnPointYString, spawnPointZString = "50";
+    public string goalPointXString, goalPointYString = "50", goalPointZString;
 	public string nodeMaxSpeedString="150", numCheckpointsString="20";
 	public int spawnPointX, spawnPointY, spawnPointZ, goalPointX, goalPointY, goalPointZ, numCheckpoints;
 	public int nodeMaxSpeed;
-    int floorSize = 400;
 
     GameObject goalPrefab;
 	GameObject obstaclePrefab;
@@ -19,9 +19,10 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 	// Use this for initialization
 	void Start () {
         simValues = gameObject.GetComponent<LoadOptionsGUI>();
-        popManager = gameObject.GetComponent<NEATPopulationManager>();
+        popManager = gameObject.GetComponent<ANNPopulationManager>();
         goalPrefab = (GameObject)Resources.Load("GoalPrefab");
 		obstaclePrefab = (GameObject)Resources.Load ("ObstaclePrefab");
+        spawnPointYString = goalPointXString = goalPointZString = "" + (floorSize - 50);
 	}
 	
 	// Update is called once per frame
@@ -92,21 +93,20 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         Camera mainCamera = null;
         foreach (Camera c in Camera.allCameras)
         {
-            print(c.gameObject.name);
             if (c.gameObject.name == "Main Camera")
             {
                 mainCamera = c; 
-                c.transform.position = (new Vector3(5 * floorSize / 4, 450, -2 * floorSize / 4));
-                c.transform.LookAt(new Vector3(center, 40, center));
+                c.transform.position = (new Vector3(5 * floorSize / 4, 5 * floorSize / 4, -1 * floorSize / 4));
+                c.transform.LookAt(new Vector3(center, 3 * center / 4, center));
             }
             else if (c.gameObject.name == "Second Camera")
             {
-                c.transform.position = (new Vector3(-30, 370, -center));
-                c.transform.LookAt(new Vector3(center, 50, center));
+                c.transform.position = (new Vector3(center, center, -floorSize));
+                c.transform.LookAt(new Vector3(center, center, center));
             }
 			else if (c.gameObject.name == "Third Camera")
 			{
-				c.transform.position = (getGoalLocation() + new Vector3(80, 0, 40));
+				c.transform.position = (getGoalLocation() + new Vector3(80, 0, 80));
 				c.transform.LookAt(getSpawnLocation() - new Vector3(0, 150, 0));
 			}
         }
@@ -133,20 +133,21 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 
             SphereCollider collider = checkpointNode.AddComponent<SphereCollider>();
             collider.center = Vector3.zero;
-            collider.radius = 1.5f * spacing / checkpointNode.transform.localScale.x;
+            collider.radius = 1.3f * spacing / checkpointNode.transform.localScale.x;
         }
         goalNode.transform.rotation = Quaternion.LookRotation(Vector3.forward);
+
+        buildBoundary(center);
         layObstacles();
     }
 
     void layObstacles()
     {
-        int cubeScale = 10;
-        int spacing = 50;
-        int totalSpacing = cubeScale + spacing;
-        for (int i = 0; i <= getSpawnLocation().y + spacing; i += totalSpacing)
+        int cubeScale = 30;
+        int spacing = 75;
+        for (int i = 0; i <= getSpawnLocation().y + spacing; i += spacing)
         {
-            layObstacleLayer(i, cubeScale, totalSpacing);
+            layObstacleLayer(i, cubeScale, spacing);
         }
     }
 
@@ -160,8 +161,58 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
             {
                 obstacleNode = (GameObject)GameObject.Instantiate(obstaclePrefab);
                 obstacleNode.transform.position = new Vector3(i * spacing, yOffset, j * spacing);
-                obstacleNode.transform.localScale *= size;
+                obstacleNode.transform.localScale = new Vector3(Random.Range(5, size), Random.Range(5, size), Random.Range(5, size));
             }
         }
+    }
+
+    void buildBoundary(int center)
+    {
+        GameObject boundaryObstacle;
+
+        boundaryObstacle = (GameObject)GameObject.Instantiate(obstaclePrefab);
+        boundaryObstacle.name = "Boundary Back";
+        boundaryObstacle.transform.localScale = new Vector3(floorSize, floorSize, 1);
+        boundaryObstacle.transform.position = new Vector3(center, -10 + center, 0);
+        Color invisibleColor = boundaryObstacle.renderer.material.color;
+        invisibleColor.a = 0;
+        boundaryObstacle.renderer.material.color = invisibleColor;
+        boundaryObstacle.tag = "Boundary";
+
+        boundaryObstacle = (GameObject)GameObject.Instantiate(obstaclePrefab);
+        boundaryObstacle.name = "Boundary Front";
+        boundaryObstacle.transform.localScale = new Vector3(floorSize, floorSize, 1);
+        boundaryObstacle.transform.position = new Vector3(center, -10 + center, floorSize);
+        invisibleColor = boundaryObstacle.renderer.material.color;
+        invisibleColor.a = 0;
+        boundaryObstacle.renderer.material.color = invisibleColor;
+        boundaryObstacle.tag = "Boundary";
+
+        boundaryObstacle = (GameObject)GameObject.Instantiate(obstaclePrefab);
+        boundaryObstacle.name = "Boundary Right";
+        boundaryObstacle.transform.localScale = new Vector3(1, floorSize, floorSize);
+        boundaryObstacle.transform.position = new Vector3(floorSize, -10 + center, center);
+        invisibleColor = boundaryObstacle.renderer.material.color;
+        invisibleColor.a = 0;
+        boundaryObstacle.renderer.material.color = invisibleColor;
+        boundaryObstacle.tag = "Boundary";
+
+        boundaryObstacle = (GameObject)GameObject.Instantiate(obstaclePrefab);
+        boundaryObstacle.name = "Boundary Left";
+        boundaryObstacle.transform.localScale = new Vector3(1, floorSize, floorSize);
+        boundaryObstacle.transform.position = new Vector3(0, -10 + center, center);
+        invisibleColor = boundaryObstacle.renderer.material.color;
+        invisibleColor.a = 0;
+        boundaryObstacle.renderer.material.color = invisibleColor;
+        boundaryObstacle.tag = "Boundary";
+
+        boundaryObstacle = (GameObject)GameObject.Instantiate(obstaclePrefab);
+        boundaryObstacle.name = "Boundary Top";
+        boundaryObstacle.transform.localScale = new Vector3(floorSize, 1, floorSize);
+        boundaryObstacle.transform.position = new Vector3(center, floorSize - 10, center);
+        invisibleColor = boundaryObstacle.renderer.material.color;
+        invisibleColor.a = 0;
+        boundaryObstacle.renderer.material.color = invisibleColor;
+        boundaryObstacle.tag = "Boundary";
     }
 }

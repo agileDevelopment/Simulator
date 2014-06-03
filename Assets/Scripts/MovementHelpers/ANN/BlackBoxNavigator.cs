@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SharpNeat.Phenomes;
 
-public class NEATNavigator
+public class BlackBoxNavigator
 {
     IBlackBox brain;
     ArrayList outputs = new ArrayList(new float[] {0.0f,0.0f,0.0f});
@@ -11,7 +11,7 @@ public class NEATNavigator
     public double fitness = 0;
     public bool isAlive = true;
     
-    public NEATNavigator(IBlackBox brain)
+    public BlackBoxNavigator(IBlackBox brain)
     {
         this.brain = brain;
     }
@@ -25,7 +25,6 @@ public class NEATNavigator
         inputs[4] = (float)sensorInfo[4];
         inputs[5] = (float)sensorInfo[5];
         inputs[6] = (float)sensorInfo[6];
-        inputs[7] = (float)sensorInfo[7];
     }
 
     public ArrayList updateLocation(ArrayList sensorInfo, bool isAlive)
@@ -33,7 +32,7 @@ public class NEATNavigator
         if (this.isAlive && !isAlive)
         {
             this.isAlive = isAlive;
-            fitness *= 0.95;
+            //fitness *= 0.95;
         }
         age++;
 

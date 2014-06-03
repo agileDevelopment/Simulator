@@ -22,18 +22,15 @@ public class Sensor
         Vector3 sensorDirection;
         switch (direction) {
             case 1:
-                sensorDirection = -node.transform.forward;
-                break;
-            case 2:
                 sensorDirection = node.transform.right;
                 break;
-            case 3:
+            case 2:
                 sensorDirection = -node.transform.right;
                 break;
-            case 4:
+            case 3:
                 sensorDirection = node.transform.up;
                 break;
-            case 5:
+            case 4:
                 sensorDirection = -node.transform.up;
                 color = Color.green;
                 break;
@@ -62,7 +59,7 @@ public class Sensor
         }
 
         if (distance != 64)
-            Debug.DrawRay(node.transform.position + (sensorDirection * 10), sensorDirection * distance, color);
+            Debug.DrawRay(node.transform.position, sensorDirection * distance, color);
         
         float data = ((float)(range - distance)) / range;
         return data;

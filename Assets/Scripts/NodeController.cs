@@ -76,8 +76,11 @@ public class NodeController : MonoBehaviour {
 		} else if (col.gameObject.tag == "Obstacle") 
 		{
 			flightBehavior.hitObstacle();
-		}
-		
+        }
+        else if (col.gameObject.tag == "Boundary")
+        {
+            flightBehavior.hitObstacle();
+        }
 	}
 	
 	void OnTriggerExit(Collider col){
@@ -91,7 +94,7 @@ public class NodeController : MonoBehaviour {
 		{
 			//int index = int.Parse(col.gameObject.name.Substring(9));
 			//flightBehavior.checkpointNotify(-index);
-		}
+        }
 	}
 	
 	
