@@ -27,8 +27,6 @@ public class MCDSGA : AODV
     MCDSGAGUI guiSettings;
 
     public Dictionary<GameObject, GameObject> VBlines;
-    public List<string> broadcasts;
-
     public bool[] gotBroadcast;
     public bool connected = false;
 
@@ -38,9 +36,6 @@ public class MCDSGA : AODV
     protected override void Start()
     {
         base.Start();
-
-        broadcastID = 0;
-        broadcasts = new List<string>();
         Random.seed = gameObject.GetComponent<NodeController>().idNum;
         VBlines = new Dictionary<GameObject, GameObject>();
         guiSettings = GameObject.Find("Spawner").GetComponent<MCDSGAGUI>();

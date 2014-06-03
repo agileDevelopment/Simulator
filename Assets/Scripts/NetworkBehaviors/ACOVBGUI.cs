@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class ACOVBGUI : AODVGUI {
     public object myLock;
     public CDS currentCDS;
+    public int maxCDS;
     public string weightFactor;
     public string newTrailInfluence;
     public string localUpdate;
@@ -11,21 +12,24 @@ public class ACOVBGUI : AODVGUI {
     public float maxPheremoneLevel;
     public bool start= false;
     public bool displayCDS = false;
-    public List<string> runningCDSs;
+    public Dictionary<string, float> runningCDSs;
     int counter = 0;
+    GameObject displayNode;
 
 	// Use this for initialization
 	protected override void Start () {
+        maxCDS = 0;
         base.Start();
         myLock = new object();
         currentCDS = null;
-        runningCDSs = new List<string>();
+        runningCDSs = new Dictionary<string, float>();
         maxPheremoneLevel = 0f;
         weightFactor = ".8";
         newTrailInfluence = ".8";
         localUpdate = ".8";
         myUIElements.Add("pLevel", "");
         myUIElements.Add("CDS Running", "");
+
         
 
 	}
@@ -33,20 +37,45 @@ public class ACOVBGUI : AODVGUI {
 	// Update is called once per frame
     protected override void Update()
     {
-        myUIElements["Tot Messages"] = "Tot# Mess: " + messageCounter.ToString();
         counter++;
+
         if (counter % 2 == 0)
         {
-        //    displayCurrentCDS();
+
+            if (displayCDS)
+            {
+                if (currentCDS != null)
+                {
+           //         displayCurrentCDS();
+                }
+            }
+
             counter = 0;
         }
+	}
+
+    protected virtual void LateUpdate()
+    {
+
+        Dictionary<string, float> temp = new Dictionary<string, float>(runningCDSs);
+        foreach (KeyValuePair<string, float> entry in temp)
+        {
+            if (entry.Value < Time.time)
+            {
+                runningCDSs.Remove(entry.Key);
+            }
+        }
+
+        myUIElements["Tot Messages"] = "Tot# Mess: " + messageCounter.ToString();
+
+
         if (runningCDSs.Count > 0)
             myUIElements["CDS Running"] = "CDS Running";
         else
         {
             myUIElements["CDS Running"] = "";
         }
-	}
+    }
 
 
     //--------------------------Algorithm Functions--------------------------------
@@ -164,7 +193,70 @@ public class ACOVBGUI : AODVGUI {
         GUILayout.EndArea();
     }
 
-   
+
+    private void displayCurrentCDS()
+    {
+        if (currentCDS != null)
+        {
+            //clear current graphics
+            GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+            foreach (GameObject node in nodes)
+            {
+                //node.renderer.material.color = Color.blue;
+                node.GetComponent<ACOVB>().connected = false;
+                node.GetComponent<ACOVB>().VBlines.Clear();
+            }
+
+            GameObject[] lines = GameObject.FindGameObjectsWithTag("VBLine");
+            foreach (GameObject line in lines)
+            {
+                Destroy(line);
+            }
+
+            List<GameObject> openList = new List<GameObject>(currentCDS.getInCDS());
+            List<GameObject> edgeList = new List<GameObject>(currentCDS.getEdgeCDS());
+            List<GameObject> closedList = new List<GameObject>();
+            GameObject checkNode = openList[(int)openList.Count /2];
+            openList.Remove(checkNode);
+            closedList.Add(checkNode);
+
+            while (openList.Count > 0)
+            {
+                foreach (GameObject neighbor in checkNode.GetComponent<ACOVB>().neighbors)
+                {
+                    if (openList.Contains(neighbor))
+                    {
+
+
+                        neighbor.GetComponent<ACOVB>().connected = true;
+                        GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
+                        line.tag = "VBLine";
+                        line.name = "VBline_" + checkNode.GetComponent<NodeController>().idNum.ToString() +
+                            neighbor.GetComponent<NodeController>().idNum.ToString();
+                        line.transform.parent = checkNode.transform;
+                        line.GetComponent<LineRenderer>().SetColors(Color.black, Color.black);
+                        line.GetComponent<LineRenderer>().SetWidth(3, 3);
+                        checkNode.GetComponent<ACOVB>().VBlines.Add(neighbor, line);
+                        openList.Remove(neighbor);
+                        closedList.Add(neighbor);
+                    }
+
+                }
+                if (openList.Count > 0)
+                {
+                    if (closedList.Count > 0)
+                    {
+                        checkNode = closedList[0];
+                        closedList.Remove(checkNode);
+                    }
+
+                }
+            }
+
+
+        }
+    }
+
 
 
 }

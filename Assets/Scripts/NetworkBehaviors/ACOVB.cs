@@ -22,19 +22,16 @@ using System.Threading;
 
 public class ACOVB : AODV {
     new ACOVBGUI netValues;
-    CDS myCurrentCDS;
+    public CDS myCurrentCDS;
 
     public Dictionary<GameObject, GameObject> VBlines;
     public Dictionary<GameObject, ACORouteEntry> antRoutes;
     Dictionary<string, CDSAnt> antUpdates;
-
     public float myPhereLevel;
     public int maxCDS;
-
     int counter=0;
-
     public bool memberOfCDS = false;
-    bool cdsUpdated = false;
+    public bool connected = false;
 
 
 	// Use this for initialization
@@ -57,16 +54,16 @@ public class ACOVB : AODV {
         pollNeighbors();
         base.Update();
         counter++;
-        if (counter % 5 == 0)
+        if (counter % 2 == 0)
         {
 
 
             counter = 0;
-            //if (myCurrentCDS != null)
-            //{
-            //    if (netValues.displayCDS)
-            //       displayCDS();
-            //}
+            if (myCurrentCDS != null)
+            {
+                if (netValues.displayCDS)
+                    displayCDS();
+            }
 
         }
         if (netValues.source == gameObject)
@@ -89,109 +86,36 @@ public class ACOVB : AODV {
         GameObject cdsNode = gameObject;
         if (myCurrentCDS != null)
         {
-            if (myCurrentCDS.getInCDS().Contains(gameObject))
-                memberOfCDS = true;
 
-            if (cdsUpdated)
+            foreach (KeyValuePair<GameObject, GameObject> entry in VBlines)
             {
-                cdsUpdated = false;
-                GameObject line = null;
-                Dictionary<GameObject, GameObject> temp = new Dictionary<GameObject, GameObject>(VBlines);
-                foreach (GameObject node in temp.Keys)
+                GameObject line = (GameObject)entry.Value;
+                if (line)//check to see if its been destroyed already
                 {
-                    line = VBlines[node];
-                    Destroy(line);
-                }
-                VBlines.Clear();
-            }
-            //If I'm part of a CDS..
-            if (memberOfCDS)
-            {
-                gameObject.renderer.material.color = Color.black;
-                foreach (GameObject node in neighbors)
-                {
-                    if (node.GetComponent<ACOVB>().memberOfCDS)
-                    {
-                        if (!VBlines.ContainsKey(node))
-                        {
-                            GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
-                            line.tag = "VBLine";
-                            line.name = "VBline_" + gameObject.GetComponent<NodeController>().idNum.ToString() +
-                                node.GetComponent<NodeController>().idNum.ToString();
-                            line.transform.parent = gameObject.transform;
-                            line.GetComponent<LineRenderer>().SetColors(Color.black, Color.black);
-                            line.GetComponent<LineRenderer>().SetWidth(2, 2);
-                            gameObject.GetComponent<ACOVB>().VBlines.Add(node, line);
-                        }
-                        else
-                        {
-                            VBlines[node].GetComponent<LineRenderer>().SetWidth(2, 2);
-                            VBlines[node].GetComponent<LineRenderer>().SetColors(Color.black, Color.black);
-                        }
-                    }
-                }
-            }
-            else
-            {  // I'm not part of the CDS
-                foreach (GameObject neighborCDS in neighbors)
-                {
-                    if (myCurrentCDS.getInCDS().Contains(neighborCDS))
-                    {
-                        float distance = Vector3.Distance(gameObject.transform.position, neighborCDS.transform.position);
-                        if (distance < minDistance)
-                        {
-                            minDistance = distance;
-                            cdsNode = neighborCDS;
-                        }
-                    }
-                }
-                if (!VBlines.ContainsKey(cdsNode))
-                {
-                    GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
-                    line.tag = "VBLine";
-                    line.name = "VBline_" + gameObject.GetComponent<NodeController>().idNum.ToString() +
-                        cdsNode.GetComponent<NodeController>().idNum.ToString();
-                    line.transform.parent = gameObject.transform;
-                    line.GetComponent<LineRenderer>().SetColors(Color.blue, Color.blue);
-                    line.GetComponent<LineRenderer>().SetWidth(2, 2);
-                    gameObject.GetComponent<ACOVB>().VBlines.Add(cdsNode, line);
-                }
-                else
-                {
-                    VBlines[cdsNode].GetComponent<LineRenderer>().SetWidth(2, 3);
-                    VBlines[cdsNode].GetComponent<LineRenderer>().SetColors(Color.blue, Color.blue);
-                }
+                    line.GetComponent<LineRenderer>().enabled = true;
+                    GameObject dest = entry.Key;
 
+
+                    line.GetComponent<LineRenderer>().SetPosition(0, gameObject.transform.position);
+                    line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
+                }
             }
         }
-
-        foreach (KeyValuePair<GameObject, GameObject> entry in VBlines)
-        {
-            GameObject line = (GameObject)entry.Value;
-            if (line)//check to see if its been destroyed already
-            {
-                line.GetComponent<LineRenderer>().enabled = true;
-                GameObject dest = entry.Key;
-
-
-                line.GetComponent<LineRenderer>().SetPosition(0, gameObject.transform.position);
-                line.GetComponent<LineRenderer>().SetPosition(1, dest.transform.position);
-            }
-        }
+        
     }
+
 
     //---------------------------Utility Functions----------------------------------
     #region Utility
 
         protected override void performRecMessage(MSGPacket packet)
     {
-        bool fwd=true;
+        bool fwd=false;
         if (gameObject == packet.destination)
         {
             if(packet.messageType == "mess"){
                 //do something
-            }
-        
+            }     
             else if (packet.messageType == "cmd")
             {
                 if (packet.message == "ping")
@@ -204,7 +128,14 @@ public class ACOVB : AODV {
                 }
                 if (packet.message == "clear")
                 {
-                    maxCDS = 0;
+                    if (netValues.runningCDSs.Count == 0)
+                    {
+                        maxCDS = 0;
+                        netValues.maxCDS = 0;
+                        netValues.currentCDS = null;
+                        myCurrentCDS = null;
+                    }
+   
                 }
                 if (packet.message == "genCDS")
                 {
@@ -212,9 +143,12 @@ public class ACOVB : AODV {
                     generateAntCDS();
                 }
             }
-
         }
-        else if(fwd)
+        else
+        {
+            fwd = true;
+        }
+        if(fwd)
         {
             if(packet.messageType == "CDS"){
                 if (memberOfCDS)
@@ -274,21 +208,27 @@ public class ACOVB : AODV {
             }
             foreach (GameObject neighbor in neighbors)
             {
-                if (myCurrentCDS.getInCDS().Contains(neighbor))
+                if (neighbor.GetComponent<ACOVB>().memberOfCDS)
                 {
                     cdsNeighborCount++;
                 }
-                if (cdsNeighborCount == 0)
-                {
-                    initMessage(myCurrentCDS.owner,"cmd","genCDS");
-                }
-                else
-                {
-                    if (!checkFeasibility(myCurrentCDS))
-                        initMessage(myCurrentCDS.owner, "cmd", "genCDS");
-                }
 
             }
+            if (cdsNeighborCount == 0)
+            {
+                initBroadcast("cmd", "clear");
+                initMessage(myCurrentCDS.owner, "cmd", "genCDS");
+            }
+            else
+            {
+                if (!checkFeasibility(myCurrentCDS))
+                {
+                    initBroadcast("cmd", "clear");
+                    initMessage(myCurrentCDS.owner, "cmd", "genCDS");
+                
+                }
+            }
+
 
             if (VBlines.ContainsKey(node))
             {
@@ -395,12 +335,11 @@ public class ACOVB : AODV {
         broadcastID++;
         CDSAnt myAnt = new CDSAnt(gameObject);
         myAnt.label = gameObject.name + broadcastID.ToString();
-        netValues.runningCDSs.Add(myAnt.label);
+        netValues.runningCDSs.Add(myAnt.label, Time.time + 2);
         foreach (GameObject neighbor in neighbors)
         {
             myAnt.myCDS.moveToEdgeCDS(neighbor);
         }
-        print("At node: " + gameObject.name + " Method: genAntCDS()");
          performSendCDSAnt(myAnt);
     }
 
@@ -415,7 +354,6 @@ public class ACOVB : AODV {
 
     IEnumerator delaySendCDSAnt(CDSAnt ant)
     {
-        print("At node: " + gameObject.name + " Method: delaySendAntCDS()");
         float distance = Vector3.Distance(gameObject.transform.position, ant.nodeData[ant.hop_count].previous.transform.position);
         distance = distance / delayFactor;
         yield return new WaitForSeconds(distance);
@@ -451,7 +389,6 @@ public class ACOVB : AODV {
 
     void performSendCDSAnt(CDSAnt ant)
     {
-        print("At node: " + gameObject.name + " Method: performSendCDSAnt()");
         memberOfCDS = true;
         if (ant.myCDS.getInCDS().Count == 0)
             ant.myCDS.owner = gameObject;
@@ -523,11 +460,8 @@ public class ACOVB : AODV {
                     if (neighbors.Contains(canidate))
                     {
                         float numer = ant.canidates[canidate].tau * ant.canidates[canidate].degree;
-
-                        //       print("num: = " + numer + "    TotalTau: " + totalTau);
                         tempProb += (float)(numer / totalTau);
 
-                        //      print("rand: " + rand + " <->" + tempProb);
                         if (rand < tempProb)
                         {
                             nextHop = canidate;
@@ -554,6 +488,17 @@ public class ACOVB : AODV {
                 }
             }
 
+            ant.hop_count++;
+            RevAntPath pathBack = new RevAntPath();
+            pathBack.previous = gameObject;
+            pathBack.stop = nextHop;
+            ant.nodeData.Add(ant.hop_count, pathBack);
+
+            //Local update of PheremoneValues...
+            float tau_i = (1 - float.Parse(netValues.localUpdate)) * nextHop.GetComponent<ACOVB>().myPhereLevel + float.Parse(netValues.localUpdate)* qualityValue;
+            nextHop.GetComponent<ACOVB>().myPhereLevel = tau_i;
+
+
 
 
             //check to see if we have route to our destination , if we don't, send a ping        
@@ -571,6 +516,19 @@ public class ACOVB : AODV {
         else
         {
             netValues.runningCDSs.Remove(ant.label);
+            if (netValues.currentCDS != null)
+            {
+                if (netValues.currentCDS.getInCDS().Count > ant.myCDS.getInCDS().Count)
+                {
+                    netValues.currentCDS = ant.myCDS;
+                }
+
+            }
+            else
+            {
+                netValues.currentCDS = ant.myCDS;
+            }
+
             bool sendResult = true;
             if (myCurrentCDS != null)
                 if (ant.myCDS.getInCDS().Count > myCurrentCDS.getInCDS().Count)
@@ -600,6 +558,7 @@ public class ACOVB : AODV {
         }
     }
 
+
     public void sendPheremoneUpdate(CDSAnt ant)
     {
         if (netValues.useLatency)
@@ -627,7 +586,6 @@ public class ACOVB : AODV {
             myPhereLevel = (float)((1 - float.Parse(netValues.newTrailInfluence)) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
 
             myCurrentCDS = ant.myCDS;
-            cdsUpdated = true;
             if (ant.source == gameObject)
             {
 
@@ -637,7 +595,6 @@ public class ACOVB : AODV {
             {
                 memberOfCDS = true;
                 gameObject.renderer.material.color = Color.black;
-          //      print(gameObject + "forwarding update");
                 foreach (GameObject neighbor in neighbors)
                 {
                     netValues.messageCounter++;
@@ -648,14 +605,45 @@ public class ACOVB : AODV {
     }
 
     IEnumerator waitForPath(GameObject nextHop, CDSAnt ant){
-        print("At node: " + gameObject.name + " Method: waitForPath()");
         while(!routes.ContainsKey(nextHop)){
         yield return null;
         }
-      //  print("got a path to " + nextHop.name);
         netValues.messageCounter++;
         nextHop.GetComponent<ACOVB>().sendCDSAnt(ant);
     }
+
+
+    public override void sendRREQ(RREQpacket dataOut)
+    {
+        string cameFrom = dataOut.intermediate.name;
+        foreach (GameObject node in neighbors)
+        {
+            if (cameFrom != node.name && node.name != dataOut.destination.name)
+            {
+                if (myCurrentCDS != null)
+                {
+                    if (myCurrentCDS.getInCDS().Contains(node))
+                    {
+                        dataOut.intermediate = gameObject;
+                        netValues.messageCounter++;
+                        node.GetComponent<AODV>().recRREQ(dataOut);
+                    }
+                   
+                }
+                else
+                {
+                    dataOut.intermediate = gameObject;
+                    netValues.messageCounter++;
+                    node.GetComponent<AODV>().recRREQ(dataOut);
+                }
+
+
+            }
+        }
+    }
+
+
+
 
     #endregion
 

@@ -73,6 +73,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         }
     }
 
+
     public virtual void showRunningGUI()
     {
         GUI.Box(new Rect(0, Screen.height / 2, 175, 400), "Network Options");

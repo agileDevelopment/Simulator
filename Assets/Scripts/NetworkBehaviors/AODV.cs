@@ -27,7 +27,6 @@ public class AODV : Network
     public Dictionary<string, RevPath> currentRREQ;
     protected float active_route_timer;
     protected int nodeSeqNum;
-    public int broadcastID;
     public int delayFactor;
     public int messageQueue=0;
     GUIText mCountText;
@@ -43,7 +42,7 @@ public class AODV : Network
         delayFactor = 4000;
         active_route_timer = 5.0f;  // used to delete route information;
         nodeSeqNum = 0;
-        broadcastID = 0;
+
         currentRREQ = new Dictionary<string, RevPath>();
 
    
@@ -76,6 +75,26 @@ public class AODV : Network
 
            
         }
+        foreach (GameObject neighbor in neighbors)
+        {
+            if (!routes.ContainsKey(neighbor))
+            {
+                AODVRouteEntry n = new AODVRouteEntry();
+                n.dest_sequence_num = neighbor.GetComponent<AODV>().broadcastID;
+                n.destination = neighbor;
+                n.expirationTime = Time.time + active_route_timer;
+                n.hop_count = 1;
+                n.nextHop = neighbor;
+                routes.Add(neighbor, n);
+            }
+            else
+            {
+                AODVRouteEntry n = (AODVRouteEntry)routes[neighbor];
+                n.expirationTime = Time.time + active_route_timer;
+                n.dest_sequence_num = neighbor.GetComponent<AODV>().broadcastID;
+            }
+        }
+
 
         //clear routes if they have expired.
         Dictionary<GameObject, RouteEntry> temp2 = new Dictionary<GameObject, RouteEntry>(routes);
@@ -232,19 +251,17 @@ public class AODV : Network
     }
 
 
-    public void sendRREQ(RREQpacket dataOut)
+    public virtual void sendRREQ(RREQpacket dataOut)
     {
         string cameFrom = dataOut.intermediate.name;
-        List<GameObject> temp = new List<GameObject>(neighbors);
 
-        foreach (GameObject node in temp)
+        foreach (GameObject node in neighbors)
         {
             if (cameFrom != node.name && node.name != dataOut.destination.name)
             {
                 dataOut.intermediate = gameObject;
                 netValues.messageCounter++;
                 node.GetComponent<AODV>().recRREQ(dataOut);
-               // node.GetComponent<AODV>().StartCoroutine("recRREQ", dataOut);
 
             }
         }
@@ -314,7 +331,39 @@ public class AODV : Network
         performRecRREP(packet);
     }
 
-    
+
+
+    public override void sendBroadcast(MSGPacket packet)
+    {
+        if (netValues.useLatency)
+            StartCoroutine(delayBroadcast(packet));
+        else
+            performBroadcast(packet);
+    }
+
+    IEnumerator delayBroadcast(MSGPacket packet)
+    {
+
+        float distance = Vector3.Distance(gameObject.transform.position, packet.sender.transform.position);
+        distance = distance / delayFactor;
+        yield return new WaitForSeconds(distance);
+        performBroadcast(packet);
+    }
+
+    protected virtual void performBroadcast(MSGPacket packet)
+    {
+        if (!broadcasts.Contains(packet.id))
+        {
+            broadcasts.Add(packet.id);
+            foreach (GameObject neighbor in neighbors)
+            {
+                packet.sender = gameObject;
+                sendBroadcast(packet);
+                packet.destination = gameObject;
+                performRecMessage(packet);
+            }
+        }
+    }
 
 
     //update route table with rrepPacket info
@@ -379,21 +428,17 @@ public class AODV : Network
         {
             if (routes.ContainsKey(packet.destination))
             {
-                //         print(gameObject.name + " has route");
                 haveRoute = true;
             }
             else
             {
-                //       print(gameObject.name + " doesn't have route");
                 for (int i = 0; i <= packet.retries; i++)
                 {
-                    //         print(gameObject.name + " waiting for route");
                     discoverPath(packet.destination);
-                    yield return new WaitForSeconds(.1f);
+                    yield return new WaitForSeconds(.5f);
                     if (routes.ContainsKey(packet.destination))
                     {
                         haveRoute = true;
-                        //             print(gameObject.name + " has route");
                         break;
                     }
 
@@ -432,7 +477,10 @@ public class AODV : Network
         {
             if (packet.messageType == "mess")
             {
-                //do something
+                gameObject.GetComponent<NodeController>().nodeText.GetComponent<TextMesh>().text = "Test";
+                gameObject.GetComponent<NodeController>().nodeText.GetComponent<TextMesh>().renderer.enabled = true;
+              //  gameObject.GetComponent<NodeController>().nodeText.transform.localEulerAngles = new Vector3(180, 0, 0);
+
             }
 
             else if (packet.messageType == "cmd")
