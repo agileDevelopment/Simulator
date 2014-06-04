@@ -23,8 +23,8 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
 {
     IPhenomeEvaluator<IBlackBox> _phenomeEvaluator;
     NetworkActivationScheme _activationSchemeCppn;
-    int RealInputCount = 7;
-    int RealOutputCount = 3;
+    int RealInputCount = 5 + 8; // 5 sensors, 8 quadrant sensors, current velocity
+    int RealOutputCount = 1 + 8; // 1 accelration and 8 "quadrant votes" outputs
 
     public ESHyperNEATNavigationExperiment(IPhenomeEvaluator<IBlackBox> phenomeEvaluator)
     {
@@ -60,30 +60,39 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         uint inputId = 1;
         uint outputId = (uint)(inputId + RealInputCount);
 
-        // I will represent the inputs on a substrate as depicted on the following picture
-        //
-        // Theta    |   Up      |   Phi
-        // Left     |   Center  |   Right
-        //          |   Down    |
-        //
-        // I will read outputs from the output substrate like so
-        //
-        // Theta    |           |   Phi
-        //          |   Speed   |   
-        //          |           |
-        //
+        // I will represent the inputs on a substrate as such:
+		//
+		// The forward, right, left, down, up sensors will exist on vertical and horizontal slices of a cube
+		// in positions relative to the center based on the direction they should impulse. The quadrant sensors
+		// will exist at the various 3d diagonals from the center.
+		//
+		// The velocity output will be forward of center at 0.5 (for movement forward). The theta/phi angle outputs
+		// will be at the center.
+		//
         // Hopefully the structure of this will be good...
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 0 })); // Theta input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 0 })); // Phi input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 1 })); // Forward Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -1, 0, 0 })); // Right Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 1, 0, 0 })); // Left Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 1, 0 })); // Up Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, -1, 0 })); // Down Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 0.5 })); // Forward Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -0.5, 0, 0 })); // Right Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0.5, 0, 0 })); // Left Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0.5, 0 })); // Up Sensor input
+		inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, -0.5, 0 })); // Down Sensor input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5, 0.5 })); // Top, front, left quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5, 0.5, 0.5 })); // Top, front, right quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5,-0.5, 0.5 })); // Bottom, front, left quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5,-0.5, 0.5 })); // Bottom, front, right quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5,-0.5 })); // Top, back, left quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5, 0.5,-0.5 })); // Top, back, right quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5,-0.5,-0.5 })); // Bottom, back, left quadrant input
+		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5,-0.5,-0.5 })); // Bottom, back, right quadrant input
 
-        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 0 })); // Theta output
-        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 0 }));  // Phi output
-        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 1 }));  // Velocity output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 0.5 })); // Velocity output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5, 0.5 })); // Top, front, left quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5, 0.5, 0.5 })); // Top, front, right quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5,-0.5, 0.5 })); // Bottom, front, left quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5,-0.5, 0.5 })); // Bottom, front, right quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5,-0.5 })); // Top, back, left quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5, 0.5,-0.5 })); // Top, back, right quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5,-0.5,-0.5 })); // Bottom, back, left quadrant vote output
+		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5,-0.5,-0.5 })); // Bottom, back, right quadrant vote output
 
         List<SubstrateNodeSet> nodeSetList = new List<SubstrateNodeSet>(2);
         nodeSetList.Add(inputLayer);
@@ -93,13 +102,13 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         List<NodeSetMapping> nodeSetMappingList = new List<NodeSetMapping>(1);
         nodeSetMappingList.Add(NodeSetMapping.Create(0, 1, (double?)null));
 
-        int initialDepth = 4;
-        int maxDepth = 4;
+        int initialDepth = 3;
+        int maxDepth = 3;
         int weightRange = 5;
         float divisionThreshold = 0.03f;
         float varianceThreshold = 0.03f;
-        float bandingThreshold = 0.3f;
-        int ESIterations = 3;
+        float bandingThreshold = 0.5f;
+        int ESIterations = 1;
 
         EvolvableSubstrate substrate = new EvolvableSubstrate(nodeSetList, DefaultActivationFunctionLibrary.CreateLibraryCppn(),
             0, 0.4, 5, nodeSetMappingList, initialDepth, maxDepth, weightRange, divisionThreshold, varianceThreshold, bandingThreshold, ESIterations);

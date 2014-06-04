@@ -28,12 +28,12 @@ public class NEATNavigationExperiment : SimpleNeatExperiment
 
     public override int InputCount
     {
-        get { return 7; }
+        get { return 5 + 8; } // 5 sensors and 8 quadrant sensors
     }
 
     public override int OutputCount
     {
-        get { return 3; }
+        get { return 1 + 8; } // 1 acceleration and 8 quadrant sensors
     }
 
     public override bool EvaluateParents
