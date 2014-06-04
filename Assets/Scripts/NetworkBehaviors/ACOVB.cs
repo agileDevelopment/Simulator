@@ -32,6 +32,7 @@ public class ACOVB : AODV {
     int counter=0;
     public bool memberOfCDS = false;
     public bool connected = false;
+    public bool generatingCDS = false;
 
 
 	// Use this for initialization
@@ -51,21 +52,14 @@ public class ACOVB : AODV {
 	// Update is called once per frame
     protected override void Update()
     {
+        if (netValues.supervisor == gameObject)
+        {
+            netValues.currentCDS = myCurrentCDS;
+        }
         pollNeighbors();
         base.Update();
         counter++;
-        if (counter % 2 == 0)
-        {
 
-
-            counter = 0;
-            if (myCurrentCDS != null)
-            {
-                if (netValues.displayCDS)
-                    displayCDS();
-            }
-
-        }
         if (netValues.source == gameObject)
         {
             netValues.myUIElements["pLevel"] = "Phereomon: " + myPhereLevel.ToString();
@@ -77,13 +71,21 @@ public class ACOVB : AODV {
     protected override void LateUpdate()
     {
         base.LateUpdate();
+        if (counter % 2 == 0)
+        {
+            myCurrentCDS = netValues.currentCDS;
+            if (myCurrentCDS != null)
+            {
+                if (netValues.displayCDS)
+                    displayCDS();
+            }
+
+        }
     }
 
 
     protected void displayCDS()
     {
-        float minDistance = netValues.nodeCommRange;
-        GameObject cdsNode = gameObject;
         if (myCurrentCDS != null)
         {
 
@@ -131,15 +133,12 @@ public class ACOVB : AODV {
                     if (netValues.runningCDSs.Count == 0)
                     {
                         maxCDS = 0;
-                        netValues.maxCDS = 0;
-                        netValues.currentCDS = null;
-                        myCurrentCDS = null;
+                     //   myCurrentCDS = null;
                     }
    
                 }
                 if (packet.message == "genCDS")
                 {
-                    maxCDS = 0;
                     generateAntCDS();
                 }
             }
@@ -217,14 +216,14 @@ public class ACOVB : AODV {
             if (cdsNeighborCount == 0)
             {
                 initBroadcast("cmd", "clear");
-                initMessage(myCurrentCDS.owner, "cmd", "genCDS");
+                initMessage(netValues.supervisor, "cmd", "genCDS");
             }
             else
             {
                 if (!checkFeasibility(myCurrentCDS))
                 {
                     initBroadcast("cmd", "clear");
-                    initMessage(myCurrentCDS.owner, "cmd", "genCDS");
+                    initMessage(netValues.supervisor, "cmd", "genCDS");
                 
                 }
             }
@@ -333,13 +332,13 @@ public class ACOVB : AODV {
     #region CDSAnt
     public void generateAntCDS(){
         broadcastID++;
-        CDSAnt myAnt = new CDSAnt(gameObject);
+        CDSAnt myAnt = new CDSAnt(netValues.supervisor);
         myAnt.label = gameObject.name + broadcastID.ToString();
         netValues.runningCDSs.Add(myAnt.label, Time.time + 2);
-        foreach (GameObject neighbor in neighbors)
-        {
-            myAnt.myCDS.moveToEdgeCDS(neighbor);
-        }
+        //foreach (GameObject neighbor in neighbors)
+        //{
+        //    myAnt.myCDS.moveToEdgeCDS(neighbor);
+        //}
          performSendCDSAnt(myAnt);
     }
 
@@ -411,7 +410,6 @@ public class ACOVB : AODV {
                 if (!ant.canidates.ContainsKey(neighbor))
                 {
                     ant.myCDS.moveToEdgeCDS(neighbor);
-         //           neighbor.renderer.material.color = Color.grey;
                     NeighborData nData = new NeighborData();
                     nData.degree = neighbor.GetComponent<ACOVB>().neighbors.Count-1;
                     nData.tau = neighbor.GetComponent<ACOVB>().myPhereLevel;
@@ -450,8 +448,7 @@ public class ACOVB : AODV {
             {
                 rand = (float)Random.Range(0, 100) / 100;
                  foreach (GameObject canidate in ant.myCDS.getEdgeCDS())
-                {
-                    
+                {                  
                     totalTau += (ant.canidates[canidate].tau * ant.canidates[canidate].degree);
                 }
 
@@ -470,6 +467,7 @@ public class ACOVB : AODV {
                     }
                 }
             }
+
            //out of direct hops, choose a random edge
             if (nextHop == null)
             {
@@ -479,6 +477,14 @@ public class ACOVB : AODV {
                     {
                         if (ant.myCDS.getOutCDS().Contains(neighbor2))
                         {
+                            float numer = ant.canidates[canidate].tau * ant.canidates[canidate].degree;
+                            tempProb += (float)(numer / totalTau);
+
+                            if (rand < tempProb)
+                            {
+                                nextHop = canidate;
+                                qualityValue = (float)(numer / totalTau);
+                            }
                             nextHop = canidate;
                             break;
                         }
@@ -495,7 +501,7 @@ public class ACOVB : AODV {
             ant.nodeData.Add(ant.hop_count, pathBack);
 
             //Local update of PheremoneValues...
-            float tau_i = (1 - float.Parse(netValues.localUpdate)) * nextHop.GetComponent<ACOVB>().myPhereLevel + float.Parse(netValues.localUpdate)* qualityValue;
+            float tau_i = (1-netValues.localUpdate) * nextHop.GetComponent<ACOVB>().myPhereLevel + netValues.localUpdate* qualityValue;
             nextHop.GetComponent<ACOVB>().myPhereLevel = tau_i;
 
 
@@ -516,38 +522,20 @@ public class ACOVB : AODV {
         else
         {
             netValues.runningCDSs.Remove(ant.label);
-            if (netValues.currentCDS != null)
-            {
-                if (netValues.currentCDS.getInCDS().Count > ant.myCDS.getInCDS().Count)
-                {
-                    netValues.currentCDS = ant.myCDS;
-                }
+            myCurrentCDS = ant.myCDS;
 
-            }
-            else
-            {
-                netValues.currentCDS = ant.myCDS;
-            }
-
-            bool sendResult = true;
-            if (myCurrentCDS != null)
-                if (ant.myCDS.getInCDS().Count > myCurrentCDS.getInCDS().Count)
-                    sendResult = false;
-           if(sendResult) 
-           {
-
-                foreach (GameObject node in ant.myCDS.getInCDS())
-                {
-                    node.renderer.material.color = Color.black;
-                }
-                foreach (GameObject node in ant.myCDS.getEdgeCDS())
-                {
-                    node.renderer.material.color = Color.grey;
-                }
-                foreach (GameObject node in ant.myCDS.getOutCDS())
-                {
-                    node.renderer.material.color = Color.white;
-                }
+               foreach (GameObject node in ant.myCDS.getInCDS())
+               {
+                   node.GetComponent<NodeController>().oldColor = node.renderer.material.color = Color.black;
+               }
+               foreach (GameObject node in ant.myCDS.getEdgeCDS())
+               {
+                   node.GetComponent<NodeController>().oldColor = node.renderer.material.color = Color.grey;
+               }
+               foreach (GameObject node in ant.myCDS.getOutCDS())
+               {
+                   node.GetComponent<NodeController>().oldColor = node.renderer.material.color = Color.white;
+               }
                 foreach (GameObject neighbor in neighbors)
                 {
                     if (ant.myCDS.getInCDS().Contains(neighbor))
@@ -555,7 +543,7 @@ public class ACOVB : AODV {
                         neighbor.GetComponent<ACOVB>().sendPheremoneUpdate(ant);
                 }
             }
-        }
+        
     }
 
 
@@ -583,13 +571,10 @@ public class ACOVB : AODV {
         {
             //add it to my list
             antUpdates.Add(ant.label, ant);
-            myPhereLevel = (float)((1 - float.Parse(netValues.newTrailInfluence)) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
+            myPhereLevel = (float)((1 - netValues.newTrailInfluence) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
 
             myCurrentCDS = ant.myCDS;
-            if (ant.source == gameObject)
-            {
 
-            }
             //and send it on if I'm a CDS node
             if (ant.myCDS.getInCDS().Contains(gameObject))
             {
@@ -702,12 +687,13 @@ public class CDSAnt: ACORouteEntry
    public CDSAnt(GameObject source_)
     {
         updateList = new List<GameObject>();
-        exploreRate = float.Parse(GameObject.Find("Spawner").GetComponent<ACOVBGUI>().weightFactor);
+        exploreRate = GameObject.Find("Spawner").GetComponent<ACOVBGUI>().weightFactor;
         hop_count = 0;
         source = source_;
         nodeData = new Dictionary<int, RevAntPath>();
         canidates = new Dictionary<GameObject, NeighborData>();
         myCDS = new CDS(source_);
+        myCDS.owner = source_;
     }
 }
 
