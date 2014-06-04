@@ -567,7 +567,7 @@ public class MCDSGAGUI : AODVGUI
 #region Support Classes
 
 
-public class CDS
+public class CDS 
 {
     //-------------------Comments-------------------------
     //  Title: CDS
@@ -595,6 +595,7 @@ public class CDS
     public GameObject owner;
     float fitness;
     public int size;
+
     public CDS(GameObject owner_)
     {
         CDSLock = new Object();
