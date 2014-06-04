@@ -39,11 +39,6 @@ public class Network : MonoBehaviour, INetworkBehavior {
             netValues.myUIElements["nodeID"] = gameObject.name;
             netValues.myUIElements["numRoutes"] = "# of Rts:" + routes.Count.ToString();
         }
-                if (simValues.networkChoice != "none")
-        {
-            if (gameObject.GetComponent<SphereCollider>().radius * gameObject.transform.localScale.x < simValues.networkGUI.nodeCommRange /2)
-                gameObject.GetComponent<SphereCollider>().radius += .1f;
-        }
 
 	}
     protected virtual void LateUpdate()

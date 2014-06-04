@@ -185,6 +185,8 @@ public class LoadOptionsGUI : MonoBehaviour {
         GUILayout.BeginArea(new Rect((Screen.width - buttonWidth) / 2, Screen.height / 2 + 250, buttonWidth, buttonHeight * numberButtons));
         if (GUILayout.Button("Load Simulation", GUILayout.Width(buttonWidth), GUILayout.Height(50)))
         {
+
+
             if (flightGUI)
             {
                 paused = true;
@@ -196,7 +198,6 @@ public class LoadOptionsGUI : MonoBehaviour {
                 gameObject.GetComponent<RTPopulationManager>().initializePopulation(movementChoice, networkChoice);
                 flightGUI.setSpawnLocation();
             }
-
         }
 
         if (GUILayout.Button("Exit"))
@@ -249,7 +250,6 @@ public class LoadOptionsGUI : MonoBehaviour {
             slowMoRateString = (++slowMoRate).ToString();
         }
         GUILayout.EndHorizontal();
-
         GUILayout.EndArea();
     }
 

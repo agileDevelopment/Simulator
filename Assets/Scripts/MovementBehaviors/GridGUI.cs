@@ -3,6 +3,8 @@ using System.Collections;
 
 public class GridGUI : FlightGUI
 {
+    Camera mainCamera;
+    Camera camera2;
     LoadOptionsGUI simValues;
     public string nodeSpacingString = "45";
     public string nodeOrbitString = "50";
@@ -11,8 +13,7 @@ public class GridGUI : FlightGUI
     public int nodeMaxSpeed;
     public float radius;
     public float rotationSpeed;
-    
-
+    bool mainActive = true;
     // Use this for initialization
     void Start()
     {
@@ -20,13 +21,19 @@ public class GridGUI : FlightGUI
         nodeSpacingString = "45";
         nodeOrbitString = "30";
         nodeMaxSpeedString = "20";
-
+        mainCamera = Camera.main;
+        camera2 = (Camera)GameObject.Find("Second Camera").camera;
     }
 
     // Update is called once per frame
-    protected override void Update()
+    void Update()
     {
-        base.Update();
+        if (Input.GetKeyDown("space"))
+        {
+            mainCamera.enabled = !mainActive;
+            camera2.enabled = mainActive;
+            mainActive = !mainActive;
+        }
     }
 
     public override void showGUI()
@@ -53,13 +60,10 @@ public class GridGUI : FlightGUI
 
     public override void setGuiValues()
     {
-        base.setGuiValues();
         radius = float.Parse(nodeOrbitString);
         rotationSpeed = Random.Range(5, float.Parse(nodeMaxSpeedString));
         nodeSpacing = int.Parse(nodeSpacingString);
         nodeMaxSpeed = int.Parse(nodeMaxSpeedString);
-        floorSize = (int)(simValues.nodesSqrt * nodeSpacing + radius * 3);
-        center = floorSize / 2;
     }
     public override void setSpawnLocation()
     {
@@ -91,7 +95,8 @@ public class GridGUI : FlightGUI
 
     public override void setFloor()
     {
-
+        int floorSize = (int)(simValues.nodesSqrt * nodeSpacing + radius * 3);
+        int center = floorSize / 2;
         GameObject floor = GameObject.Find("Floor");
         floor.transform.position = (new Vector3(center, -radius -10, center));
         floor.transform.localScale = (new Vector3(floorSize, .1f, floorSize));

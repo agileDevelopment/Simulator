@@ -25,7 +25,7 @@ public class NodeController : MonoBehaviour {
 	public int idNum;
 	public string idString;
     public bool selected;
-    public Color oldColor;
+    Color oldColor;
  
 	
 	// Use this for initialization
@@ -42,7 +42,7 @@ public class NodeController : MonoBehaviour {
 	
 	}
 
-    public void OnMouseDown()
+    void OnMouseDown()
     {
         unselectNodes();
         selected = true;
@@ -94,7 +94,11 @@ public class NodeController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+        if (simValues.networkChoice != "none")
+        {
+            if (gameObject.GetComponent<SphereCollider>().radius < simValues.networkGUI.nodeCommRange / 20)
+                gameObject.GetComponent<SphereCollider>().radius += .1f;
+        }
         if (selected)
             gameObject.renderer.material.color = Color.green;
 

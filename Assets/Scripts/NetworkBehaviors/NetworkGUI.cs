@@ -31,10 +31,6 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public string useDefaultLineStr = "Default Lines Enabled";
     public long messageCounter = 0;
     public Dictionary<string, string> myUIElements;
-    public GameObject baseStation;
-    public GameObject supervisor;
-    public GameObject upLink;
-
     //----------------Unity Functions------------------------------------
 
     // Update is called once per frame
@@ -183,34 +179,8 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         {
         GUI.Box(new Rect(Screen.width - 200, Screen.height / 2, 200, myUIElements.Count * 30 + 40), "Node Data");
         GUILayout.BeginArea(new Rect(Screen.width - 195, Screen.height / 2 + 5, 190, myUIElements.Count * 30));
+
         GUILayout.BeginVertical();
-        GUILayout.Space(30);
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Node -"))
-        {
-            if (source.GetComponent<NodeController>().idNum == 0)
-            {
-                source = GameObject.Find("Node " + (simValues.numNodes - 1).ToString());
-            }
-            else
-            {
-                source = GameObject.Find("Node " + (source.GetComponent<NodeController>().idNum - 1).ToString());         
-            }
-            source.GetComponent<NodeController>().OnMouseDown();
-        }
-        if (GUILayout.Button("Node +"))
-        {
-            if (source.GetComponent<NodeController>().idNum == source.GetComponent<NodeController>().idNum - 1)
-            {
-                source = GameObject.Find("Node 0");
-            }
-            else
-            {
-                source = GameObject.Find("Node " + (source.GetComponent<NodeController>().idNum + 1).ToString());
-            }
-            source.GetComponent<NodeController>().OnMouseDown();
-        }
-        GUILayout.EndHorizontal();
         foreach (string item in myUIElements.Values)
         {
             GUILayout.Label(item, GUILayout.Width(180));
@@ -234,7 +204,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     }
 
     //------------------INetworkGUIOptions Functions----------------------
-    public virtual void setGuiValues()
+    public void setGuiValues()
     {
         nodeCommRange = int.Parse(nodeCommRangeString);
 

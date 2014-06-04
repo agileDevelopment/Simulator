@@ -5,9 +5,9 @@ public class ACOVBGUI : AODVGUI {
     public object myLock;
     public CDS currentCDS;
     public int maxCDS;
-    public float weightFactor;
-    public float newTrailInfluence;
-    public float localUpdate;
+    public string weightFactor;
+    public string newTrailInfluence;
+    public string localUpdate;
     public string startStr = "Start";
     public float maxPheremoneLevel;
     public bool start= false;
@@ -24,9 +24,9 @@ public class ACOVBGUI : AODVGUI {
         currentCDS = null;
         runningCDSs = new Dictionary<string, float>();
         maxPheremoneLevel = 0f;
-        weightFactor = .8f;
-        newTrailInfluence = .8f;
-        localUpdate = .8f;
+        weightFactor = ".8";
+        newTrailInfluence = ".8";
+        localUpdate = ".8";
         myUIElements.Add("pLevel", "");
         myUIElements.Add("CDS Running", "");
 
@@ -37,30 +37,21 @@ public class ACOVBGUI : AODVGUI {
 	// Update is called once per frame
     protected override void Update()
     {
-        base.Update();
         counter++;
+
         if (counter % 2 == 0)
         {
+
             if (displayCDS)
             {
-                if (supervisor.GetComponent<ACOVB>().myCurrentCDS != null)
+                if (currentCDS != null)
                 {
-
-                    currentCDS = supervisor.GetComponent<ACOVB>().myCurrentCDS;
-                    if (currentCDS != null)
-                    {
-                        displayCurrentCDS();
-                    }
-                }else
-            {
-                print("nope, cds is blanks");
-            }
-                
+           //         displayCurrentCDS();
+                }
             }
 
             counter = 0;
         }
-
 	}
 
     protected virtual void LateUpdate()
@@ -86,11 +77,6 @@ public class ACOVBGUI : AODVGUI {
         }
     }
 
-    private void displayCurrentCDS()
-    {
-
-    }
-
 
     //--------------------------Algorithm Functions--------------------------------
     public override void showRunningGUI()
@@ -107,13 +93,13 @@ public class ACOVBGUI : AODVGUI {
             GUILayout.Space(20);
             adaptiveNetworkColor = GUILayout.Toggle(adaptiveNetworkColor, "Adaptive Color");
             GUILayout.EndHorizontal();
-        }    
-        GUILayout.Label("Weight Factor: " + weightFactor.ToString(), GUILayout.Width(200));
-        weightFactor = GUILayout.HorizontalSlider(weightFactor, 0, 1);
-        GUILayout.Label("Freshness Factor: " + newTrailInfluence.ToString(), GUILayout.Width(200));
-        newTrailInfluence = GUILayout.HorizontalSlider(newTrailInfluence, 0, 1);
-        GUILayout.Label("Local Factor: " + localUpdate.ToString(), GUILayout.Width(200));
-        localUpdate = GUILayout.HorizontalSlider(localUpdate, 0,1);
+        }
+        GUILayout.Label("Weight Factor:", GUILayout.Width(120));
+        weightFactor = GUILayout.TextField(weightFactor, 4);
+        GUILayout.Label("Freshness Factor:", GUILayout.Width(120));
+        newTrailInfluence = GUILayout.TextField(newTrailInfluence, 4);
+        GUILayout.Label("Local Factor:", GUILayout.Width(120));
+        localUpdate= GUILayout.TextField(localUpdate, 4);
         GUILayout.BeginVertical();
         GUILayout.BeginHorizontal();
         GUILayout.Label("Source Node: ", GUILayout.Width(100));
@@ -197,11 +183,80 @@ public class ACOVBGUI : AODVGUI {
               {
                   node.renderer.material.color = Color.white;
               }
-           supervisor.GetComponent<ACOVB>().generateAntCDS();
+            int rand = Random.Range(0, simValues.numNodes);
+            GameObject.Find("Node " + rand).GetComponent<ACOVB>().generateAntCDS();
         }
         displayCDS = GUILayout.Toggle(displayCDS, "Display CDS");
+
+
         GUILayout.EndVertical();
         GUILayout.EndArea();
     }
+
+
+    private void displayCurrentCDS()
+    {
+        if (currentCDS != null)
+        {
+            //clear current graphics
+            GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+            foreach (GameObject node in nodes)
+            {
+                //node.renderer.material.color = Color.blue;
+                node.GetComponent<ACOVB>().connected = false;
+                node.GetComponent<ACOVB>().VBlines.Clear();
+            }
+
+            GameObject[] lines = GameObject.FindGameObjectsWithTag("VBLine");
+            foreach (GameObject line in lines)
+            {
+                Destroy(line);
+            }
+
+            List<GameObject> openList = new List<GameObject>(currentCDS.getInCDS());
+            List<GameObject> edgeList = new List<GameObject>(currentCDS.getEdgeCDS());
+            List<GameObject> closedList = new List<GameObject>();
+            GameObject checkNode = openList[(int)openList.Count /2];
+            openList.Remove(checkNode);
+            closedList.Add(checkNode);
+
+            while (openList.Count > 0)
+            {
+                foreach (GameObject neighbor in checkNode.GetComponent<ACOVB>().neighbors)
+                {
+                    if (openList.Contains(neighbor))
+                    {
+
+
+                        neighbor.GetComponent<ACOVB>().connected = true;
+                        GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
+                        line.tag = "VBLine";
+                        line.name = "VBline_" + checkNode.GetComponent<NodeController>().idNum.ToString() +
+                            neighbor.GetComponent<NodeController>().idNum.ToString();
+                        line.transform.parent = checkNode.transform;
+                        line.GetComponent<LineRenderer>().SetColors(Color.black, Color.black);
+                        line.GetComponent<LineRenderer>().SetWidth(3, 3);
+                        checkNode.GetComponent<ACOVB>().VBlines.Add(neighbor, line);
+                        openList.Remove(neighbor);
+                        closedList.Add(neighbor);
+                    }
+
+                }
+                if (openList.Count > 0)
+                {
+                    if (closedList.Count > 0)
+                    {
+                        checkNode = closedList[0];
+                        closedList.Remove(checkNode);
+                    }
+
+                }
+            }
+
+
+        }
+    }
+
+
 
 }

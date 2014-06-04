@@ -2,13 +2,14 @@
 using System.Collections;
 
 public class OrbitGUI : FlightGUI {
-
 	LoadOptionsGUI simValues;
 	public string nodeOrbitString;
 	public string nodeMaxSpeedString;
 	public int nodeMaxSpeed;
 	public float radius;
 	public float rotationSpeed;
+	int floorSize;
+	public int center;
 	// Use this for initialization
 	void Start () {
 		simValues = gameObject.GetComponent<LoadOptionsGUI>();
@@ -17,9 +18,8 @@ public class OrbitGUI : FlightGUI {
 	}
 	
 	// Update is called once per frame
-    protected override void Update()
-    {
-        base.Update();
+	void Update () {
+	
 	}
 
 
@@ -42,7 +42,6 @@ public class OrbitGUI : FlightGUI {
 
     public override void setGuiValues()
     {
-        base.setGuiValues();
 	    radius = float.Parse(nodeOrbitString);
 	    rotationSpeed = Random.Range(5,float.Parse(nodeMaxSpeedString));
 	    nodeMaxSpeed  = int.Parse(nodeMaxSpeedString);
@@ -76,12 +75,9 @@ public class OrbitGUI : FlightGUI {
     GameObject floor = GameObject.Find("Floor");
     floor.transform.position = (new Vector3(center, -center, center));
     floor.transform.localScale = (new Vector3(floorSize,.1f,floorSize));	
-    camera2.isOrthoGraphic = true;
-    camera2.orthographicSize = floor.transform.localScale.x / 2 + 50;
-	camera2.transform.position = (new Vector3(center,100,center));
-    camera2.rect = new Rect(.7f, .7f, .3f, .3f);
-    Camera.main.transform.position = (new Vector3(floorSize, floorSize / 2, floorSize));
-    Camera.main.transform.LookAt(new Vector3(center, 0, center));
+    Camera.main.isOrthoGraphic = true;
+    Camera.main.orthographicSize = floor.transform.localScale.x / 2 + 50;
+		    Camera.main.transform.position = (new Vector3(center,100,center));
     floor.renderer.material.mainTextureScale = new Vector2(floorSize/10, floorSize/10);
     }
 

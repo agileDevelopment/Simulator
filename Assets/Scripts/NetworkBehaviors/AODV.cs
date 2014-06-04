@@ -38,32 +38,12 @@ public class AODV : Network
     protected override void Start()
     {
         base.Start();
+        netValues = simValues.networkGUI;
         delayFactor = 4000;
         active_route_timer = 5.0f;  // used to delete route information;
         nodeSeqNum = 0;
+
         currentRREQ = new Dictionary<string, RevPath>();
-
-        if (netValues.supervisor == null)
-        {
-            netValues.supervisor = GameObject.Find("Node " + ((int)simValues.numNodes / 2).ToString());
-            netValues.baseStation.transform.position = (new Vector3(simValues.flightGUI.floorSize / 2, Camera.main.transform.position.y * 4 / 5, simValues.flightGUI.floorSize / 2));
-        }
-
-        if (netValues.supervisor != null)
-        {
-            if (gameObject == netValues.supervisor)
-            {
-                GameObject line = (GameObject)GameObject.Instantiate(simValues.linePrefab);
-                line.name = "UpLink" + netValues.supervisor.GetComponent<NodeController>().idNum.ToString() +
-                    netValues.baseStation.name;
-                line.transform.parent = netValues.baseStation.transform;
-                line.GetComponent<LineRenderer>().SetColors(Color.blue, Color.blue);
-                line.GetComponent<LineRenderer>().SetWidth(3, 3);
-                netValues.upLink = line;
-                netValues.supervisor.transform.localScale = (new Vector3(15, 15, 15));
-            }
-        }
-
 
    
     }
@@ -72,15 +52,12 @@ public class AODV : Network
     protected override void Update()
     {
         base.Update();
-
         messageQueue = currentRREQ.Count;
         if (gameObject.GetComponent<NodeController>().selected)
         {
             netValues.myUIElements["messageQueue"] = "# of mess:" + messageQueue.ToString();
         }
         netValues.myUIElements["Tot Messages"] = "Tot# Mess: " + netValues.messageCounter.ToString();
-
-
 
     }
     protected override void LateUpdate()
