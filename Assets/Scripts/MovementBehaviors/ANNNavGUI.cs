@@ -123,8 +123,8 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         goalNode.transform.LookAt(getSpawnLocation());
 
         GameObject checkpointNode;
-		for (int i = 1; i < numCheckpoints; i++)
-		{
+        for (int i = 1; i < numCheckpoints; i++)
+        {
             checkpointNode = (GameObject)GameObject.Instantiate(goalPrefab);
             checkpointNode.name = "GoalNode " + i;
             checkpointNode.layer = 2;
@@ -162,6 +162,9 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
                 obstacleNode = (GameObject)GameObject.Instantiate(obstaclePrefab);
                 obstacleNode.transform.position = new Vector3(i * spacing, yOffset, j * spacing);
                 obstacleNode.transform.localScale = new Vector3(Random.Range(5, size), Random.Range(5, size), Random.Range(5, size));
+                Color color = obstacleNode.renderer.material.color;
+                color.a = 0.5f;
+                obstacleNode.renderer.material.color = color;
             }
         }
     }

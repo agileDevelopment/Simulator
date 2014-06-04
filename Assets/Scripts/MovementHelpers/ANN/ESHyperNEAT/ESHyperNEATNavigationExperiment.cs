@@ -24,7 +24,7 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
     IPhenomeEvaluator<IBlackBox> _phenomeEvaluator;
     NetworkActivationScheme _activationSchemeCppn;
     int RealInputCount = 7;
-    //int FinalOutputCount = 3;
+    int RealOutputCount = 3;
 
     public ESHyperNEATNavigationExperiment(IPhenomeEvaluator<IBlackBox> phenomeEvaluator)
     {
@@ -51,8 +51,8 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
     /// </summary>
     public override IGenomeDecoder<NeatGenome, IBlackBox> CreateGenomeDecoder()
     {
-        SubstrateNodeSet inputLayer = new SubstrateNodeSet(InputCount);
-        SubstrateNodeSet outputLayer = new SubstrateNodeSet(OutputCount);
+        SubstrateNodeSet inputLayer = new SubstrateNodeSet(RealInputCount);
+        SubstrateNodeSet outputLayer = new SubstrateNodeSet(RealOutputCount);
 
         // Each node in each layer needs a unique ID.
         // The input nodes use ID range [1,9] and
@@ -73,17 +73,17 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         //          |           |
         //
         // Hopefully the structure of this will be good...
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -1, 1 })); // Theta input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 1, 1 }));  // Phi input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0 }));  // Forward Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 1, 0 }));  // Right Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -1, 0 })); // Left Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 1 }));  // Up Sensor input
-        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, -1 })); // Down Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 0 })); // Theta input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 0 })); // Phi input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0, 1 })); // Forward Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -1, 0, 0 })); // Right Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 1, 0, 0 })); // Left Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 1, 0 })); // Up Sensor input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, -1, 0 })); // Down Sensor input
 
-        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { -1, 1 })); // Theta output
-        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 1, 1 }));  // Phi output
-        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0 }));  // Velocity output
+        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 0 })); // Theta output
+        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 0 }));  // Phi output
+        outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 1 }));  // Velocity output
 
         List<SubstrateNodeSet> nodeSetList = new List<SubstrateNodeSet>(2);
         nodeSetList.Add(inputLayer);
@@ -93,13 +93,13 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         List<NodeSetMapping> nodeSetMappingList = new List<NodeSetMapping>(1);
         nodeSetMappingList.Add(NodeSetMapping.Create(0, 1, (double?)null));
 
-        int initialDepth = 3;
-        int maxDepth = 3;
+        int initialDepth = 4;
+        int maxDepth = 4;
         int weightRange = 5;
         float divisionThreshold = 0.03f;
         float varianceThreshold = 0.03f;
         float bandingThreshold = 0.3f;
-        int ESIterations = 1;
+        int ESIterations = 3;
 
         EvolvableSubstrate substrate = new EvolvableSubstrate(nodeSetList, DefaultActivationFunctionLibrary.CreateLibraryCppn(),
             0, 0.4, 5, nodeSetMappingList, initialDepth, maxDepth, weightRange, divisionThreshold, varianceThreshold, bandingThreshold, ESIterations);
@@ -119,7 +119,7 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
 
     public override int InputCount
     {
-        get { return 4; } // 2 * (x,y) = 4 inputs for CPPN
+        get { return 6; } // 2 * (x,y,z) = 6 inputs for CPPN
     }
 
     public override int OutputCount

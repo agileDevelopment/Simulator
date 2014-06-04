@@ -31,13 +31,15 @@ public class BackPropNeuralNet
     private double[][] hoPrevWeightsDelta;
     private double[] oPrevBiasesDelta;
 
-    private Random rnd = new Random();
-
-    public BackPropNeuralNet(int numInput, int numHidden, int numOutput)
+    private Random _rng;
+    
+    public BackPropNeuralNet(int numInput, int numHidden, int numOutput, Random rnd)
     {
         this.numInput = numInput;
         this.numHidden = numHidden;
         this.numOutput = numOutput;
+
+        _rng = rnd;
 
         inputs = new double[numInput];
         ihWeights = Helpers.MakeMatrix(numInput, numHidden);
@@ -60,22 +62,23 @@ public class BackPropNeuralNet
     }
 
     public void GenRandWeights() {
+        double scale = 0.025;
         for (int i = 0; i < numInput; i++) 
         {
             for (int j = 0; j < numHidden; j++) 
             {
-                 ihWeights[i][j] = (0.1 - 0.01) * rnd.NextDouble() + 0.01;
+                ihWeights[i][j] = (scale) * _rng.NextDouble() + 0.01;
             }
         }
 
         for (int j = 0; j < numHidden; j++) {
             for (int k = 0; k < numOutput; k++) {
-                hoWeights[j][k] = (0.1 - 0.01) * rnd.NextDouble() + 0.01;
+                hoWeights[j][k] = (scale) * _rng.NextDouble() + 0.01;
             }
         }
 
-        for (int l = 0; l < numHidden; l++) hBiases[l] = (0.1 - 0.01) * rnd.NextDouble() + 0.01;
-        for (int l = 0; l < numOutput; l++) oBiases[l] = (0.1 - 0.01) * rnd.NextDouble() + 0.01;
+        for (int l = 0; l < numHidden; l++) hBiases[l] = (scale) * _rng.NextDouble() + 0.01;
+        for (int l = 0; l < numOutput; l++) oBiases[l] = (scale) * _rng.NextDouble() + 0.01;
     }
 
     public void SetWeights(double[] weights)
@@ -185,14 +188,14 @@ public class BackPropNeuralNet
         // 1. compute output gradients. assumes log-sigmoid!
         for (int i = 0; i < oGrads.Length; ++i)
         {
-            double derivative = (1 - outputs[i]) * outputs[i]; // derivative of log-sigmoid is y(1-y)
-			oGrads[i] = derivative * errorVal; // oGrad = (1 - O)(O) * (T-O)
+            //double derivative = (1 - outputs[i]) * outputs[i]; // derivative of log-sigmoid is y(1-y)
+			oGrads[i] = 1.0/numOutput * errorVal; // oGrad = (1 - O)(O) * (T-O)
         }
 
         // 2. compute hidden gradients. assumes tanh!
         for (int i = 0; i < hGrads.Length; ++i)
         {
-            double derivative = (1 - hOutputs[i]) * (1 + hOutputs[i]); // derivative of tanh is (1-y)(1+y)
+            double derivative = (1 - hOutputs[i]) * hOutputs[i];
             double sum = 0.0;
             for (int j = 0; j < numOutput; ++j) // each hidden delta is the sum of numOutput terms
                 sum += oGrads[j] * hoWeights[i][j]; // each downstream gradient * outgoing weight
@@ -205,7 +208,7 @@ public class BackPropNeuralNet
             for (int j = 0; j < ihWeights[0].Length; ++j) // 0..3 (4)
             {
                 double delta = learn * hGrads[j] * inputs[i]; // compute the new delta = "eta * hGrad * input"
-                ihWeights[i][j] += delta; // update
+                ihWeights[i][j] += delta * _rng.Next(-1, 2); // Either accept a negative update, a positive update, or no update randomly
                 ihWeights[i][j] += mom * ihPrevWeightsDelta[i][j]; // add momentum using previous delta. on first pass old value will be 0.0 but that's OK.
                 ihPrevWeightsDelta[i][j] = delta; // save the delta for next time
             }
@@ -215,7 +218,7 @@ public class BackPropNeuralNet
         for (int i = 0; i < hBiases.Length; ++i)
         {
             double delta = learn * hGrads[i] * 1.0; // the 1.0 is the constant input for any bias; could leave out
-            hBiases[i] += delta;
+            hBiases[i] += delta * _rng.Next(-1, 2);
             hBiases[i] += mom * hPrevBiasesDelta[i];
             hPrevBiasesDelta[i] = delta; // save delta
         }
@@ -226,7 +229,7 @@ public class BackPropNeuralNet
             for (int j = 0; j < hoWeights[0].Length; ++j) // 0..1 (2)
             {
                 double delta = learn * oGrads[j] * hOutputs[i];  // hOutputs are inputs to next layer
-                hoWeights[i][j] += delta;
+                hoWeights[i][j] += delta * _rng.Next(-1, 2);
                 hoWeights[i][j] += mom * hoPrevWeightsDelta[i][j];
                 hoPrevWeightsDelta[i][j] = delta;
             }
@@ -236,7 +239,7 @@ public class BackPropNeuralNet
         for (int i = 0; i < oBiases.Length; ++i)
         {
             double delta = learn * oGrads[i] * 1.0;
-            oBiases[i] += delta;
+            oBiases[i] += delta * _rng.Next(-1, 2);
             oBiases[i] += mom * oPrevBiasesDelta[i];
             oPrevBiasesDelta[i] = delta;
         }

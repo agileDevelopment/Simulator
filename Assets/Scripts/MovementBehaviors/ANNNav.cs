@@ -99,7 +99,7 @@ public class ANNNav : NodeMove
 			if (isAlive) {
                 if (checkBounds() && prevPosition != transform.position) // Only get fitness points in the maze
 				{
-                    populationManager.checkpointNotify(gameObject, Mathf.Pow (guiValues.floorSize/2/(Vector3.Distance(gameObject.transform.position, goal) + 1), 2) );
+                    populationManager.checkpointNotify(gameObject, guiValues.floorSize/2/(Vector3.Distance(gameObject.transform.position, goal) + 1) );
 					prevPosition = new Vector3 (transform.position.x, transform.position.y, transform.position.z);
 				}
 
@@ -122,6 +122,9 @@ public class ANNNav : NodeMove
 				transform.eulerAngles = new Vector3 (yaw, pitch, transform.eulerAngles.z);
 				transform.position += transform.forward * speed * Time.deltaTime;
 			}
+
+            if (transform.position.y < -10)
+                transform.position = new Vector3(transform.position.x, -10, transform.position.z);
         }
         catch { } // If the object was already destroyed we don't really care...
     }
@@ -130,15 +133,19 @@ public class ANNNav : NodeMove
     {
 		if (index == 0) 
 		{
-			print ("Goal reached by " + gameObject.name);
-			populationManager.goalReachedNotify(gameObject);
+            if (checkpointsReached[index] == 0)
+            {
+                checkpointsReached[index] = 1;
+                print("Goal reached by " + gameObject.name);
+                populationManager.goalReachedNotify(gameObject);
+            }
 		} 
 		else 
 		{
             if (checkpointsReached[index] == 0) // Only get the reward for hitting it once.
             {
                 checkpointsReached[index] = 1;
-                populationManager.checkpointNotify(gameObject, Mathf.Pow((float)numCheckpoints / index, 2));
+                populationManager.checkpointNotify(gameObject, Mathf.Pow((float)3 * numCheckpoints / index, 2));
             }
 		}
     }

@@ -58,7 +58,7 @@ public class Sensor
             }
         }
 
-        if (distance != 64)
+        if (distance < range)
             Debug.DrawRay(node.transform.position, sensorDirection * distance, color);
         
         float data = ((float)(range - distance)) / range;

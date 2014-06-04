@@ -3,7 +3,7 @@
     <Fn id="0" name="SteepenedSigmoid" prob="1" />
   </ActivationFunctions>
   <Networks>
-    <Network id="3076" birthGen="62" fitness="2.0938169882776165">
+    <Network id="42902" birthGen="962" fitness="120.40945293063028">
       <Nodes>
         <Node type="bias" id="0" />
         <Node type="in" id="1" />
@@ -18,8 +18,13 @@
         <Node type="out" id="10" />
       </Nodes>
       <Connections>
-        <Con id="16" src="1" tgt="10" wght="4.20406230561551" />
-        <Con id="69" src="6" tgt="8" wght="0.85490969295200081" />
+        <Con id="19" src="2" tgt="10" wght="1.9574451688244039" />
+        <Con id="26" src="5" tgt="8" wght="2.0708201194684852" />
+        <Con id="40" src="7" tgt="9" wght="-4.1220244842962108" />
+        <Con id="79" src="5" tgt="10" wght="3.00359716707222" />
+        <Con id="86" src="4" tgt="8" wght="-0.85876923607391331" />
+        <Con id="115" src="3" tgt="8" wght="0.454777462525012" />
+        <Con id="155" src="6" tgt="9" wght="1.0411655241550983" />
       </Connections>
     </Network>
   </Networks>

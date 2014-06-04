@@ -8,7 +8,7 @@ using SharpNeat.Phenomes;
 using SharpNeat.EvolutionAlgorithms;
 using UnityEngine;
 
-class BlackBoxEvaluator : IPhenomeEvaluator<IBlackBox>
+public class BlackBoxEvaluator : IPhenomeEvaluator<IBlackBox>
 {
     ANNPopulationManager _popManager;
     GameObject maxFitnessNode;
@@ -60,6 +60,9 @@ class BlackBoxEvaluator : IPhenomeEvaluator<IBlackBox>
         {
             case 1:
                 nodeColor = Color.cyan;
+                break;
+            case 2:
+                nodeColor = Color.white;
                 break;
             default:
                 nodeColor = Color.blue;

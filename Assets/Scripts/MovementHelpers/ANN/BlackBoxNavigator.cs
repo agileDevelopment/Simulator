@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using SharpNeat.Phenomes;
+using UnityEngine;
 
 public class BlackBoxNavigator
 {
@@ -18,6 +19,7 @@ public class BlackBoxNavigator
 
     public void setInputSignalArray(ISignalArray inputs, ArrayList sensorInfo)
     {
+        //Debug.Log("Inputs: " + sensorInfo[0] + ", " + sensorInfo[1] + ", " + sensorInfo[2] + ", " + sensorInfo[3] + ", " + sensorInfo[4] + ", " + sensorInfo[5] + ", " + sensorInfo[6]);
         inputs[0] = (float)sensorInfo[0];
         inputs[1] = (float)sensorInfo[1];
         inputs[2] = (float)sensorInfo[2];
@@ -39,6 +41,7 @@ public class BlackBoxNavigator
         brain.ResetState();
         setInputSignalArray(brain.InputSignalArray, sensorInfo);
         brain.Activate();
+        //Debug.Log("Outputs: " + outputs[0] + ", " + outputs[1] + ", " + outputs[2]);
         outputs[0] = (float)brain.OutputSignalArray[0]; 
         outputs[1] = (float)brain.OutputSignalArray[1]; 
         outputs[2] = (float)brain.OutputSignalArray[2];
