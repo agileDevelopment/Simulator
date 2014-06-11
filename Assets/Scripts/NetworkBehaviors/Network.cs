@@ -8,11 +8,12 @@ public class Network : MonoBehaviour, INetworkBehavior {
     public List<GameObject> neighbors;
     public Object nodeLock = new Object();
     public NodeLine lineController;
+    protected float active_route_timer;
     public int broadcastID;
-
-    int routeCount=0;
+    int clearMsgCtr = 0;
+ //   int routeCount=0;
     protected Dictionary<GameObject, RouteEntry> routes;
-    protected List<string> broadcasts;
+    protected Dictionary<string, MSGPacket> messages;
 
 	// Use this for initialization
 
@@ -22,10 +23,11 @@ public class Network : MonoBehaviour, INetworkBehavior {
         simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
         netValues = simValues.networkGUI;
         neighbors = new List<GameObject>();
+        active_route_timer = 5.0f;  // used to delete route information;
         lineController = gameObject.GetComponent<NodeLine>();
         gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
         routes = new Dictionary<GameObject, RouteEntry>();
-        broadcasts = new List<string>();
+        messages = new Dictionary<string, MSGPacket>();
         broadcastID = 0;
 
 
@@ -33,7 +35,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
 	
 	// Update is called once per frame-----------------------
 	protected virtual void Update () {
-        routeCount = routes.Count;
+   //     routeCount = routes.Count;
         if (gameObject.GetComponent<NodeController>().selected)
         {
             netValues.myUIElements["nodeID"] = gameObject.name;
@@ -46,9 +48,22 @@ public class Network : MonoBehaviour, INetworkBehavior {
         }
 
 	}
+
+    //every 60 frames, clear messages.    
     protected virtual void LateUpdate()
-    { 
-    //do something
+    {
+        clearMsgCtr++;
+        if (clearMsgCtr >= 60)
+        {
+            clearMsgCtr = 0;
+            Dictionary<string, MSGPacket> temp = new Dictionary<string,MSGPacket>(messages);
+            foreach(MSGPacket packet in temp.Values){
+                if (packet.startTime + active_route_timer < Time.time)
+                {
+          //          messages.Remove(packet.id);
+                }
+            }
+        }
     }
 
     void OnMouseDown()
@@ -104,6 +119,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
 
     public void initBroadcast(string mType, string message)
     {
+        broadcastID++;
         MSGPacket packetToSend = new MSGPacket();
         packetToSend.id = gameObject.name + " - " + broadcastID;
         packetToSend.sender = gameObject;
@@ -111,7 +127,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
         packetToSend.messageType = mType;
         packetToSend.message = message;
         packetToSend.retries = (int)simValues.numNodes / 2;
-        packetToSend.TTL = (int)simValues.numNodes;
+        packetToSend.MaxTTL = packetToSend.TTL = (int)simValues.numNodes;
         packetToSend.source = gameObject;
         packetToSend.startTime = Time.time;
 
@@ -127,7 +143,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
         packetToSend.messageType = mType;
         packetToSend.message = message;
         packetToSend.retries = (int)simValues.numNodes / 2;
-        packetToSend.TTL = (int)simValues.numNodes ;
+        packetToSend.MaxTTL = packetToSend.TTL = (int)simValues.numNodes;
         packetToSend.source = gameObject;
         packetToSend.startTime = Time.time;
 
@@ -136,6 +152,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
 
     public virtual void recMessage(MSGPacket packet)
     {
+    //    print("recMessage");
         netValues.messageCounter++;
         if (netValues.useLatency)
             StartCoroutine(delayRecMessage(packet));
@@ -179,6 +196,7 @@ public struct MSGPacket
     public string messageType;
     public string message;
     public int retries;
+    public int MaxTTL;
     public int TTL;
 }
 

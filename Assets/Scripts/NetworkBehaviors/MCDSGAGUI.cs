@@ -6,8 +6,8 @@
 //  Authors: Corey Willinger
 //  OS: Windows x64/X86
 //  Language:C#
+//  Class Dependicies: AODVGUI
 //
-//  Class Dependicies: OrbitGUI
 
 //  Description: Establishes and stores algorithm parameters and data.  
 //  Delegates algorithm implementation to MCDSGA script running on every node.

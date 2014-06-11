@@ -25,7 +25,6 @@ using System.Collections.Generic;
 public class AODV : Network
 {
     public Dictionary<string, RevPath> currentRREQ;
-    protected float active_route_timer;
     protected int nodeSeqNum;
     public int delayFactor;
     public int messageQueue=0;
@@ -39,7 +38,6 @@ public class AODV : Network
     {
         base.Start();
         delayFactor = 4000;
-        active_route_timer = 5.0f;  // used to delete route information;
         nodeSeqNum = 0;
         currentRREQ = new Dictionary<string, RevPath>();
 
@@ -84,7 +82,7 @@ public class AODV : Network
 
     }
     protected override void LateUpdate()
-    {        //clear requests if they have expired.
+    {   //clear requests if they have expired.
         Dictionary<string, RevPath> temp = new Dictionary<string, RevPath>(currentRREQ);
         foreach (RevPath r in temp.Values)
         {
@@ -117,6 +115,7 @@ public class AODV : Network
                 n.dest_sequence_num = neighbor.GetComponent<AODV>().broadcastID;
             }
         }
+
 
 
         //clear routes if they have expired.
@@ -283,6 +282,7 @@ public class AODV : Network
             if (cameFrom != node.name && node.name != dataOut.destination.name)
             {
                 dataOut.intermediate = gameObject;
+         //       print("AODV SendRREQ");
                 netValues.messageCounter++;
                 node.GetComponent<AODV>().recRREQ(dataOut);
 
@@ -331,6 +331,7 @@ public class AODV : Network
                     gameObject.renderer.material.color = Color.red;
                 if (gameObject != rrepPacket.source)
                 {
+           //         print("AODV Send RREQ");
                     netValues.messageCounter++;
                     returnP.GetComponent<AODV>().recRREP(rrepPacket);
                 }
@@ -358,6 +359,7 @@ public class AODV : Network
 
     public override void sendBroadcast(MSGPacket packet)
     {
+        
         if (netValues.useLatency)
             StartCoroutine(delayBroadcast(packet));
         else
@@ -375,16 +377,17 @@ public class AODV : Network
 
     protected virtual void performBroadcast(MSGPacket packet)
     {
-        if (!broadcasts.Contains(packet.id))
+
+        if (!messages.ContainsKey(packet.id))
         {
-            broadcasts.Add(packet.id);
+            messages.Add(packet.id, packet);
             foreach (GameObject neighbor in neighbors)
             {
                 packet.sender = gameObject;
-                sendBroadcast(packet);
-                packet.destination = gameObject;
-                performRecMessage(packet);
+                neighbor.GetComponent<AODV>().sendBroadcast(packet);
             }
+            packet.destination = gameObject;
+            performRecMessage(packet);
         }
     }
 
@@ -481,6 +484,7 @@ public class AODV : Network
                     if (packet.TTL > 0)
                     {
                         packet.TTL--;
+            //            print("AODV delaySendMEssage");
                         netValues.messageCounter++;
                         nextHop.GetComponent<AODV>().recMessage(packet);
                     }
@@ -495,33 +499,37 @@ public class AODV : Network
 
     protected override void performRecMessage(MSGPacket packet)
     {
-        bool fwd = true;
-        if (gameObject == packet.destination)
+        if (!messages.ContainsKey(packet.id))
         {
-            if (packet.messageType == "mess")
+            bool fwd = true;
+            messages.Add(packet.id, packet);
+            if (gameObject == packet.destination)
             {
-                gameObject.GetComponent<NodeController>().nodeText.GetComponent<TextMesh>().text = "Test";
-                gameObject.GetComponent<NodeController>().nodeText.GetComponent<TextMesh>().renderer.enabled = true;
-              //  gameObject.GetComponent<NodeController>().nodeText.transform.localEulerAngles = new Vector3(180, 0, 0);
-
-            }
-
-            else if (packet.messageType == "cmd")
-            {
-                if (packet.message == "ping")
+                if (packet.messageType == "mess")
                 {
-                    initMessage(packet.source, "cmd", "ack");
-                }
-                if (packet.message == "ack")
-                {
+                    gameObject.GetComponent<NodeController>().nodeText.GetComponent<TextMesh>().text = "Test";
+                    gameObject.GetComponent<NodeController>().nodeText.GetComponent<TextMesh>().renderer.enabled = true;
+                    //  gameObject.GetComponent<NodeController>().nodeText.transform.localEulerAngles = new Vector3(180, 0, 0);
 
                 }
-            }
 
-        }
-        else if (fwd)
-        {
-            sendMessage(packet);
+                else if (packet.messageType == "cmd")
+                {
+                    if (packet.message == "ping")
+                    {
+                        initMessage(packet.source, "cmd", "ack");
+                    }
+                    if (packet.message == "ack")
+                    {
+
+                    }
+                }
+
+            }
+            else if (fwd)
+            {
+                sendMessage(packet);
+            }
         }
     }
 
