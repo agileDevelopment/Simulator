@@ -137,6 +137,7 @@ public class Network : MonoBehaviour, INetworkBehavior {
 
     public void initMessage(GameObject destination, string mType, string message)
     {
+ 
         MSGPacket packetToSend = new MSGPacket();
         packetToSend.id = gameObject.name + " - " + broadcastID;
         packetToSend.destination = destination;

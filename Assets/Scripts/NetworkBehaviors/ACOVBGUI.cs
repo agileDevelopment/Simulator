@@ -56,6 +56,7 @@ public class ACOVBGUI : AODVGUI {
     public int CDSCounter;
     public int numOfCDS;
     public int time = 0;
+    public bool reset = false;
  
 
 
@@ -218,8 +219,7 @@ public class ACOVBGUI : AODVGUI {
     }
 
 
-    void startTestEvent()
-    {
+    void startTestEvent(){
         drawLine = false;
         enableTest = true;
         logdata = new List<ACOLogData>();
