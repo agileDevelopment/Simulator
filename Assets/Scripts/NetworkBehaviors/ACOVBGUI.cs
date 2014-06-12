@@ -100,7 +100,7 @@ public class ACOVBGUI : AODVGUI {
                 }
                 if (simValues.simRunTime != 0)
                 {
-                    if (Time.time > startTime + simValues.simRunTime)
+                    if (Time.time > startTime + simValues.simRunTime+.01)
                     {
                         finishIteration(logdata);
                     }
@@ -332,13 +332,14 @@ public class ACOVBGUI : AODVGUI {
             avgEntry.totBroadcasts += entry.totBroadcasts = (int)broadcastCounter;
             avgEntry.recBroadcasts += entry.recBroadcasts = (int)recBroadcasts;
             avgEntry.bCastsPerSec += entry.bCastsPerSec = (float)broadcastCounter / 3;
-            avgEntry.currentCDSsize += currentCDS.getInCDS().Count;
+            avgEntry.currentCDSsize += entry.currentCDSsize = currentCDS.getInCDS().Count;
             avgEntry.lostPackets += entry.lostPackets = (int)broadcastCounter - recBroadcasts;
             avgEntry.avgPacketTime += entry.avgPacketTime = packetClock / recBroadcasts;
             avgEntry.avgPacketHops += entry.avgPacketHops = packetHopCounter / recBroadcasts;
 
             logdata.Add(entry);
             broadcastCounter = 0;
+            messageCounter = 0;
             recBroadcasts = 0;
             packetClock = 0f;
             packetHopCounter = 0f;
@@ -395,13 +396,13 @@ public class ACOVBGUI : AODVGUI {
             {
                 ACOLogData entry = entryData.Value;
                 timeLine += entry.time + "\t";
-                totBcastsLine += ((float)entry.totBroadcasts / avgdata.Count).ToString() + "\t";
-                recBcastsLine += ((float)entry.recBroadcasts / avgdata.Count).ToString() + "\t";
-                bCastsPerSecLine += ((float)entry.bCastsPerSec / avgdata.Count).ToString() + "\t";
-                currentCDSsizeLine += (entry.currentCDSsize).ToString() + "\t";
-                lostPacketsLine += ((float)entry.lostPackets / avgdata.Count).ToString() + "\t";
-                avgPacketTimeLine += ((float)entry.avgPacketTime).ToString() + "\t";
-                avgPacketHopsLine += ((float)entry.avgPacketHops).ToString() + "\t";
+                totBcastsLine += ((float)entry.totBroadcasts / maxIterations).ToString() + "\t";
+                recBcastsLine += ((float)entry.recBroadcasts / maxIterations).ToString() + "\t";
+                bCastsPerSecLine += ((float)entry.bCastsPerSec / maxIterations).ToString() + "\t";
+                currentCDSsizeLine += ((float)entry.currentCDSsize / maxIterations).ToString() + "\t";
+                lostPacketsLine += ((float)entry.lostPackets / maxIterations).ToString() + "\t";
+                avgPacketTimeLine += ((float)entry.avgPacketTime / maxIterations).ToString() + "\t";
+                avgPacketHopsLine += ((float)entry.avgPacketHops / maxIterations).ToString() + "\t";
             }
             outputFile.WriteLine();
             outputFile.WriteLine(fileName);

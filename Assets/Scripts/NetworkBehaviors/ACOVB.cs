@@ -89,12 +89,12 @@ public class ACOVB : AODV
                     netValues.currentCDS = myCurrentCDS;
                 }
 
-                if (myCurrentCDS != null)
-                {
+                //if (myCurrentCDS != null)
+                //{
 
-                    bestAnt.label = gameObject.name + " - " + broadcastID;
-                    sendBackAnt(bestAnt);
-                }
+                //    bestAnt.label = gameObject.name + " - " + broadcastID;
+                //    sendBackAnt(bestAnt);
+                //}
 
             }
 
@@ -778,6 +778,12 @@ public class ACOVB : AODV
                     {
                         tempCDS = ant.myCDS;
                         bestAnt =  ant;
+                    }
+                    if (myCurrentCDS != null)
+                    {
+
+                        bestAnt.label = gameObject.name + " - " + broadcastID;
+                        sendBackAnt(bestAnt);
                     }
 
                 }
