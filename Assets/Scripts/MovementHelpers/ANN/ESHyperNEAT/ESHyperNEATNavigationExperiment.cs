@@ -23,8 +23,8 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
 {
     IPhenomeEvaluator<IBlackBox> _phenomeEvaluator;
     NetworkActivationScheme _activationSchemeCppn;
-    int RealInputCount = 5 + 8; // 5 sensors, 8 quadrant sensors, current velocity
-    int RealOutputCount = 1 + 8; // 1 accelration and 8 "quadrant votes" outputs
+    int RealInputCount = 13; // 5 sensors, 8 quadrant sensors, current velocity
+    int RealOutputCount = 9; // 1 accelration and 8 "quadrant votes" outputs
 
     public ESHyperNEATNavigationExperiment(IPhenomeEvaluator<IBlackBox> phenomeEvaluator)
     {
@@ -75,14 +75,14 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0.5, 0, 0 })); // Left Sensor input
         inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, 0.5, 0 })); // Up Sensor input
 		inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0, -0.5, 0 })); // Down Sensor input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5, 0.5 })); // Top, front, left quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5, 0.5, 0.5 })); // Top, front, right quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5,-0.5, 0.5 })); // Bottom, front, left quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5,-0.5, 0.5 })); // Bottom, front, right quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5,-0.5 })); // Top, back, left quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5, 0.5,-0.5 })); // Top, back, right quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5,-0.5,-0.5 })); // Bottom, back, left quadrant input
-		inputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] {-0.5,-0.5,-0.5 })); // Bottom, back, right quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0.5, 0.5, 0.5 })); // Top, front, left quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -0.5, 0.5, 0.5 })); // Top, front, right quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0.5, -0.5, 0.5 })); // Bottom, front, left quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -0.5, -0.5, 0.5 })); // Bottom, front, right quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0.5, 0.5, -0.5 })); // Top, back, left quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -0.5, 0.5, -0.5 })); // Top, back, right quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { 0.5, -0.5, -0.5 })); // Bottom, back, left quadrant input
+        inputLayer.NodeList.Add(new SubstrateNode(inputId++, new double[] { -0.5, -0.5, -0.5 })); // Bottom, back, right quadrant input
 
 		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0, 0, 0.5 })); // Velocity output
 		outputLayer.NodeList.Add(new SubstrateNode(outputId++, new double[] { 0.5, 0.5, 0.5 })); // Top, front, left quadrant vote output
@@ -107,8 +107,8 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
         int weightRange = 5;
         float divisionThreshold = 0.03f;
         float varianceThreshold = 0.03f;
-        float bandingThreshold = 0.5f;
-        int ESIterations = 1;
+        float bandingThreshold = 0.3f;
+        int ESIterations = 2;
 
         EvolvableSubstrate substrate = new EvolvableSubstrate(nodeSetList, DefaultActivationFunctionLibrary.CreateLibraryCppn(),
             0, 0.4, 5, nodeSetMappingList, initialDepth, maxDepth, weightRange, divisionThreshold, varianceThreshold, bandingThreshold, ESIterations);
@@ -133,7 +133,7 @@ public class ESHyperNEATNavigationExperiment : SimpleNeatExperiment
 
     public override int OutputCount
     {
-        get { return 2; } // 2 Outputs for the CPPN - 1 for weight and 1 for bias weight
+        get { return 1; } // 1 Outputs for the CPPN
     }
 
     public override bool EvaluateParents

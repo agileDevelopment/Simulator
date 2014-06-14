@@ -11,7 +11,7 @@ class MLPBPBlackBox : IBlackBox
 	int _outputCount;
 	ISignalArray _inputArray, _outputArray;
 	double[] signalsArray;
-    int _hiddenNodes = 4;
+    int _hiddenNodes = 20;
     public int _id;
     public double fitness = 0;
 

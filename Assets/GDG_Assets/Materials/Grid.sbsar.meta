@@ -6,7 +6,7 @@ SubstanceImporter:
   - serializedVersion: 10
     name: Floor
     prototypeName: Grid
-    shaderName: Bumped Specular
+    shaderName: Transparent/Diffuse
     inputs:
     - name: $normalformat
       value:
@@ -94,7 +94,7 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: SpecularIntensity
       value:
-        scalar[0]: .5
+        scalar[0]: 0
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
@@ -118,13 +118,6 @@ SubstanceImporter:
         data:
           first:
             name: _MainTex
-          second:
-            texture: {instanceID: 0}
-            scale: {x: 40, y: 40}
-            offset: {x: 0, y: 0}
-        data:
-          first:
-            name: _BumpMap
           second:
             texture: {instanceID: 0}
             scale: {x: 40, y: 40}

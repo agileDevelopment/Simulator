@@ -9,7 +9,7 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
     public int floorSize = 300;
     public string spawnPointXString = "50", spawnPointYString, spawnPointZString = "50";
     public string goalPointXString, goalPointYString = "50", goalPointZString;
-	public string nodeMaxSpeedString="150", numCheckpointsString="20";
+	public string nodeMaxSpeedString="150", numCheckpointsString="30";
 	public int spawnPointX, spawnPointY, spawnPointZ, goalPointX, goalPointY, goalPointZ, numCheckpoints;
 	public int nodeMaxSpeed;
 
@@ -113,7 +113,7 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         floor.renderer.material.mainTextureScale = new Vector2(floorSize / 10, floorSize / 10);
 
 		float spawnToGoal = Vector3.Distance(getSpawnLocation(), getGoalLocation());
-		float spacing = spawnToGoal / (numCheckpoints + 1);
+		float spacing = 4.0f / 5.0f * spawnToGoal / (numCheckpoints);
 
 		GameObject goalNode;
 		goalNode = (GameObject)GameObject.Instantiate(goalPrefab);
@@ -133,7 +133,7 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
 
             SphereCollider collider = checkpointNode.AddComponent<SphereCollider>();
             collider.center = Vector3.zero;
-            collider.radius = 1.3f * spacing / checkpointNode.transform.localScale.x;
+            collider.radius = spacing / checkpointNode.transform.localScale.x;
         }
         goalNode.transform.rotation = Quaternion.LookRotation(Vector3.forward);
 
@@ -186,8 +186,6 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         boundaryObstacle.name = "Boundary Front";
         boundaryObstacle.transform.localScale = new Vector3(floorSize, floorSize, 1);
         boundaryObstacle.transform.position = new Vector3(center, -10 + center, floorSize);
-        invisibleColor = boundaryObstacle.renderer.material.color;
-        invisibleColor.a = 0;
         boundaryObstacle.renderer.material.color = invisibleColor;
         boundaryObstacle.tag = "Boundary";
 
@@ -195,8 +193,6 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         boundaryObstacle.name = "Boundary Right";
         boundaryObstacle.transform.localScale = new Vector3(1, floorSize, floorSize);
         boundaryObstacle.transform.position = new Vector3(floorSize, -10 + center, center);
-        invisibleColor = boundaryObstacle.renderer.material.color;
-        invisibleColor.a = 0;
         boundaryObstacle.renderer.material.color = invisibleColor;
         boundaryObstacle.tag = "Boundary";
 
@@ -204,8 +200,6 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         boundaryObstacle.name = "Boundary Left";
         boundaryObstacle.transform.localScale = new Vector3(1, floorSize, floorSize);
         boundaryObstacle.transform.position = new Vector3(0, -10 + center, center);
-        invisibleColor = boundaryObstacle.renderer.material.color;
-        invisibleColor.a = 0;
         boundaryObstacle.renderer.material.color = invisibleColor;
         boundaryObstacle.tag = "Boundary";
 
@@ -213,8 +207,6 @@ public class ANNNavGUI : MonoBehaviour, IFlightGUIOptions {
         boundaryObstacle.name = "Boundary Top";
         boundaryObstacle.transform.localScale = new Vector3(floorSize, 1, floorSize);
         boundaryObstacle.transform.position = new Vector3(center, floorSize - 10, center);
-        invisibleColor = boundaryObstacle.renderer.material.color;
-        invisibleColor.a = 0;
         boundaryObstacle.renderer.material.color = invisibleColor;
         boundaryObstacle.tag = "Boundary";
     }

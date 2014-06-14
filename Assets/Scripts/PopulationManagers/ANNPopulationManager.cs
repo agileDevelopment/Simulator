@@ -17,6 +17,7 @@ public class ANNPopulationManager : PopulationManager, IMovementManager
     public int _lifespan;
     static string CHAMPION_FILE = "File.xml";
     static string DOT_FILE = "File.dot";
+    static string resultsFile = "resultsESHyperNEAT" + (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds + ".csv";
 
     static NeatEvolutionAlgorithm<NeatGenome> neatAlgorithm;
     static NeatEvolutionAlgorithm<NeatGenome> esHyperNeatAlgorithm;
@@ -38,15 +39,15 @@ public class ANNPopulationManager : PopulationManager, IMovementManager
         //mlpbpExperiment.StartContinueMainThread();
         //print("MLP w/ BP running");
 
-        print("Initializing NEAT experiment");
-        NEATNavigationExperiment neatExperiment = new NEATNavigationExperiment(new BlackBoxEvaluator(this));
-        neatExperiment.Initialize("NEAT Experiment", xmlConfig.DocumentElement);
-        neatAlgorithm = neatExperiment.CreateEvolutionAlgorithm(0, () =>
-        {
-            //neatAlgorithm.UpdateEvent += new EventHandler(ea_UpdateEvent);
-            neatAlgorithm.StartContinueMainThread();
-        });
-        print("NEAT running");
+        //print("Initializing NEAT experiment");
+        //NEATNavigationExperiment neatExperiment = new NEATNavigationExperiment(new BlackBoxEvaluator(this));
+        //neatExperiment.Initialize("NEAT Experiment", xmlConfig.DocumentElement);
+        //neatAlgorithm = neatExperiment.CreateEvolutionAlgorithm(0, () =>
+        //{
+        //    //neatAlgorithm.UpdateEvent += new EventHandler(ea_UpdateEvent);
+        //    neatAlgorithm.StartContinueMainThread();
+        //});
+        //print("NEAT running");
 
         print("Initializing ES-HyperNEAT experiment");
         ESHyperNEATNavigationExperiment esHyperNeatExperiment = new ESHyperNEATNavigationExperiment(new BlackBoxEvaluator(this));
@@ -61,27 +62,36 @@ public class ANNPopulationManager : PopulationManager, IMovementManager
 
     static void ea_UpdateEvent(object sender, EventArgs e)
     {
-        Debug.Log(string.Format("MLP w/ Backpropagation - Generation={0:N0}, Evaluations={1:N0}, Best Fitness={2:N6}, Mean Fitness={3:N6}",
-            mlpbpExperiment.CurrentGeneration, mlpbpExperiment._totalEvaluationCount, mlpbpExperiment._maxFitness,
-            mlpbpExperiment._meanFitness));
-
-        Debug.Log(string.Format("NEAT - Generation={0:N0}, Evaluations={1:N0}, Best Fitness={2:N6}, Mean Fitness={3:N6}, Mean Complexity={4:N6}",
-            neatAlgorithm.CurrentGeneration, neatAlgorithm.Statistics._totalEvaluationCount, neatAlgorithm.Statistics._maxFitness,
-            neatAlgorithm.Statistics._meanFitness, neatAlgorithm.Statistics._meanComplexity));
-
-        Debug.Log(string.Format("ES-HyperNEAT - Generation={0:N0}, Evaluations={1:N0}, Best Fitness={2:N6}, Mean Fitness={3:N6}, Mean Complexity={4:N6}",
-            esHyperNeatAlgorithm.CurrentGeneration+1, esHyperNeatAlgorithm.Statistics._totalEvaluationCount, esHyperNeatAlgorithm.Statistics._maxFitness,
-            esHyperNeatAlgorithm.Statistics._meanFitness, esHyperNeatAlgorithm.Statistics._meanComplexity));
+        //string mlpbpText = string.Format("MLP w/ BP   ,{0:N0},{1:N0},{2:N6},{3:N6},{4:N6}",
+        //    mlpbpExperiment.CurrentGeneration, mlpbpExperiment._totalEvaluationCount, mlpbpExperiment._maxFitness,
+        //    mlpbpExperiment._meanFitness, 20);
+        //string neatText = string.Format("NEAT        ,{0:N0},{1:N0},{2:N6},{3:N6},{4:N6}",
+        //    neatAlgorithm.CurrentGeneration, neatAlgorithm.Statistics._totalEvaluationCount, neatAlgorithm.Statistics._maxFitness,
+        //    neatAlgorithm.Statistics._meanFitness, neatAlgorithm.Statistics._meanComplexity);
+        string esHyperNeatText = string.Format("ES-HyperNEAT,{0:N0},{1:N0},{2:N6},{3:N6},{4:N6}",
+            esHyperNeatAlgorithm.CurrentGeneration + 1, esHyperNeatAlgorithm.Statistics._totalEvaluationCount, esHyperNeatAlgorithm.Statistics._maxFitness,
+            esHyperNeatAlgorithm.Statistics._meanFitness, esHyperNeatAlgorithm.Statistics._meanComplexity);
 
         // Save the best genome to file
-        var neatDoc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { neatAlgorithm.CurrentChampGenome }, false);
-        neatDoc.Save("champNeat" + CHAMPION_FILE);
+        //var neatDoc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { neatAlgorithm.CurrentChampGenome }, false);
+        //neatDoc.Save("champNeat" + CHAMPION_FILE);
 
         var esHyperNeatDoc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { esHyperNeatAlgorithm.CurrentChampGenome }, false);
-        esHyperNeatDoc.Save("champeESHyperNeat" + CHAMPION_FILE);
+        esHyperNeatDoc.Save("champESHyperNeat" + CHAMPION_FILE);
 
-        CPPNDotWriterStatic.saveCPPNasDOT(neatAlgorithm.CurrentChampGenome, "neatChamp" + DOT_FILE);
-        CPPNDotWriterStatic.saveCPPNasDOT(esHyperNeatAlgorithm.CurrentChampGenome, "esHyperNEATChamp" + DOT_FILE);
+        //CPPNDotWriterStatic.saveCPPNasDOT(neatAlgorithm.CurrentChampGenome, "neatChamp" + DOT_FILE);
+        //CPPNDotWriterStatic.saveCPPNasDOT(esHyperNeatAlgorithm.CurrentChampGenome, "esHyperNEATChamp" + DOT_FILE);
+
+        //Debug.Log(mlpbpText);
+        //Debug.Log(neatText);
+        Debug.Log(esHyperNeatText);
+
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter(resultsFile, true))
+        {
+            //file.WriteLine(mlpbpText);
+            //file.WriteLine(neatText);
+            file.WriteLine(esHyperNeatText);
+        }
     }
 
     public ArrayList updateLocation(GameObject node, ArrayList sensorInfo, bool isAlive)

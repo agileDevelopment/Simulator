@@ -17,7 +17,7 @@ public class MLPBPNavigationExperiment
 {
     private BlackBoxEvaluator blackBoxEvaluator;
     string _name, _description;
-    int _populationSize, _lifespan, _generation = 0, _inputCount = 7, _outputCount = 3;
+    int _populationSize, _lifespan, _generation = 0, _inputCount = 13, _outputCount = 9;
     double _learnRate, _momentum, _optimalFitness;
     bool generationComplete = true;
 
@@ -106,9 +106,17 @@ public class MLPBPNavigationExperiment
     {
         foreach (MLPBPBlackBox blackBox in _neuralNets)
         {
-            double error = (_maxFitness - blackBox.fitness) / _maxFitness + _momentum; // Never want to be truly static
+            double mu = _meanFitness;
+            double sigma = _maxFitness - _meanFitness;
+
+            double error = gaussian(blackBox.fitness, mu, sigma);
             blackBox.trainWithError(error, _learnRate, _momentum);
         }
+    }
+
+    private double gaussian(double x, double mu, double sigma)
+    {
+        return Math.Exp(- Math.Pow((x - mu), 2) / (2 * Math.Pow(sigma, 2)));
     }
 
     #endregion

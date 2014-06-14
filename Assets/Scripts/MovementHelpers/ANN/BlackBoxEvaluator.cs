@@ -60,12 +60,15 @@ public class BlackBoxEvaluator : IPhenomeEvaluator<IBlackBox>
         {
             case 1:
                 nodeColor = Color.cyan;
+                //nodeColor.a = 0.5f;
                 break;
             case 2:
                 nodeColor = Color.white;
+                //nodeColor.a = 0.5f;
                 break;
             default:
                 nodeColor = Color.blue;
+                //nodeColor.a = 0.5f;
                 break;
         }
 
@@ -77,11 +80,14 @@ public class BlackBoxEvaluator : IPhenomeEvaluator<IBlackBox>
 
         while (nav.age < _popManager._lifespan)
         {
-            if (nav.fitness > maxFitness)
+            if (nav.fitness > maxFitness && node != maxFitnessNode)
             {
                 maxFitness = nav.fitness;
-                node.renderer.material.color = Color.yellow;
+                Color yellowColor = Color.yellow;
+                yellowColor.a = 1f;
+                node.renderer.material.color = yellowColor;
                 maxFitnessNode.renderer.material.color = nodeColor;
+               // Debug.Log("Current leader is " + node.name);
                 maxFitnessNode = node;
             }
             yield return null;

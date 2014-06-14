@@ -24,7 +24,8 @@ public class ANNNav : NodeMove
 {
     //other data
     public ANNPopulationManager populationManager;
-	public ArrayList inputs = new ArrayList(new float[] {0,0,0,0,0,0,0,0,0,0,0,0,0});
+    public ArrayList inputs = new ArrayList(new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+    public float[] outputs = new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     public ArrayList newDirection;
     Vector3 goal;
     Vector3 goalDirection;
@@ -79,97 +80,113 @@ public class ANNNav : NodeMove
     {
 		try
 		{
+            //print(gameObject.name + ": " + transform.position);
 			Vector3 tmp = new Vector3 (transform.position.x, transform.position.y, transform.position.z);
 			tmpTransform.position = tmp;
 			tmpTransform.LookAt (goal);
-			float in_pitch = (0.0f - tmpTransform.eulerAngles.x); // Make it be between 0 and 1
-			float in_yaw = (0.0f - tmpTransform.eulerAngles.y);
+
+            float currentXAngle = transform.rotation.eulerAngles.x;
+            if (currentXAngle >= 180) currentXAngle -= 360;
+            float currentYAngle = transform.rotation.eulerAngles.y;
+            if (currentYAngle >= 180) currentYAngle -= 360;
+            float in_pitch = (currentXAngle - tmpTransform.eulerAngles.x); // Make it be between 0 and 1
+            float in_yaw = (currentYAngle - tmpTransform.eulerAngles.y);
+
+            //print("Current Heading (x, y, z): " + currentXAngle + ", " + currentYAngle +
+            //    " - Goal Heading (x, y, z): " + tmpTransform.eulerAngles.x + ", " + tmpTransform.eulerAngles.y + 
+            //    " - Pitch to goal: " + in_pitch + " - Yaw to Goal: " + in_yaw);
 
 			bool stimulate_top = (0 < in_pitch);
 			bool stimulate_front = (-90 < in_yaw && in_yaw <= 90);
 			bool stimulate_right = (in_yaw <= 0);
 			
-			for (int i = 0; i < 13; i++) inputs[i] = 0; // Reset input array list
+			for (int i = 0; i < 13; i++) inputs[i] = 0f; // Reset input array list
+
+            //print("Setting inputs");
 
 			for (int i = 0; i < sensors.Length; i++) inputs[i] = sensors[i].getSensorData();
 			// The following designed to match what's in ESHyperNEATNavigationExperiment
-			if (stimulate_top && stimulate_right && !stimulate_right) inputs[5] = 1;
-			if (stimulate_top && stimulate_right && stimulate_right) inputs[6] = 1;
-			if (!stimulate_top && stimulate_right && !stimulate_right) inputs[7] = 1;
-			if (!stimulate_top && stimulate_right && stimulate_right) inputs[8] = 1;
-			if (stimulate_top && !stimulate_right && !stimulate_right) inputs[9] = 1;
-			if (stimulate_top && !stimulate_right && stimulate_right) inputs[10] = 1;
-			if (!stimulate_top && !stimulate_right && !stimulate_right) inputs[11] = 1;
-			if (!stimulate_top && !stimulate_right && stimulate_right) inputs[12] = 1;
-
-            //print("Forward Sensor: " + inputs[2]);
+			if (stimulate_top && stimulate_front && !stimulate_right) inputs[5] = 1f;
+            if (stimulate_top && stimulate_front && stimulate_right) inputs[6] = 1f;
+            if (!stimulate_top && stimulate_front && !stimulate_right) inputs[7] = 1f;
+            if (!stimulate_top && stimulate_front && stimulate_right) inputs[8] = 1f;
+            if (stimulate_top && !stimulate_front && !stimulate_right) inputs[9] = 1f;
+            if (stimulate_top && !stimulate_front && stimulate_right) inputs[10] = 1f;
+            if (!stimulate_top && !stimulate_front && !stimulate_right) inputs[11] = 1f;
+            if (!stimulate_top && !stimulate_front && stimulate_right) inputs[12] = 1f;
 
             newDirection = populationManager.updateLocation(gameObject, inputs, isAlive); // Must do this to update age
 
+            // Don't get points for standing still, unless you are dead. We do want to capture new behavior that dies, which is why we need
+            // to continue rewarding things that die if they go somewhere. This will hopefully encourage movement and then the penalty for
+            // dying will evolve the obstacle avoidance.
+            if (prevPosition != transform.position || !isAlive)
+            {
+                populationManager.checkpointNotify(gameObject, guiValues.floorSize / 2 / (Vector3.Distance(gameObject.transform.position, goal) + 1));
+                prevPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+            }
+
 			if (isAlive) {
-                if (checkBounds() && prevPosition != transform.position) // Only get fitness points in the maze
-				{
-                    populationManager.checkpointNotify(gameObject, guiValues.floorSize/2/(Vector3.Distance(gameObject.transform.position, goal) + 1) );
-					prevPosition = new Vector3 (transform.position.x, transform.position.y, transform.position.z);
-				}
 
 				float biggestVote = 0;
 				int biggestVoteIndex = 0;
 				for (int i = 1; i < newDirection.Count; i++)
 				{
-					if (newDirection[i] > biggestVote) 
+                    outputs[i] = (float)newDirection[i];
+                    if (outputs[i] > biggestVote) 
 					{
 						biggestVoteIndex = i;
-						biggestVote = newDirection[i];
+                        biggestVote = outputs[i];
 					}
 				}
 
 				float yaw_change = 0;
 				float pitch_change = 0;
+                float weight = 0.5f;
 				switch (biggestVoteIndex)
 				{
-				case 1: // top, front, left vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				case 2: // top, front, right vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				case 3: // bottom, front, left vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				case 4: // bottom, front, right vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				case 5: // top, back, left vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				case 6: // top, back, right vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				case 7: // bottom, back, left vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
-				default: // bottom, back, right vote
-					yaw_change = newDirection[2] - newDirection[1]; // Turn it negative by subtracting from right hand vote. Also adjusts magnitude accordingly.
-					pitch_change = newDirection[1] - newDirection[3]; // Subtract the downward vote.
-					break;
+                    case 1: // top, front, left vote
+                        yaw_change = - outputs[1] + weight * outputs[2]; // If left vote is bigger, the number will be negative. Else it will be positive
+                        pitch_change = outputs[1] - weight * outputs[3]; // If the down vote is bigger, the number will be negative. Else it will be positive.
+                        break;
+                    case 2: // top, front, right vote
+                        yaw_change = outputs[2] - weight * outputs[1]; // If left vote is bigger, the number will be negative. Else it will be positive
+                        pitch_change = outputs[2] - weight * outputs[4]; // If the down vote is bigger, the number will be negative. Else it will be positive.
+                        break;
+                    case 3: // bottom, front, left vote
+                        yaw_change = - outputs[3] + weight * outputs[4]; // If left vote is bigger, the number will be negative. Else it will be positive
+                        pitch_change = - outputs[3] + weight * outputs[1] ; // If the down vote is bigger, the number will be negative. Else it will be positive.
+                        break;
+                    case 4: // bottom, front, right vote
+                        yaw_change = outputs[4] - weight * outputs[3]; // If left vote is bigger, the number will be negative. Else it will be positive
+                        pitch_change = - outputs[4] + weight * outputs[2] ; // If the down vote is bigger, the number will be negative. Else it will be positive.
+                        break;
+                    case 5: // top, back, left vote is the same as bottom, just reversed
+                        yaw_change = -1;
+                        pitch_change = outputs[5] - weight * outputs[7]; // Subtract the downward vote.
+                        break;
+                    case 6: // top, back, right vote is the same as bottom, just reversed
+                        yaw_change = 1;
+                        pitch_change = outputs[6] - weight * outputs[8]; // Subtract the downward vote.
+                        break;
+				    case 7: // bottom, back, left vote
+                        yaw_change = -1;
+					    pitch_change =  - outputs[7] + weight * outputs[5]; // Subtract the downward vote.
+                        break;
+				    default: // bottom, back, right vote
+                        yaw_change = 1;
+					    pitch_change =  - outputs[8] + weight * outputs[6]; // Subtract the downward vote.
+					    break;
 				}
 
-				yaw = (yaw + yaw_change * 30) % 360; // Max yaw change rate of 15 degrees
-				pitch = (pitch + pitch_change * 30) % 360; // Max descent change rate of 5 degrees
+				yaw = (yaw + yaw_change * 5) % 360; // Max yaw change rate of 5 degrees
+				pitch = (pitch + pitch_change * 5) % 360; // Max descent change rate of 5 degrees
 
 				speed += ((float)newDirection [2] - 0.5f) * 2 * maxAcceleration;
 				if (speed >= maxSpeed)
 					speed = (float)maxSpeed;
-				if (speed <= -maxSpeed)
-					speed = (float)-maxSpeed;
+				if (speed <= 0)
+					speed = 0;
 
 				transform.eulerAngles = new Vector3 (yaw, pitch, transform.eulerAngles.z);
 				transform.position += transform.forward * speed * Time.deltaTime;

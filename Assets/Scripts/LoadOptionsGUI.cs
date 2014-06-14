@@ -64,6 +64,7 @@ public class LoadOptionsGUI : MonoBehaviour {
     public int maxAge = 0;
 	
 	void Start () {
+        Application.runInBackground = true;
 		numberButtons=5;
 		numNodesString="50";
 		slowMoRateString = "2";

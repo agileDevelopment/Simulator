@@ -12,22 +12,32 @@ public class BlackBoxNavigator
     public double fitness = 0;
     public bool isAlive = true;
     
-    public BlackBoxNavigator(IBlackBox brain, int numOutputs)
+    public BlackBoxNavigator(IBlackBox brain)
     {
         this.brain = brain;
-		outpus = new ArrayList(new float[numOutputs]);
+		outputs = new ArrayList(new float[9]);
     }
 
     public void setInputSignalArray(ISignalArray inputs, ArrayList sensorInfo)
     {
-		for (int i = 0; i < sensorInfo.Count; i++)
-			inputs[i] = (float)sensorInfo[i];
+        //string debug = "";
+        for (int i = 0; i < sensorInfo.Count; i++)
+        {
+            inputs[i] = (float)sensorInfo[i];
+            //debug += inputs[i] + ", ";
+        }
+        //Debug.Log("Inputs: " + debug);
     }
 
 	public void setOutputs(ISignalArray outputSigArray) 
 	{
-		for (int i = 0; i < outputs.Count; i++)
-			outputs[i] = (float)outputSigArray[i];
+        //string debug = "";
+        for (int i = 0; i < outputs.Count; i++)
+        {
+            outputs[i] = (float)outputSigArray[i];
+            //debug += outputs[i] + ", ";
+        }
+        //Debug.Log("Outputs: " + debug);
 	}
 
     public ArrayList updateLocation(ArrayList sensorInfo, bool isAlive)
@@ -42,13 +52,15 @@ public class BlackBoxNavigator
         brain.ResetState();
         setInputSignalArray(brain.InputSignalArray, sensorInfo);
         brain.Activate();
-		setOutputs ();
+		setOutputs (brain.OutputSignalArray);
         return outputs;
     }
 
     public void checkpointNotify(double checkpointReward)
     {
-        fitness += checkpointReward / (age/2 + 1);
+        double reward = checkpointReward / (age/2 + 1);
+        if (!isAlive) reward *= 0.75;
+        fitness += reward;
     }
 
 	public virtual void goalReachedNotify() 
