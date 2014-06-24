@@ -33,3 +33,8 @@ ehthumbs.db
 Thumbs.db
 UAV Sim 6000_Data/
 *.exe
+*.cs
+*.cd
+ClassDiagram2.png
+*.zip
+*.png

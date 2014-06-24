@@ -6,7 +6,7 @@ public class FlightGUI : MonoBehaviour, IFlightGUIOptions {
     public float center = 0;
     public Camera mainCamera;
     public Camera camera2;
-    bool mainActive = true;
+ //   bool mainActive = true;
 
     protected virtual void Update()
     {

@@ -30,10 +30,12 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public bool useDefaultLine = true;
     public string useDefaultLineStr = "Default Lines Enabled";
     public long messageCounter = 0;
+    public long broadcastCounter = 0;
     public Dictionary<string, string> myUIElements;
     public GameObject baseStation;
     public GameObject supervisor;
     public GameObject upLink;
+    public float active_route_timer=3f;
 
     //----------------Unity Functions------------------------------------
 
@@ -181,8 +183,8 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         if (source != null)
         if (source.GetComponent<NodeController>().selected)
         {
-        GUI.Box(new Rect(Screen.width - 200, Screen.height / 2, 200, myUIElements.Count * 30 + 40), "Node Data");
-        GUILayout.BeginArea(new Rect(Screen.width - 195, Screen.height / 2 + 5, 190, myUIElements.Count * 30));
+        GUI.Box(new Rect(Screen.width - 200, Screen.height / 2, 200, myUIElements.Count * 30 + 200), "Node Data");
+        GUILayout.BeginArea(new Rect(Screen.width - 195, Screen.height / 2 + 5, 190, myUIElements.Count * 30+190));
         GUILayout.BeginVertical();
         GUILayout.Space(30);
         GUILayout.BeginHorizontal();
@@ -214,6 +216,59 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
         foreach (string item in myUIElements.Values)
         {
             GUILayout.Label(item, GUILayout.Width(180));
+        }
+        GUILayout.Label("Time Required: " + timeToFind.ToString());
+        GUILayout.Label("Number of Hops: " + numHops.ToString());
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Node to Find", GUILayout.Width(100));
+        nodeToFindString = GUILayout.TextField(nodeToFindString, GUILayout.Width(30));
+        GUILayout.EndHorizontal();
+        if (GUILayout.Button("Find", GUILayout.Width(140)))
+        {
+            GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+
+            foreach (GameObject node in nodes)
+            {
+                if (node)
+                    node.renderer.material.color = Color.blue;
+
+            }
+            nodeToFindID = int.Parse(nodeToFindString);
+            foundTime = 0;
+            startTime = Time.time;
+            endTime = 0;
+
+            if (nodeToFindID < simValues.numNodes)
+            {
+                nodeToFind = GameObject.Find("Node " + nodeToFindID);
+                source.GetComponent<AODV>().discoverPath(nodeToFind);
+                nodeToFind.renderer.material.color = Color.magenta;
+
+
+            }
+        }
+        if (GUILayout.Button("Send Message", GUILayout.Width(140)))
+        {
+            GameObject[] nodes = GameObject.FindGameObjectsWithTag("Node");
+
+            foreach (GameObject node in nodes)
+            {
+                if (node)
+                    node.renderer.material.color = Color.blue;
+
+            }
+            nodeToFindID = int.Parse(nodeToFindString);
+            foundTime = 0;
+            startTime = Time.time;
+            endTime = 0;
+
+            if (nodeToFindID < simValues.numNodes)
+            {
+                nodeToFind = GameObject.Find("Node " + nodeToFindID);
+                source.GetComponent<AODV>().initMessage(nodeToFind, "mess", "Test Message");
+                nodeToFind.renderer.material.color = Color.magenta;
+
+            }
         }
         GUILayout.EndVertical();
         GUILayout.EndArea();

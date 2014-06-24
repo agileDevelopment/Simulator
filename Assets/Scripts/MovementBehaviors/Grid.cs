@@ -56,8 +56,8 @@ public class Grid : NodeMove
 
         gridValues = GameObject.Find("Spawner").GetComponent<GridGUI>();
         radius = (float)gridValues.radius;
-        radiusSpeed = Random.Range(5, gridValues.nodeMaxSpeed) + gameObject.GetComponent<NodeController>().idNum;
-        rotationSpeed = Random.Range(5, gridValues.nodeMaxSpeed);
+        radiusSpeed = Random.Range(5, gridValues.nodeMaxSpeed)/5;
+        rotationSpeed = Random.Range(5, gridValues.nodeMaxSpeed)/5;
         float direction = Random.Range(0, 10);
         if (direction < 5)
         {

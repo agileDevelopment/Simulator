@@ -65,7 +65,7 @@ public class GridGUI : FlightGUI
     {
         int count = 0;
         float range = simValues.nodesSqrt + 1;
-        for (int i = 0; i <= range; i++)
+        for (int i = 0; i < range; i++)
         {
             for (int j = 0; j < range; j++)
             {
