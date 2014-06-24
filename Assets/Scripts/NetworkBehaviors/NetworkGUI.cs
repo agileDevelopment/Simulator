@@ -35,6 +35,7 @@ public class NetworkGUI : MonoBehaviour, INetworkGUIOptions
     public GameObject baseStation;
     public GameObject supervisor;
     public GameObject upLink;
+    public float active_route_timer=3f;
 
     //----------------Unity Functions------------------------------------
 

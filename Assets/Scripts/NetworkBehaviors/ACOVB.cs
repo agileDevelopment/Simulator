@@ -34,7 +34,6 @@ public class ACOVB : AODV
     //System Generics
     public Dictionary<GameObject, ACORouteEntry> antRoutes;
     Dictionary<string, CDSAnt> antUpdates;
-   // List<GameObject> cdsConnections;
 
     //strings and primatives
     public float myPhereLevel;
@@ -42,11 +41,12 @@ public class ACOVB : AODV
     public float lastUpdateTime = 0f;
     public int connectedNodes = 0;
     public int counter=0;
+    int countOfAntRoutes;
+    int countOfAntUpdates;
     public bool memberOfCDS = false;
     public CDSAnt bestAnt;
     bool updateCDS = true;
-    private bool startAnts=true;
-    private bool resetCDS=false;
+        private bool resetCDS=false;
 
     #endregion 
 
@@ -64,8 +64,7 @@ public class ACOVB : AODV
         tempCDS = null;
         antRoutes = new Dictionary<GameObject, ACORouteEntry>();
         antUpdates = new Dictionary<string, CDSAnt>();
-  //      cdsConnections = new List<GameObject>();
-        myPhereLevel = 0.1f;
+        myPhereLevel = 1f;
         startTime = Time.time;
         bestAnt = null;
         
@@ -75,27 +74,23 @@ public class ACOVB : AODV
 	// Update is called once per frame
     protected override void Update()
     {
+        base.Update();
+        counter++;
+        if (gameObject.GetComponent<NodeController>().selected)
+        {
+            netValues.myUIElements["AntRoutes"] = "# of AntRts: " + antRoutes.Count.ToString();
+            netValues.myUIElements["AntUpdates"] = "# of AntUpdates:" + antUpdates.Count.ToString();
+        }
+
         if (netValues.supervisor == gameObject && netValues.enableCDS)
         {
-
-            
-
             if (Time.time > startTime + 2.9f && updateCDS)
             {
                 updateCDS = false;
-                if (tempCDS != null)
+                if (myCurrentCDS != null)
                 {
-                    myCurrentCDS = new CDS(tempCDS);
                     netValues.currentCDS = myCurrentCDS;
                 }
-
-                //if (myCurrentCDS != null)
-                //{
-
-                //    bestAnt.label = gameObject.name + " - " + broadcastID;
-                //    sendBackAnt(bestAnt);
-                //}
-
             }
 
             if (Time.time > startTime + 3f)
@@ -103,35 +98,48 @@ public class ACOVB : AODV
                 startTime = Time.time;
                 updateCDS = true;
                 resetCDS = true;
-                //generateAntCDS();
-                //initBroadcast("cmd", "genCDS");
                 foreach (GameObject node in neighbors)
                 {
-                    if ((int)Random.Range(0, 100) < simValues.numNodes / 5)
+                    if ((int)Random.Range(0, 100) < (int)Mathf.Max(simValues.numNodes / 5, 10))
                         initMessage(node, "cmd", "genCDS");
                 }
 
             }
         }
-        base.Update();
-        counter++;
-
+        
         //if the current node is selected, show current pheremone levels
         if (netValues.source == gameObject)
         {
             netValues.myUIElements["pLevel"] = "Phereomon: " + myPhereLevel.ToString();
         }
-	}
+        if (netValues.reset && netValues.enableCDS)
+        {
 
+            myPhereLevel = 1f;
+            antUpdates.Clear();
+            antRoutes.Clear();
+            messages.Clear();
+            routes.Clear();
+            currentRREQ.Clear();
+            broadcastID = 0;
+        }
+	}
 
     //LateUpdate is called once per frame after Update
     protected override void LateUpdate()
     {
-        if (startAnts && superVisor == gameObject && netValues.enableCDS)
+        base.LateUpdate();
+        //
+        if (netValues.reset && superVisor == gameObject && netValues.enableCDS)
         {
-            generateAntCDS();
-            startAnts = false;
+            foreach (GameObject node in neighbors)
+            {
+                if ((int)Random.Range(0, 100) < (int)Mathf.Max(simValues.numNodes / 5, 10)) 
+                initMessage(node, "cmd", "genCDS");
+            }
+            netValues.reset = false;
         }
+
         base.LateUpdate();
 
         if (counter % 30 == 0)
@@ -146,17 +154,29 @@ public class ACOVB : AODV
         {
             gameObject.renderer.material.color = Color.grey;
         }
-        if(netValues.enableTest || netValues.enableCDS){
-            if (counter % ((gameObject.GetComponent<NodeController>().idNum + 1) * 4) == 0)
-            {
-                if ((netValues.enableCDS && myCurrentCDS != null) || !netValues.enableCDS)
-                    gameObject.GetComponent<ACOVB>().initBroadcast("cmd", "bCast recv");
-            }
 
-        }
         if(counter==simValues.numNodes*2)
             counter = 0;
+        //clean up some of our old data    
+
+            Dictionary<string, CDSAnt> temp = new Dictionary<string, CDSAnt>(antUpdates);
+            foreach (CDSAnt ant in temp.Values)
+            {
+                if (ant.expirationTime + netValues.active_route_timer < Time.time)
+                {
+                    antUpdates.Remove(ant.label);
+                }
+            }
+           Dictionary<GameObject, ACORouteEntry> temp2 = new Dictionary<GameObject, ACORouteEntry>(antRoutes);
+            foreach (KeyValuePair<GameObject, ACORouteEntry> route in temp2)
+            {
+                if (route.Value.expirationTime + netValues.active_route_timer < Time.time)
+                {
+                    antRoutes.Remove(route.Key);
+                }
+            }
     }
+
     #endregion
     //---------------------------Utility Functions----------------------------------
     #region Utility
@@ -284,37 +304,54 @@ public class ACOVB : AODV
         if (!messages.ContainsKey(packet.id))
         {
             netValues.broadcastCounter++;
-            packet.TTL--;
             messages.Add(packet.id, packet);
             //is a CDS currently Active?
-            if (netValues.enableCDS)
+            if (netValues.enableCDS && myCurrentCDS != null)
             {
-               
+    
                 //Am I am member of the current CDS?
                 if (memberOfCDS || gameObject==superVisor)
                 {   //Send it on to all of my neighbors       
                     foreach (GameObject neighbor in neighbors)
                     {
+ 
                         packet.sender = gameObject;
+                        packet.TTL--;
                         neighbor.GetComponent<ACOVB>().sendBroadcast(packet);
                     }
 
                 }
-                //make me the destination and send it to myself.
-                packet.destination = gameObject;
-                performRecMessage(packet);
+                else
+                {
+                    if (packet.TTL == packet.MaxTTL)//I'm initiating the broadcast, so I need to send it out to my CDS neighbors.
+                    {
+                        foreach (GameObject neighbor in neighbors)
+                        {
+                            if (myCurrentCDS.getInCDS().Contains(neighbor)) { 
+                            packet.sender = gameObject;
+                            packet.TTL--;
+                            neighbor.GetComponent<ACOVB>().sendBroadcast(packet);
+                            }
+                        }
+                    }
+                }
 
             }
-            else //CDS isn't active, so broadcast regularlly
+            if(!netValues.enableCDS)//CDS isn't active, so broadcast regularly (or if our CDS is broken)
             {
               foreach (GameObject neighbor in neighbors)
                     {
+                   //    print("reg broadcast");
                         packet.sender = gameObject;
+                        packet.TTL--;
                         neighbor.GetComponent<ACOVB>().sendBroadcast(packet);
                     }
-                    packet.destination = gameObject;
-                    performRecMessage(packet);
+
                 }
+           //make me the destination and send it to myself.
+            packet.TTL--;
+            packet.destination = gameObject;
+            performRecMessage(packet);
         }
         else
         {
@@ -333,7 +370,7 @@ public class ACOVB : AODV
                 if (route.dest_sequence_num > temp.dest_sequence_num)
                 {
                     AODVRouteEntry path = (AODVRouteEntry)routes[route.destination];
-                    path.expirationTime = Time.time + active_route_timer;
+                    path.expirationTime = Time.time + netValues.active_route_timer;
                 }
             }
             else
@@ -399,8 +436,7 @@ public class ACOVB : AODV
    //     lock (nodeLock)
         {
     
-            connectedNodes = 0;
-            foreach (GameObject neighbor in neighbors)
+             foreach (GameObject neighbor in neighbors)
             {
                 //check to see if I have a route entry for my neighbor and add one if I don't...
                 if (!antRoutes.ContainsKey(neighbor))
@@ -418,7 +454,20 @@ public class ACOVB : AODV
     int getRREQCount(){
         return currentRREQ.Count;
     }
-
+    //------------------------------------------------------------
+    //  Function: repairCDS()
+    //  Date: 6-7-2014
+    //  Version: 1.1
+    //  Project: UAV Swarm
+    //  Authors: Corey Willinger
+    //  OS: Windows x64/X86
+    //  Language:C#
+    //  
+    //  Class Dependicies: CDS
+    //  
+    //  Description:  Not currently implemented, in place for future work.
+    //
+    //--------------------------------------------------------------
     void repairCDS()
     {
         if (myCurrentCDS != null)
@@ -453,7 +502,7 @@ public class ACOVB : AODV
 
     //------------------------------------------------------------
     //  Function: checkFeasibility
-    //  Algorithm: MCDS - GA
+    //  Algorithm: MCDS - GA / MCDS-ACO
     //  Date: 5-28-2014
     //  Version: 3
     //  Project: UAV Swarm
@@ -521,6 +570,26 @@ public class ACOVB : AODV
 
     //ANTCDS Build
     #region Build Ant CDS
+
+    //-----------------------------------------------
+    //  Title: generateAntCDS()
+    //  Date: 6-1-2014
+    //  Version: 2.1
+    //  Project: UAV Swarm
+    //  Authors: Corey Willinger
+    //  OS: Windows x64/X86
+    //  Language:C#
+    //
+    //   Order-of: O(n^2) although actual implementation will be substantially less as 
+    //   the loops are broken on first node that meets criteria.  Order of is based on end-to-end
+    //   applicaiton of function, not sole implementation of this function.
+    //
+    //  Class Dependicies: CDSAnt, NeighborData
+    //
+    //  Description: Initiates the process for building a CDS.  Initalizes ant data
+    //  and calls performCDSAnt() to send the Ant to the next node.
+    //
+    //--------------------------------------------------------------
     public void generateAntCDS(){
 
         if (netValues.enableCDS)
@@ -531,8 +600,8 @@ public class ACOVB : AODV
                 broadcastID++;
                 CDSAnt myAnt = new CDSAnt(gameObject);
                 myAnt.label = gameObject.name + " - " + broadcastID.ToString();
-                myAnt.expirationTime = Time.time + active_route_timer;
-                netValues.runningCDSs.Add(myAnt.label, Time.time + active_route_timer);
+                myAnt.expirationTime = Time.time + netValues.active_route_timer;
+                netValues.runningCDSs.Add(myAnt.label, Time.time + netValues.active_route_timer);
 
                 NeighborData nData = new NeighborData();
                 nData.degree = neighbors.Count;
@@ -543,6 +612,8 @@ public class ACOVB : AODV
             }
         }
     }
+
+
     //case 1 is building CDS
     //case 2 is reporting back to supervisor
     public void sendCDSAnt(CDSAnt ant, int flag)
@@ -562,7 +633,7 @@ public class ACOVB : AODV
                  if (!antUpdates.ContainsKey(ant.label))
                  {
                      CDSAnt newAnt = new CDSAnt(ant);
-                     antUpdates.Add(ant.label, newAnt);
+                     antUpdates.Add(ant.label, ant);
                  }
                  if (antUpdates.ContainsKey(ant.label))
                  {
@@ -586,6 +657,26 @@ public class ACOVB : AODV
         performSendCDSAnt(ant);
     }
 
+    //------------------------------------------------------------
+    //  Function: performSendCDSAnt()
+    //  Algorithm: MCDS - GA
+    //  Date: 6-7-2014
+    //  Version: 3.1
+    //  Project: UAV Swarm
+    //  Authors: Corey Willinger
+    //  OS: Windows x64/X86
+    //  Language:C#
+    //
+    //  Class Dependicies: CDSAnt
+    //
+    //   Order-of: O(n^2) - When assumed as a system.  It will run in O(n) on an individual node.
+    //
+    //  Description:  Recieves an ant and if the CDS is not complete, it chooses the next node to add based on 
+    //  pheromone levels.  If CDS is complete, this method will forward the ant back to the supervisor.  Finally
+    //  if the node is the supervisor, it will check to see if the CDS is better than the current CDS, and if so, it
+    //  it will send out Ant back out to update Pheromone levels.
+    //
+    //--------------------------------------------------------------
     void performSendCDSAnt(CDSAnt ant)
     {
         {
@@ -660,8 +751,6 @@ public class ACOVB : AODV
 
                         foreach (GameObject canidate in ant.myCDS.getEdgeCDS())
                         {
-               //             if (neighbors.Contains(canidate))
-//{
                                 float numer = ant.canidates[canidate].tau * ant.canidates[canidate].degree;
                                 tempProb += (float)(numer / totalTau);
 
@@ -669,37 +758,8 @@ public class ACOVB : AODV
                                 {
                                     nextHop = canidate;
                                 }
-        //                    }
                         }
                     }
-                    if (nextHop == null)
-                    {
-               //         print("Explore = " + explore + "Total Tau = " + totalTau + " tempProb = " + tempProb);
-                    }
-                    ////out of direct hops, choose a random edge
-                    //if (nextHop == null)
-                    //{
-                    //    foreach (GameObject canidate in ant.myCDS.getEdgeCDS())
-                    //    {
-                    //        foreach (GameObject neighbor2 in canidate.GetComponent<ACOVB>().neighbors)
-                    //        {
-                    //            if (ant.myCDS.getOutCDS().Contains(neighbor2))
-                    //            {
-                    //                float numer = ant.canidates[canidate].tau * ant.canidates[canidate].degree;
-                    //                tempProb += (float)(numer / totalTau);
-
-                    //                if (rand < tempProb)
-                    //                {
-                    //                    nextHop = canidate;
-                    //                }
-                    //                nextHop = canidate;
-                    //                break;
-                    //            }
-                    //        }
-                    //        if (nextHop != null)
-                    //            break;
-                    //    }
-                    //}
 
                     ant.hop_count++;
                     RevAntPath pathBack = new RevAntPath();
@@ -712,11 +772,6 @@ public class ACOVB : AODV
                    if (tau_i > 100)
                        tau_i = 100;
                    myPhereLevel = tau_i;
-                    //float tau_i = ant.canidates[nextHop].tau * ant.canidates[nextHop].degree; 
-                    //nextHop.GetComponent<ACOVB>().myPhereLevel = Mathf.Min(tau_i,100f);
-
-
-
   
                     //check to see if we have route to our destination , if we don't, send a ping        
                     if (!routes.ContainsKey(nextHop))
@@ -745,9 +800,10 @@ public class ACOVB : AODV
          
                     if (!antUpdates.ContainsKey(ant.label))
                     {
-                        CDSAnt newAnt = new CDSAnt(ant);
-                        newAnt.done = true;
-                        antUpdates.Add(ant.label, newAnt);
+                 //       CDSAnt newAnt = new CDSAnt(ant);
+                   //     newAnt.done = true;
+                        ant.done = true;
+                        antUpdates.Add(ant.label, ant);
                     }
                     if (antUpdates[ant.label].done == true)
                     {
@@ -762,27 +818,32 @@ public class ACOVB : AODV
                         StartCoroutine(waitForPath(ant.destination, ant, 2));
 
                     }
-                    //We are back at the supervisor
+                    
                 }
-                else
+                else//We are back at the supervisor
                 {
-          
                     if (tempCDS == null || resetCDS)
                     {
+                        print("new CDS");
                         resetCDS = false;
-                        tempCDS = new CDS(ant.myCDS);
-                        bestAnt = ant;
+                        tempCDS = ant.myCDS;
+                        bestAnt = new CDSAnt(ant);
+                        myCurrentCDS = tempCDS;
+                        broadcastID++;
+                        bestAnt.label = gameObject.name + " - " + broadcastID;
+                        bestAnt.expirationTime = Time.time + netValues.active_route_timer;
+                        sendBackAnt(bestAnt);
 
                     }
-                    else if (ant.myCDS.getInCDS().Count < tempCDS.getInCDS().Count)
+                    else if (ant.myCDS.getInCDS().Count < myCurrentCDS.getInCDS().Count)
                     {
+                        print("better CDS");
                         tempCDS = ant.myCDS;
                         bestAnt =  ant;
-                    }
-                    if (myCurrentCDS != null)
-                    {
-
+                        myCurrentCDS = tempCDS;
+                        broadcastID++;
                         bestAnt.label = gameObject.name + " - " + broadcastID;
+                        bestAnt.expirationTime = Time.time + netValues.active_route_timer;
                         sendBackAnt(bestAnt);
                     }
 
@@ -794,10 +855,10 @@ public class ACOVB : AODV
 
     public void sendBackAnt(CDSAnt ant)
     {
-        netValues.messageCounter++;
          //if i haven't already seen this requeset...
         if (!antUpdates.ContainsKey(ant.label))
         {
+        //    print("at send back:  " + ant.label);
             //add it to my list
             antUpdates.Add(ant.label, ant);
 
@@ -817,20 +878,38 @@ public class ACOVB : AODV
         yield return new WaitForSeconds(distance);
         performBackAnt(ant);
     }
-
+    //------------------------------------------------------------
+    //  Function: performBackSAnt()
+    //  Algorithm: ACOVB
+    //  Date: 6-7-2014
+    //  Version: 3.1
+    //  Project: UAV Swarm
+    //  Authors: Corey Willinger
+    //  OS: Windows x64/X86
+    //  Language:C#
+    //
+    //  Class Dependicies: CDSAnt
+    //
+    //   Order-of: O(n^2) - When assumed as a system.  It will run in O(n) on an individual node.
+    //
+    //  Description:  Updates nodes pheromone levels based on its membership in the CDS.
+    //
+    //--------------------------------------------------------------
     void performBackAnt(CDSAnt ant)
     {
-        myCurrentCDS = new CDS(ant.myCDS);
 
-        if (ant.myCDS.getInCDS().Contains(gameObject))
+        myCurrentCDS = ant.myCDS;
+
+        if (ant.myCDS.getInCDS().Contains(gameObject)|| gameObject == superVisor)
         {
-            memberOfCDS = true;
-            myPhereLevel = ((float)(1 - netValues.newTrailInfluence) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
+            if (ant.myCDS.getInCDS().Contains(gameObject))
+            {
+                memberOfCDS = true;
+                myPhereLevel = ((float)(1 - netValues.newTrailInfluence) * myPhereLevel + (1 / ant.myCDS.getInCDS().Count));
+            }
             foreach (GameObject neighbor in neighbors)
             {
-                    netValues.messageCounter++;
-
-                    neighbor.GetComponent<ACOVB>().sendBackAnt(ant);
+              neighbor.GetComponent<ACOVB>().sendBackAnt(ant);
             }
         }
         else
@@ -849,7 +928,24 @@ public class ACOVB : AODV
         nextHop.GetComponent<ACOVB>().sendCDSAnt(ant,flag);
     }
 
-
+    //------------------------------------------------------------
+    //  Function: sendRREQ()
+    //  Algorithm: ACOVB
+    //  Date: 6-7-2014
+    //  Version: 3.1
+    //  Project: UAV Swarm
+    //  Authors: Corey Willinger
+    //  OS: Windows x64/X86
+    //  Language:C#
+    //
+    //  Class Dependicies: RREQpacket
+    //
+    //   Order-of: O(n) - To search through neighbors
+    //
+    //  Description: Override of AODV sendRREQ function, utilizes CDS to broadcast request for route
+    //  instead of full spectrum broadcast.
+    //
+    //--------------------------------------------------------------
     public override void sendRREQ(RREQpacket dataOut)
     {
         string cameFrom = dataOut.intermediate.name;
@@ -857,7 +953,7 @@ public class ACOVB : AODV
         {
             if (cameFrom != node.name && node.name != dataOut.destination.name)
             {
-                if (myCurrentCDS != null)
+                if (netValues.enableCDS && myCurrentCDS != null)
                 {
                     if (myCurrentCDS.getInCDS().Contains(node))
                     {
@@ -930,14 +1026,12 @@ public class CDSAnt: ACORouteEntry
     public Dictionary<int, RevAntPath> nodeData;
     public CDS myCDS;
     public Dictionary<GameObject, NeighborData> canidates;
-    public List<GameObject> updateList;
     public bool done = false;
     public bool reported = false;
 
 
    public CDSAnt(GameObject source_)
     {
-        updateList = new List<GameObject>();
         exploreRate = GameObject.Find("Spawner").GetComponent<ACOVBGUI>().weightFactor;
         hop_count = 0;
         source = source_;
@@ -950,7 +1044,6 @@ public class CDSAnt: ACORouteEntry
 
    public CDSAnt(CDSAnt source_)
    {
-       updateList = new List<GameObject>(source_.updateList);
        exploreRate = source_.exploreRate;
        hop_count = source_.hop_count;
        source = source_.source;

@@ -57,6 +57,7 @@ public class ACOVBGUI : AODVGUI {
     public int numOfCDS;
     public int time = 0;
     public bool reset = false;
+    private int nodeCounter=0;
  
 
 
@@ -76,6 +77,8 @@ public class ACOVBGUI : AODVGUI {
         myUIElements.Add("Broadcasts", "");
         myUIElements.Add("pLevel", "");
         myUIElements.Add("CDS Running", "");
+        myUIElements.Add("AntRoutes", "");
+        myUIElements.Add("AntUpdates", "");
         iterationsStr = "30";
         enableTest = false;
 	}
@@ -90,18 +93,19 @@ public class ACOVBGUI : AODVGUI {
 
             if (log && runningSim)
             {
-                if (Time.time >= stoptime)
-                {
-                    timeCounter = timeCounter + 3;
-                    stoptime = Time.time + 3;
-                    logData(timeCounter);
+                //if (Time.time >= stoptime)
+                //{
+                //    timeCounter = timeCounter + 3;
+                //    stoptime = Time.time + 3;
+                //    logData(timeCounter);
 
 
-                }
+                //}
                 if (simValues.simRunTime != 0)
                 {
                     if (Time.time > startTime + simValues.simRunTime+.01)
                     {
+                        logData(timeCounter);
                         finishIteration(logdata);
                     }
                 }
@@ -132,6 +136,18 @@ public class ACOVBGUI : AODVGUI {
         }
 
 
+
+    }
+    void FixedUpdate()
+    {
+        nodeCounter++;
+        if (nodeCounter >= +simValues.numNodes)
+            nodeCounter = 0;
+        if (enableTest)
+        {
+            GameObject node = GameObject.Find("Node " + nodeCounter);
+                    node.GetComponent<ACOVB>().initBroadcast("cmd", "bCast recv");       
+        }
     }
     #endregion
 
@@ -162,6 +178,8 @@ public class ACOVBGUI : AODVGUI {
             newTrailInfluence = GUILayout.HorizontalSlider(newTrailInfluence, 0, 1);
             GUILayout.Label("Local Factor: " + localUpdate.ToString(), GUILayout.Width(200));
             localUpdate = GUILayout.HorizontalSlider(localUpdate, 0,1);
+            GUILayout.Label("Active Timeout: " + active_route_timer.ToString(), GUILayout.Width(200));
+            active_route_timer = GUILayout.HorizontalSlider(active_route_timer, 0, 10);
             log = GUILayout.Toggle(log, "Logging Enabled");
             enableTest = GUILayout.Toggle(enableTest, "Testing enabled");
             enableCDS = GUILayout.Toggle(enableCDS, "Enable CDS");
@@ -178,6 +196,7 @@ public class ACOVBGUI : AODVGUI {
             if (GUILayout.Button("Begin No CDS Test", GUILayout.Width(140)))
             {
                 testCycle = 1;
+                enableCDS = false;
                 startCDS();
             }
             if (GUILayout.Button("Print CDS", GUILayout.Width(140)))
@@ -202,24 +221,33 @@ public class ACOVBGUI : AODVGUI {
     //Sets up file for data logging
     void startCDS()
     {
-        initializeTestParameters(testCycle);
+         initializeTestParameters(testCycle);
         if (log)
         {
             
             GridGUI flightGUI = GameObject.Find("Spawner").GetComponent<GridGUI>();
-            fileName = "Test"+testCycle+"- nodes" + simValues.numNodes + "CDS" + enableCDS +  "- Sp" + flightGUI.nodeMaxSpeed+ "- wt"+weightFactor + "- newFac"+newTrailInfluence+ "- LU"+localUpdate+ ".txt";
-            path = Application.dataPath + "/../ACO Test Data/";
+            if (enableCDS)
+            {
+                fileName = "Test" + testCycle + "- nodes" + simValues.numNodes + "- wt" + weightFactor + "- newFac" + newTrailInfluence + "- LU" + localUpdate;
+            }
+            else
+            {
+                fileName = "Test" + testCycle + "- nodes" + simValues.numNodes + " -no CDS";
+            }
+                path = Application.dataPath + "/../ACO Test Data/";
             avgdata = new Dictionary<int, ACOLogData>();
-            outputFile = new System.IO.StreamWriter(path + fileName);
+            outputFile = new System.IO.StreamWriter(path + fileName + ".txt");
             maxIterations = int.Parse(iterationsStr);
             iteration = 1;
             runningSim = true;
+       
         }
         startTestEvent();
     }
 
 
     void startTestEvent(){
+        reset = true;
         drawLine = false;
         enableTest = true;
         logdata = new List<ACOLogData>();
@@ -233,31 +261,41 @@ public class ACOVBGUI : AODVGUI {
 
     void endTestCycle()
     {
-        enableTest = false;
-        if (enableCDS)
-        {
-            enableCDS = false;
-                 startCDS();
-        }
-        else
-        {
-            enableCDS = true;
+            
             testCycle++;
-            if (testCycle < 10)
+            if (testCycle <= 10)
             {
                 startCDS();
             }
 
             else
             {
+                enableTest = false;
                 log = false;
                 runningSim = false;
             }
-        }
+        
 
     }
+
+
+    //------------------------------------------------------------
+    //  Function: initializeTestParameters()
+    //  Date: 6-7-2014
+    //  Version: 3.2
+    //  Project: UAV Swarm
+    //  Authors: Corey Willinger
+    //  OS: Windows x64/X86
+    //  Language:C#
+    //  
+    //  Class Dependicies: 
+    //
+    //  Description:  Sets test parameters for current experiment.
+    //
+    //--------------------------------------------------------------
     void initializeTestParameters(int test)
     {
+        enableCDS = true;
         switch (test)
         {
             case 1:
@@ -305,6 +343,9 @@ public class ACOVBGUI : AODVGUI {
                 newTrailInfluence = .9f;
                 localUpdate = .9f;
                 break;
+            case 10:
+                enableCDS = false;
+                break;
             default:
                 weightFactor=.5f;
                 newTrailInfluence=.5f;
@@ -331,7 +372,8 @@ public class ACOVBGUI : AODVGUI {
             avgEntry.time = entry.time = time;
             avgEntry.totBroadcasts += entry.totBroadcasts = (int)broadcastCounter;
             avgEntry.recBroadcasts += entry.recBroadcasts = (int)recBroadcasts;
-            avgEntry.bCastsPerSec += entry.bCastsPerSec = (float)broadcastCounter / 3;
+            avgEntry.bCastsPerSec += entry.bCastsPerSec = (float)broadcastCounter / simValues.simRunTime;
+            if(enableCDS)
             avgEntry.currentCDSsize += entry.currentCDSsize = currentCDS.getInCDS().Count;
             avgEntry.lostPackets += entry.lostPackets = (int)broadcastCounter - recBroadcasts;
             avgEntry.avgPacketTime += entry.avgPacketTime = packetClock / recBroadcasts;
@@ -362,15 +404,24 @@ public class ACOVBGUI : AODVGUI {
 
     private void finishIteration(List<ACOLogData> temp)
     {
+        string timeLine = "";
+        string totBcastsLine = "";
+        string recBcastsLine = "";
+        string bCastsPerSecLine = "";
+        string currentCDSsizeLine = "";
+        string avgPacketTimeLine = "";
+        string avgPacketHopsLine = "";
+        if (iteration == 1)
+        {
+             timeLine = "Time: \t";
+             totBcastsLine = "Total Broadcasts = \t";
+             recBcastsLine = "Recieved Broadcasts =  \t";
+             bCastsPerSecLine = "Broadcast per sec \t";
+             currentCDSsizeLine = "CDS Size \t";
+             avgPacketTimeLine = "Delivery Time \t";
+             avgPacketHopsLine = "Packet Hops \t";
+        }
 
-        string timeLine ="Time: \t";
-        string totBcastsLine = "Total Broadcasts = \t";
-        string recBcastsLine = "Recieved Broadcasts =  \t";
-        string bCastsPerSecLine = "Broadcast per sec \t";
-        string currentCDSsizeLine = "CDS Size \t";
-        string lostPacketsLine = "Lost Packets \t";
-        string avgPacketTimeLine = "Delivery Time \t";
-        string avgPacketHopsLine = "Packet Hops \t";
 
         //foreach (ACOLogData entry in logdata)
         //{
@@ -400,17 +451,17 @@ public class ACOVBGUI : AODVGUI {
                 recBcastsLine += ((float)entry.recBroadcasts / maxIterations).ToString() + "\t";
                 bCastsPerSecLine += ((float)entry.bCastsPerSec / maxIterations).ToString() + "\t";
                 currentCDSsizeLine += ((float)entry.currentCDSsize / maxIterations).ToString() + "\t";
-                lostPacketsLine += ((float)entry.lostPackets / maxIterations).ToString() + "\t";
                 avgPacketTimeLine += ((float)entry.avgPacketTime / maxIterations).ToString() + "\t";
                 avgPacketHopsLine += ((float)entry.avgPacketHops / maxIterations).ToString() + "\t";
             }
-            outputFile.WriteLine();
-            outputFile.WriteLine(fileName);
-            outputFile.WriteLine(timeLine);
+            if(enableCDS)
+            outputFile.WriteLine("- wt" + weightFactor + "- newFac" + newTrailInfluence + "- LU" + localUpdate);
+            if(!enableCDS)
+            outputFile.WriteLine("no CDS");
+         //   outputFile.WriteLine(timeLine);
             outputFile.WriteLine(totBcastsLine);
             outputFile.WriteLine(recBcastsLine);
             outputFile.WriteLine(bCastsPerSecLine);
-            outputFile.WriteLine(lostPacketsLine);
             outputFile.WriteLine(avgPacketTimeLine);
             outputFile.WriteLine(avgPacketHopsLine);
             if (enableCDS)

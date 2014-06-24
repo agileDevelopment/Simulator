@@ -11,6 +11,7 @@ public class AODVGUI : NetworkGUI {
     {
         base.Start();
         myUIElements.Add("messageQueue","");
+        myUIElements.Add("currentRREQ", "");
         baseStation = GameObject.Find("Sat");
  	}
 	

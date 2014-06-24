@@ -8,12 +8,14 @@ public class Network : MonoBehaviour, INetworkBehavior {
     public List<GameObject> neighbors;
     public Object nodeLock = new Object();
     public NodeLine lineController;
-    protected float active_route_timer;
-    public int broadcastID;
-    int clearMsgCtr = 0;
+
+    protected int clearMsgCtr = 0;
  //   int routeCount=0;
     protected Dictionary<GameObject, RouteEntry> routes;
     protected Dictionary<string, MSGPacket> messages;
+    public int broadcastID;
+    public int countOfRoutes;
+    public int countOfMessages;
 
 	// Use this for initialization
 
@@ -23,7 +25,6 @@ public class Network : MonoBehaviour, INetworkBehavior {
         simValues = GameObject.Find("Spawner").GetComponent<LoadOptionsGUI>();
         netValues = simValues.networkGUI;
         neighbors = new List<GameObject>();
-        active_route_timer = 5.0f;  // used to delete route information;
         lineController = gameObject.GetComponent<NodeLine>();
         gameObject.GetComponent<SphereCollider>().radius = netValues.nodeCommRange / 200;
         routes = new Dictionary<GameObject, RouteEntry>();
@@ -52,18 +53,18 @@ public class Network : MonoBehaviour, INetworkBehavior {
     //every 60 frames, clear messages.    
     protected virtual void LateUpdate()
     {
-        clearMsgCtr++;
-        if (clearMsgCtr >= 60)
-        {
             clearMsgCtr = 0;
             Dictionary<string, MSGPacket> temp = new Dictionary<string,MSGPacket>(messages);
             foreach(MSGPacket packet in temp.Values){
-                if (packet.startTime + active_route_timer < Time.time)
+                if (packet.startTime + netValues.active_route_timer < Time.time)
                 {
-          //          messages.Remove(packet.id);
+                   messages.Remove(packet.id);
                 }
             }
-        }
+        
+
+        countOfMessages = messages.Count;
+        countOfRoutes = routes.Count;
     }
 
     void OnMouseDown()
