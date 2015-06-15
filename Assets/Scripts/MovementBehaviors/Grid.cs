@@ -52,8 +52,6 @@ public class Grid : NodeMove
         axis2 = axisList[k];
         axisList.Remove(axis2);
 
-
-
         gridValues = GameObject.Find("Spawner").GetComponent<GridGUI>();
         radius = (float)gridValues.radius;
         radiusSpeed = Random.Range(5, gridValues.nodeMaxSpeed)/5;

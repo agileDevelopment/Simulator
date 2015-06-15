@@ -2,11 +2,17 @@
 using System.Collections;
 
 public class FlightGUI : MonoBehaviour, IFlightGUIOptions {
+    public LoadOptionsGUI simValues;
     public float floorSize = 0;
     public float center = 0;
     public Camera mainCamera;
     public Camera camera2;
  //   bool mainActive = true;
+
+    protected virtual void Start()
+    {
+        simValues = gameObject.GetComponent<LoadOptionsGUI>();
+    }
 
     protected virtual void Update()
     {

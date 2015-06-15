@@ -69,12 +69,15 @@ public class LoadOptionsGUI : MonoBehaviour {
         showMainGui = true;
 		//List for types of Flight Controllers
 		//Must be updated when new FlightBehaviors are implemented
-
-        // Initialize the various attached classes
         movementBehaviorLoader.Add(0, defaultMoveString);
         movementBehaviorLoader.Add(1, "ANNNav");
-        movementBehaviorLoader.Add(2, "Grid");
-        movementBehaviorLoader.Add(3, "Orbit");
+        movementBehaviorLoader.Add(2, "ReynoldFlock");
+        movementBehaviorLoader.Add(3, "Grid");
+        movementBehaviorLoader.Add(4, "Orbit");
+
+
+        //List for types of Network Controllers
+        //Must be updated when new FlightBehaviors are implemented
         networkBehaviorLoader.Add(0, "none");
         networkBehaviorLoader.Add(1, "AODV");
         networkBehaviorLoader.Add(2, "ACOVB");

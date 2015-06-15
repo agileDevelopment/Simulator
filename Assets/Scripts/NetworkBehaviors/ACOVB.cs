@@ -632,7 +632,6 @@ public class ACOVB : AODV
             case 2:
                  if (!antUpdates.ContainsKey(ant.label))
                  {
-                     CDSAnt newAnt = new CDSAnt(ant);
                      antUpdates.Add(ant.label, ant);
                  }
                  if (antUpdates.ContainsKey(ant.label))

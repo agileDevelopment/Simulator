@@ -224,8 +224,6 @@ public class ACOVBGUI : AODVGUI {
          initializeTestParameters(testCycle);
         if (log)
         {
-            
-            GridGUI flightGUI = GameObject.Find("Spawner").GetComponent<GridGUI>();
             if (enableCDS)
             {
                 fileName = "Test" + testCycle + "- nodes" + simValues.numNodes + "- wt" + weightFactor + "- newFac" + newTrailInfluence + "- LU" + localUpdate;

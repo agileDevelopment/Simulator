@@ -3,15 +3,14 @@ using System.Collections;
 
 public class OrbitGUI : FlightGUI {
 
-	LoadOptionsGUI simValues;
 	public string nodeOrbitString;
 	public string nodeMaxSpeedString;
 	public int nodeMaxSpeed;
 	public float radius;
 	public float rotationSpeed;
 	// Use this for initialization
-	void Start () {
-		simValues = gameObject.GetComponent<LoadOptionsGUI>();
+	protected override void Start () {
+        base.Start();
 		nodeOrbitString="200";
 		nodeMaxSpeedString="30";
 	}

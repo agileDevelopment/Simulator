@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ANNNavGUI : FlightGUI {
-	LoadOptionsGUI simValues;
     public RTPopulationManager popManager;
     public NEATManager movementManager;
 
@@ -15,8 +14,8 @@ public class ANNNavGUI : FlightGUI {
 	public int nodeMaxSpeed;
 
 	// Use this for initialization
-	void Start () {
-        simValues = gameObject.GetComponent<LoadOptionsGUI>();
+	protected override void Start () {
+        base.Start();
         popManager = gameObject.GetComponent<RTPopulationManager>();
         movementManager = new NEATManager(simValues.numNodes, 15);
 	    
